@@ -1,0 +1,80 @@
+Se citesc de la tastatură numere întregi până la întâlnirea cuvântului "stop". Acestea vor fi stocate într-un arbore binar de căutare. Ulterior, se citește un nou număr întreg. Să se afișeze pe ecran, în ordine descrescătoare, toate numerele din arbore care sunt mai mari decât ultimul întreg citit de la tastatură.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structura unui nod al arborelui binar
+typedef struct Nod {
+    int valoare;
+    struct Nod *stanga, *dreapta;
+} Nod;
+
+// Funcție pentru a crea un nod nou
+Nod* creeazaNod(int valoare) {
+    Nod* nodNou = (Nod*)malloc(sizeof(Nod));
+    nodNou->valoare = valoare;
+    nodNou->stanga = NULL;
+    nodNou->dreapta = NULL;
+    return nodNou;
+}
+
+// Funcție pentru a insera un element în arbore
+Nod* insereaza(Nod* radacina, int valoare) {
+    if (radacina == NULL) {
+        return creeazaNod(valoare);
+    }
+    if (valoare < radacina->valoare) {
+        radacina->stanga = insereaza(radacina->stanga, valoare);
+    } else if (valoare > radacina->valoare) {
+        radacina->dreapta = insereaza(radacina->dreapta, valoare);
+    }
+    return radacina;
+}
+
+// Funcție pentru a afișa în ordine descrescătoare valorile din arbore care sunt mai mari decât o valoare dată
+void afiseazaDescrescator(Nod* radacina, int limita) {
+    if (radacina == NULL) return;
+
+    // Parcurgere în ordine descrescătoare: dreapta -> rădăcină -> stânga
+    afiseazaDescrescator(radacina->dreapta, limita);
+    if (radacina->valoare >= limita) {
+        printf("%d\n", radacina->valoare);
+    }
+    afiseazaDescrescator(radacina->stanga, limita);
+}
+
+// Funcție pentru a elibera memoria arborelui
+void elibereazaArbore(Nod* radacina) {
+    if (radacina == NULL) return;
+    elibereazaArbore(radacina->stanga);
+    elibereazaArbore(radacina->dreapta);
+    free(radacina);
+}
+
+int main() {
+    Nod* radacina = NULL;
+    char input[20];
+
+    // Citire și inserare în arbore până la întâlnirea cuvântului "stop"
+    while (1) {
+        scanf("%s", input);
+        if (strcmp(input, "stop") == 0) {
+            break;
+        }
+        int valoare = atoi(input);
+        radacina = insereaza(radacina, valoare);
+    }
+
+    // Citirea ultimei valori întregi
+    int limita;
+    scanf("%d", &limita);
+
+    // Afișarea valorilor mai mari decât limita în ordine descrescătoare
+    afiseazaDescrescator(radacina, limita);
+
+    // Eliberarea memoriei arborelui
+    elibereazaArbore(radacina);
+
+    return 0;
+}

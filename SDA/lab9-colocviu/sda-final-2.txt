@@ -1,0 +1,170 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structura pentru o persoană din listă
+struct PERSOANA {
+    char name[16];
+    int id;
+    struct PERSOANA *next;
+};
+
+// Funcție pentru crearea unui nod nou
+struct PERSOANA* creare_persoana(char *name, int id) {
+    struct PERSOANA *persoana = (struct PERSOANA*)malloc(sizeof(struct PERSOANA));
+    strcpy(persoana->name, name);
+    persoana->id = id;
+    persoana->next = NULL;
+    return persoana;
+}
+
+// Inserare în listă la început
+struct PERSOANA* adaugareLaInceput(struct PERSOANA *head, char *name, int id) {
+    struct PERSOANA *nou = creare_persoana(name, id);
+    // if (head == NULL) return nou;
+    nou->next = head;
+    return nou;
+}
+
+// Afișare listă
+void afisare_lista(struct PERSOANA *head) {
+    struct PERSOANA *curent = head;
+    while (curent != NULL) {
+        printf("%s %d\n", curent->name, curent->id);
+        curent = curent->next;
+    }
+}
+
+// Găsire persoană cu ID maxim
+struct PERSOANA* gasire_maxim(struct PERSOANA *head) {
+    struct PERSOANA *curent = head;
+    struct PERSOANA *maxim = head;
+    while (curent != NULL) {
+        if (curent->id > maxim->id) {
+            maxim = curent;
+        }
+        curent = curent->next;
+    }
+    return maxim;
+}
+
+// Eliminare persoană după ID
+struct PERSOANA* eliminare_persoana(struct PERSOANA *head, int id) {
+    struct PERSOANA *curent = head;
+    struct PERSOANA *prev = NULL;
+
+    while (curent != NULL) {
+        if (curent->id == id) {
+            if (prev == NULL) {
+                // Primul nod
+                head = curent->next;
+            } else {
+                prev->next = curent->next;
+            }
+            free(curent); // Eliberăm nodul găsit
+            return head;
+        }
+        prev = curent;
+        curent = curent->next;
+    }
+    return head;
+}
+
+// Sortare lista crescător
+struct PERSOANA* sortare_crescator(struct PERSOANA *head) {
+    struct PERSOANA *sorted = NULL;
+
+    while (head != NULL) {
+        struct PERSOANA *maxim = gasire_maxim(head);
+        sorted = adaugareLaInceput(sorted, maxim->name, maxim->id);
+        head = eliminare_persoana(head, maxim->id);
+    }
+
+    return sorted;
+}
+
+// Eliberare memorie listă
+void elibereaza_lista(struct PERSOANA *head) {
+    struct PERSOANA *temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+// Sortare pe identificatori impari/par
+void sortare_par_impar(struct PERSOANA *head) {
+    struct PERSOANA *impari = NULL;
+    struct PERSOANA *pari = NULL;
+
+    // Separăm în două liste
+    while (head != NULL) {
+        if (head->id % 2 == 0) {
+            pari = adaugareLaInceput(pari, head->name, head->id);
+        } else {
+            impari = adaugareLaInceput(impari, head->name, head->id);
+        }
+        head = head->next;
+    }
+
+    // Sortăm listele
+    impari = sortare_crescator(impari);
+    pari = sortare_crescator(pari);
+
+    // Afișăm listele: întâi imparii, apoi parii
+    afisare_lista(impari);
+    afisare_lista(pari);
+
+    // Eliberăm memoria
+    elibereaza_lista(pari);
+    elibereaza_lista(impari);
+
+}
+
+int main() {
+    struct PERSOANA *lista = NULL;
+
+    int comanda, id;
+    scanf("%d", &comanda);
+    scanf("%d", &id); // Acesta este folosit doar pentru comanda 3
+    
+    // Citim datele persoanelor până la EOF
+    while (1) {
+        char name[16];
+        int identificator;
+        if(scanf("%s", name) == EOF) break;
+        scanf("%d", &identificator);
+        lista = adaugareLaInceput(lista, name, identificator);
+    }
+
+    switch (comanda) {
+        case 1:
+            afisare_lista(lista);
+            break;
+        case 2: {
+            struct PERSOANA *maxim = gasire_maxim(lista);
+            if (maxim != NULL) {
+                printf("%s\n", maxim->name);
+            }
+            break;
+        }
+        case 3:
+            lista = eliminare_persoana(lista, id);
+            afisare_lista(lista);
+            break;
+        case 4:
+            // struct PERSOANA *listaSortata = NULL;
+            lista = sortare_crescator(lista);
+            afisare_lista(lista);
+            break;
+        case 5:
+            sortare_par_impar(lista);
+            break;
+        default:
+            printf("Comanda invalida!\n");
+    }
+
+    elibereaza_lista(lista);
+    return 0;
+}

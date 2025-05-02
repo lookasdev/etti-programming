@@ -1,0 +1,122 @@
+Se citesc de la tastatură:
+- un întreg m (m <= 20);
+- un întreg n;
+- o secvență de n numere întregi.
+Cele n numere întregi vor fi stocate într-un hashmap de dimensiune m. Pentru a obține indexul locului (bucket) unde valoarea va fi introdusă, se împarte valoarea întregului curent la dimensiunea hashmap-ului, iar restul împărțirii reprezintă valoarea indexului. 
+
+Coliziunile vor fi gestionate prin metoda "chaining": dacă pe poziția în care ar trebui să fie introdus un întreg se găsește deja o valoare, atunci se va crea o listă simplu înlănțuită corespunzătoare acelui bucket și valoarea nouă va fi introdusă la sfârșitul listei.
+
+Să se afișeze pe ecran valorile din hashmap separate de un spațiu liber, câte un bucket pe fiecare rând, sub forma:
+<indice_bucket>: <val_1> <val_2>...
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura pentru nodurile listei simplu înlănțuite
+typedef struct Node {
+    int value;
+    struct Node* next;
+} Node;
+
+// Structura pentru hashmap
+typedef struct HashMap {
+    Node** buckets;
+    int size;
+} HashMap;
+
+// Funcție pentru crearea unui nod nou
+Node* createNode(int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->value = value;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Funcție pentru inițializarea hashmap-ului
+HashMap* createHashMap(int size) {
+    HashMap* hashMap = (HashMap*)malloc(sizeof(HashMap));
+    hashMap->size = size;
+    hashMap->buckets = (Node**)malloc(size * sizeof(Node*));
+    for (int i = 0; i < size; i++) {
+        hashMap->buckets[i] = NULL;
+    }
+    return hashMap;
+}
+
+// Funcție pentru adăugarea unui element în hashmap
+void insert(HashMap* hashMap, int value) {
+    int index = value % hashMap->size;
+    if (index < 0) {
+        index += hashMap->size; // pentru numere negative
+    }
+
+    Node* newNode = createNode(value);
+
+    if (hashMap->buckets[index] == NULL) {
+        hashMap->buckets[index] = newNode;
+    } else {
+        Node* current = hashMap->buckets[index];
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = newNode;
+    }
+}
+
+// Funcție pentru afișarea hashmap-ului
+void printHashMap(HashMap* hashMap) {
+    for (int i = 0; i < hashMap->size; i++) {
+        printf("%d: ", i);
+        Node* current = hashMap->buckets[i];
+        while (current != NULL) {
+            printf("%d ", current->value);
+            current = current->next;
+        }
+        printf("\n");
+    }
+}
+
+// Funcție pentru eliberarea memoriei hashmap-ului
+void freeHashMap(HashMap* hashMap) {
+    for (int i = 0; i < hashMap->size; i++) {
+        Node* current = hashMap->buckets[i];
+        while (current != NULL) {
+            Node* temp = current;
+            current = current->next;
+            free(temp);
+        }
+    }
+    free(hashMap->buckets);
+    free(hashMap);
+}
+
+int main() {
+    int m, n;
+
+    // Citirea valorilor m și n
+    // printf("Introduceți dimensiunea hashmap-ului (m <= 20): ");
+    scanf("%d", &m);
+
+    // printf("Introduceți numărul de elemente (n): ");
+    scanf("%d", &n);
+
+    // Crearea hashmap-ului
+    HashMap* hashMap = createHashMap(m);
+
+    // Citirea elementelor și introducerea lor în hashmap
+    // printf("Introduceți cele %d numere întregi:\n", n);
+    for (int i = 0; i < n; i++) {
+        int value;
+        scanf("%d", &value);
+        insert(hashMap, value);
+    }
+
+    // Afișarea hashmap-ului
+    // printf("Hashmap-ul este:\n");
+    printHashMap(hashMap);
+
+    // Eliberarea memoriei
+    freeHashMap(hashMap);
+
+    return 0;
+}

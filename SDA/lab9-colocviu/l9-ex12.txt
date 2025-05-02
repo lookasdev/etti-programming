@@ -1,0 +1,103 @@
+#include <stdio.h>
+
+#define MAX_FACTURI 1000
+
+// Functie pentru afisarea valorilor facturilor
+void afisare_valori(int facturi[], int numar_facturi) {
+    for (int i = 0; i < numar_facturi; i++) {
+        printf("%d\n", facturi[i]);
+    }
+}
+
+// Functie pentru afisarea facturilor complete
+void afisare_facturi_complete(int facturi[], int numar_facturi, int an, int luna) {
+    for (int i = 0; i < numar_facturi; i++) {
+        printf("%d %d %d\n", an, luna, facturi[i]);
+        luna++;
+        if (luna > 12) {
+            luna = 1;
+            an++;
+        }
+    }
+}
+
+// Functie pentru afisarea facturilor dintr-un an anume
+void afisare_facturi_anume(int facturi[], int numar_facturi, int an, int luna, int an_de_inceput) {
+    for (int i = 0; i < numar_facturi; i++) {
+        if (an == an_de_inceput) {
+            printf("%d %d %d\n", an, luna, facturi[i]);
+        }
+        luna++;
+        if (luna > 12) {
+            luna = 1;
+            an++;
+        }
+    }
+}
+
+// Functie pentru afisarea anului cu valoarea maxima pentru o anumita luna
+void afisare_an_maxim(int facturi[], int numar_facturi, int an, int luna, int luna_cautata) {
+    int valoare_maxima = -1;
+    int an_maxim = an;
+
+    for (int i = 0; i < numar_facturi; i++) {
+        if (luna == luna_cautata && facturi[i] > valoare_maxima) {
+            valoare_maxima = facturi[i];
+            an_maxim = an;
+        }
+        luna++;
+        if (luna > 12) {
+            luna = 1;
+            an++;
+        }
+    }
+    printf("%d\n", an_maxim);
+}
+
+// Functie pentru calcularea mediei pe ultimele 12 luni
+void afisare_medie_ultimele_12(int facturi[], int numar_facturi) {
+    int suma = 0;
+    for (int i = numar_facturi - 12; i < numar_facturi; i++) {
+        suma += facturi[i];
+    }
+    printf("%.2f\n", suma / 12.0);
+}
+
+int main() {
+    int an, luna, comanda;
+    int facturi[MAX_FACTURI];
+    int numar_facturi = 0;
+
+    // Citire anul, luna si comanda
+    scanf("%d", &an);
+    scanf("%d", &luna);
+    scanf("%d", &comanda);
+
+    // Citire valori facturi pana la EOF
+    while (scanf("%d", &facturi[numar_facturi]) != EOF) {
+        numar_facturi++;
+    }
+
+    // Executare comanda
+    switch (comanda) {
+        case 1:
+            afisare_valori(facturi, numar_facturi);
+            break;
+        case 2:
+            afisare_facturi_complete(facturi, numar_facturi, an, luna);
+            break;
+        case 3:
+            afisare_facturi_anume(facturi, numar_facturi, an, luna, an);
+            break;
+        case 4:
+            afisare_an_maxim(facturi, numar_facturi, an, luna, luna);
+            break;
+        case 5:
+            afisare_medie_ultimele_12(facturi, numar_facturi);
+            break;
+        default:
+            printf("Comanda invalida!\n");
+    }
+
+    return 0;
+}

@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct CelulaSpeciala {
+    int celula;
+    char nume[21];
+    int valoare;
+} CelulaSpeciala;
+
+int aplicaPropietate(CelulaSpeciala *speciale, int numarSpeciale, int pozitieCurenta, int valoareZar) {
+    int pozitieNoua = pozitieCurenta + valoareZar;
+
+    for (int i = 0; i < numarSpeciale; i++) {
+        if (speciale[i].celula == pozitieNoua) {
+            if (strcmp(speciale[i].nume, "avanseaza") == 0) {
+                int avans = speciale[i].valoare;
+                pozitieNoua += avans;
+            } else if (strcmp(speciale[i].nume, "intoarce") == 0) {
+                int intoarcere = speciale[i].valoare;
+                pozitieNoua -= intoarcere;
+            } else if (strcmp(speciale[i].nume, "dubleaza") == 0) {
+                pozitieNoua += valoareZar;
+            }
+        }
+    }
+
+    return pozitieNoua;
+}
+
+void afiseazaSpeciale(CelulaSpeciala *speciale, int numarSpeciale) {
+    for (int i = 0; i < numarSpeciale; i++) {
+        if(strcmp(speciale[i].nume, "dubleaza") == 0) {
+            printf("%d %s\n", speciale[i].celula, speciale[i].nume);
+        } else {
+            printf("%d %s %d\n", speciale[i].celula, speciale[i].nume, speciale[i].valoare);
+        }
+    }
+}
+
+void joacaJocPiticot(int n, CelulaSpeciala *speciale, int numarSpeciale) {
+    int pozitieJucator1 = 0, pozitieJucator2 = 0;
+    int randJucator = 1; // jucatorul nr 1 incepe
+    int valoareZar;
+
+    while (scanf("%d", &valoareZar) != EOF) {
+        if (randJucator == 1) {
+            pozitieJucator1 = aplicaPropietate(speciale, numarSpeciale, pozitieJucator1, valoareZar);
+            if (pozitieJucator1 >= n) {
+                printf("1\n%d\n", pozitieJucator2);
+                return;
+            }
+            randJucator = 2;
+        } else if (randJucator == 2){
+            pozitieJucator2 = aplicaPropietate(speciale, numarSpeciale, pozitieJucator2, valoareZar);
+            if (pozitieJucator2 >= n) {
+                printf("2\n%d\n", pozitieJucator1);
+                return;
+            }
+            randJucator = 1;
+        }
+    }
+}
+
+int main() {
+    int n, x, comanda;
+    CelulaSpeciala speciale[101];
+
+    scanf("%d", &n); // nr celule
+    scanf("%d", &x); // nr speciale
+
+    for (int i = 0; i < x; i++) {
+        scanf("%d %s", &speciale[i].celula, speciale[i].nume);
+        if(strcmp(speciale[i].nume, "dubleaza") == 0) {
+            speciale[i].valoare = 0;
+        } else {
+            scanf("%d", &speciale[i].valoare);
+        }
+    }
+
+    scanf("%d", &comanda);
+
+    switch (comanda) {
+        case 1:
+            afiseazaSpeciale(speciale, x);
+            break;
+        case 2: {
+            int pozitieCurenta, valoareZar;
+            scanf("%d %d", &pozitieCurenta, &valoareZar);
+            int pozitieNoua = aplicaPropietate(speciale, x, pozitieCurenta, valoareZar);
+            printf("%d\n", pozitieNoua);
+            break;
+        }
+        case 3:
+            joacaJocPiticot(n, speciale, x);
+            break;
+        default:
+            printf("Comanda invalida!\n");
+            break;
+    }
+
+    return 0;
+}

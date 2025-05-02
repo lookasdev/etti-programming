@@ -1,0 +1,154 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_WORD_LEN 100
+#define MAX_WORDS 100
+
+typedef struct Node {
+    char word[MAX_WORD_LEN];
+    struct Node *next;
+} Node;
+
+typedef struct {
+    Node **buckets;
+    int size;
+} HashMap;
+
+int calculate_hash(const char *word, int size) {
+    int sum = 0;
+    for (int i = 0; word[i] != '\0'; i++) {
+        sum += word[i];
+    }
+    return sum % size;
+}
+
+HashMap *create_hashmap(int size) {
+    HashMap *map = (HashMap *)malloc(sizeof(HashMap));
+    map->size = size;
+    map->buckets = (Node **)malloc(size * sizeof(Node *));
+    for (int i = 0; i < size; i++) {
+        map->buckets[i] = NULL;
+    }
+    return map;
+}
+
+void insert_word(HashMap *map, const char *word) {
+    int hash = calculate_hash(word, map->size);
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    strcpy(new_node->word, word);
+    new_node->next = NULL;
+
+    if (map->buckets[hash] == NULL) {
+        map->buckets[hash] = new_node;
+    } else {
+        Node *current = map->buckets[hash];
+        while (current->next) {
+            current = current->next;
+        }
+        current->next = new_node;
+    }
+}
+
+void print_hashmap(HashMap *map) {
+    for (int i = 0; i < map->size; i++) {
+        Node *current = map->buckets[i];
+        while (current) {
+            printf("%s %d\n", current->word, i);
+            current = current->next;
+        }
+    }
+}
+
+int are_anagrams(const char *word1, const char *word2) {
+    int count[256] = {0};
+    for (int i = 0; word1[i] != '\0'; i++) {
+        count[(unsigned char)word1[i]]++;
+    }
+    for (int i = 0; word2[i] != '\0'; i++) {
+        count[(unsigned char)word2[i]]--;
+    }
+    for (int i = 0; i < 256; i++) {
+        if (count[i] != 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void find_anagrams(HashMap *map, const char *word) {
+    int hash = calculate_hash(word, map->size);
+    Node *current = map->buckets[hash];
+    while (current) {
+        if (are_anagrams(word, current->word)) {
+            printf("%s\n", current->word);
+        }
+        current = current->next;
+    }
+}
+
+void remove_anagrams(char words[][MAX_WORD_LEN], int *word_count) {
+    int to_remove[MAX_WORDS] = {0};
+    for (int i = 0; i < *word_count; i++) {
+        for (int j = i + 1; j < *word_count; j++) {
+            if (are_anagrams(words[i], words[j])) {
+                to_remove[i] = 1;
+                to_remove[j] = 1;
+            }
+        }
+    }
+    int new_count = 0;
+    for (int i = 0; i < *word_count; i++) {
+        if (!to_remove[i]) {
+            strcpy(words[new_count++], words[i]);
+        }
+    }
+    *word_count = new_count;
+}
+
+int main() {
+    int size, n, command;
+    char words[MAX_WORDS][MAX_WORD_LEN];
+
+    scanf("%d", &size);
+    scanf("%d", &n);
+
+    HashMap *map = create_hashmap(size);
+
+    for (int i = 0; i < n; i++) {
+        scanf("%s", words[i]);
+        insert_word(map, words[i]);
+    }
+
+    scanf("%d", &command);
+
+    if (command == 1) {
+        print_hashmap(map);
+    } else if (command == 2) {
+        char query[MAX_WORD_LEN];
+        scanf("%s", query);
+        find_anagrams(map, query);
+    } else if (command == 3) {
+        remove_anagrams(words, &n);
+        for (int i = 0; i < n; i++) {
+            printf("%s\n", words[i]);
+        }
+    }
+
+    // free memory
+    
+    for (int i = 0; i < map->size; i++) {
+        Node *current = map->buckets[i];
+        while (current) {
+            Node *temp = current;
+            current = current->next;
+            free(temp);
+        }
+    }
+
+    free(map->buckets);
+    free(map);
+
+    return 0;
+}

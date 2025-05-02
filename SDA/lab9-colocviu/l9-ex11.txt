@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_TRANSFERS 100
+#define MAX_NAME_LENGTH 16
+
+typedef struct {
+    char source[MAX_NAME_LENGTH];
+    char destination[MAX_NAME_LENGTH];
+    int amount;
+} Transfer;
+
+void displayTransfers(Transfer transfers[], int count) {
+    for (int i = 0; i < count; i++) {
+        printf("%s %s %d\n", transfers[i].source, transfers[i].destination, transfers[i].amount);
+    }
+}
+
+int totalTransferred(Transfer transfers[], int count) {
+    int total = 0;
+    for (int i = 0; i < count; i++) {
+        total += transfers[i].amount;
+    }
+    return total;
+}
+
+void displayDestinationBySource(Transfer transfers[], int count, char source[]) {
+    for (int i = 0; i < count; i++) {
+        if (strcmp(transfers[i].source, source) == 0) {
+            printf("%s\n", transfers[i].destination);
+            return;
+        }
+    }
+}
+
+void displayTransactionChain(Transfer transfers[], int count, char start[]) {
+    char current[MAX_NAME_LENGTH];
+    strcpy(current, start);
+    
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < count; j++) {
+            if (strcmp(transfers[j].source, current) == 0) {
+                printf("%s %s %d\n", transfers[j].source, transfers[j].destination, transfers[j].amount);
+                strcpy(current, transfers[j].destination);
+                break;
+            }
+        }
+    }
+}
+
+void eliminateRedundancyInLoop(Transfer transfers[], int count, char start[]) {
+    char current[MAX_NAME_LENGTH];
+    strcpy(current, start);
+    int minAmount = -1;
+    int visited[MAX_TRANSFERS] = {0};
+
+    // Identify the loop and find the minimum amount
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < count; j++) {
+            if (!visited[j] && strcmp(transfers[j].source, current) == 0) {
+                if (minAmount == -1 || transfers[j].amount < minAmount) {
+                    minAmount = transfers[j].amount;
+                }
+                visited[j] = 1;
+                strcpy(current, transfers[j].destination);
+                if (strcmp(current, start) == 0) {
+                    break;
+                }
+            }
+        }
+    }
+
+    // Eliminate the redundancy by subtracting the minimum amount from each transfer in the loop
+    strcpy(current, start);
+    memset(visited, 0, sizeof(visited));
+
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < count; j++) {
+            if (!visited[j] && strcmp(transfers[j].source, current) == 0) {
+                transfers[j].amount -= minAmount;
+                visited[j] = 1;
+                printf("%s %s %d\n", transfers[j].source, transfers[j].destination, transfers[j].amount);
+                strcpy(current, transfers[j].destination);
+                if (strcmp(current, start) == 0) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int n;
+    Transfer transfers[MAX_TRANSFERS];
+
+    // Read the number of transfers
+    scanf("%d", &n);
+
+    // Read the transfers
+    for (int i = 0; i < n; i++) {
+        scanf("%s %s %d", transfers[i].source, transfers[i].destination, &transfers[i].amount);
+    }
+
+    // Read the command
+    int command;
+    scanf("%d", &command);
+
+    if (command == 1) {
+        displayTransfers(transfers, n);
+    } else if (command == 2) {
+        printf("%d\n", totalTransferred(transfers, n));
+    } else if (command == 3) {
+        char source[MAX_NAME_LENGTH];
+        scanf("%s", source);
+        displayDestinationBySource(transfers, n, source);
+    } else if (command == 4) {
+        char start[MAX_NAME_LENGTH];
+        scanf("%s", start);
+        displayTransactionChain(transfers, n, start);
+    } else if (command == 5) {
+        char start[MAX_NAME_LENGTH];
+        scanf("%s", start);
+        eliminateRedundancyInLoop(transfers, n, start);
+    }
+
+    return 0;
+}

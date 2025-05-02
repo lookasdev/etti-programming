@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    char name[50];
+    int cards[100]; // Maxim 100 de runde
+} Player;
+
+void test1(int n, Player players[]) {
+    for (int i = 0; i < n; i++) {
+        printf("%s", players[i].name);
+        for (int j = 0; j < n - 1; j++) {
+            printf(" %d", players[i].cards[j]);
+        }
+        printf("\n");
+    }
+}
+
+void test2(int n, Player players[]) {
+    int eliminated;
+    int rundaCurenta = 0;
+
+    while (rundaCurenta != n) {
+        eliminated = -1;
+        int min_card = 100; // Valoare mai mare decât orice carte posibilă
+
+        for (int i = 0; i < n; i++) {
+            if (players[i].name[0] != '\0') { // Jucător activ
+                if (players[i].cards[rundaCurenta] < min_card) {
+                    min_card = players[i].cards[rundaCurenta];
+                    eliminated = i;
+                }
+            }
+        }
+
+        // Eliminăm jucătorul cu cartea minimă
+        if (eliminated != -1) {
+            players[eliminated].name[0] = '\0';
+        }
+
+        // Afișăm jucătorii rămași după eliminare
+        for (int i = 0; i < n; i++) {
+            if (players[i].name[0] != '\0') {
+                printf("%s\n", players[i].name);
+            }
+        }
+        
+        printf("\n");
+        rundaCurenta++;
+    }
+
+    // Afișăm câștigătorul
+    for (int i = 0; i < n; i++) {
+        if (players[i].name[0] != '\0') {
+            printf("%s\n", players[i].name);
+            break;
+        }
+    }
+}
+
+int main() {
+    int test;
+    scanf("%d", &test);
+
+    int n;
+    scanf("%d", &n);
+
+    Player players[n];
+
+    for (int i = 0; i < n; i++) {
+        scanf("%s", players[i].name);
+        for (int j = 0; j < n - 1; j++) {
+            scanf("%d", &players[i].cards[j]);
+        }
+    }
+
+    if (test == 1) {
+        test1(n, players);
+    } else if (test == 2) {
+        test2(n, players);
+    }
+
+    return 0;
+}

@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura unui nod din lista circulară
+struct Nod {
+    int date;
+    struct Nod* urmator;
+};
+
+// Funcție pentru crearea unui nod nou
+struct Nod* creeazaNod(int valoare) {
+    struct Nod* nodNou = (struct Nod*)malloc(sizeof(struct Nod));
+    nodNou->date = valoare;
+    nodNou->urmator = NULL;
+    return nodNou;
+}
+
+// Funcție pentru afișarea listei
+void afiseazaLista(struct Nod* cap) {
+    if (!cap) return;
+    struct Nod* curent = cap;
+    do {
+        printf("%d\n", curent->date);
+        curent = curent->urmator;
+    } while (curent != cap);
+}
+
+// Funcție pentru adăugarea unui nod înaintea primului nod
+struct Nod* adaugaInainteaPrimului(struct Nod* cap, int valoareNoua) {
+    struct Nod* nodNou = creeazaNod(valoareNoua);
+    if (!cap) {
+        nodNou->urmator = nodNou; // Se leagă către el însuși
+        return nodNou;
+    }
+    struct Nod* ultim = cap;
+    while (ultim->urmator != cap) {
+        ultim = ultim->urmator;
+    }
+    nodNou->urmator = cap;
+    ultim->urmator = nodNou;
+    return nodNou;
+}
+
+// Funcție pentru eliberarea memoriei listei
+void elibereazaLista(struct Nod* cap) {
+    if (!cap) return;
+    struct Nod* curent = cap;
+    struct Nod* urmator;
+    do {
+        urmator = curent->urmator;
+        free(curent);
+        curent = urmator;
+    } while (curent != cap);
+}
+
+// Funcția principală
+int main() {
+    int n, valoare, valoareNoua;
+    struct Nod* cap = NULL;
+    struct Nod* ultim = NULL;
+
+    // Citirea numărului de noduri
+    scanf("%d", &n);
+
+    // Citirea valorilor și construirea listei
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &valoare);
+        struct Nod* nodNou = creeazaNod(valoare);
+        if (!cap) {
+            cap = nodNou;
+            nodNou->urmator = nodNou; // Prima legătură către sine
+        } else {
+            nodNou->urmator = cap; // Se leagă la cap
+            ultim->urmator = nodNou; // Ultimul leagă la noul nod
+        }
+        ultim = nodNou;
+    }
+
+    // Afișarea listei inițiale
+    afiseazaLista(cap);
+
+    // Citirea valorii pentru noul nod
+    scanf("%d", &valoareNoua);
+
+    // Adăugarea nodului înaintea primului
+    cap = adaugaInainteaPrimului(cap, valoareNoua);
+
+    // Afișarea listei modificate
+    afiseazaLista(cap);
+
+    // Eliberarea memoriei
+    elibereazaLista(cap);
+
+    return 0;
+}

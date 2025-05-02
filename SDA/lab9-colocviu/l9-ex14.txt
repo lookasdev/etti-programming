@@ -1,0 +1,190 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_USERNAME_LENGTH 30
+#define MAX_USERS 100
+
+// Structura utilizator
+typedef struct {
+    char username[MAX_USERNAME_LENGTH];
+    int year, month, day;
+} User;
+
+// Structura pentru o listă de utilizatori dintr-o poziție a hash-ului
+typedef struct Node {
+    User user;
+    struct Node *next;
+} Node;
+
+// Functie pentru calculul hash-ului
+int hash_function(const char *username, int n) {
+    int sum = 0;
+    for (int i = 0; username[i] != '\0'; i++) {
+        sum += username[i];
+    }
+    return sum % n;
+}
+
+// Funcție pentru adăugarea unui utilizator într-o poziție de hash
+void insert_user(Node **hash_table, int hash_value, User user) {
+    Node *new_node = (Node *)malloc(sizeof(Node));
+    new_node->user = user;
+    new_node->next = NULL;  // Nodul nou va fi ultimul, deci next este NULL
+
+    // Dacă lista este goală, adăugăm nodul la început
+    if (hash_table[hash_value] == NULL) {
+        hash_table[hash_value] = new_node;
+    } else {
+        // Dacă lista nu este goală, căutăm ultimul nod
+        Node *current = hash_table[hash_value];
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        // Adăugăm noul nod la finalul listei
+        current->next = new_node;
+    }
+}
+
+// Funcție pentru verificarea majoratului
+int is_major(int year, int month, int day) {
+    if (year < 2006 || (year == 2006 && month <= 1 && day <= 9)) {
+        return 1;
+    }
+    return 0;
+}
+
+// Funcție pentru afișarea utilizatorilor majori
+void list_majors(Node **hash_table, int n) {
+    for (int i = 0; i < n; i++) {
+        Node *current = hash_table[i];
+        while (current != NULL) {
+            User user = current->user;
+            if (is_major(user.year, user.month, user.day)) {
+                printf("%s %d %d %d\n", user.username, user.year, user.month, user.day);
+            } else {
+                printf("%s Minor\n", user.username);
+            }
+            current = current->next;  // Trecem la următorul nod din lista de la această poziție
+        }
+    }
+}
+
+// Funcție pentru verificarea utilizatorilor similari
+int are_similar(const char *username1, const char *username2) {
+    int freq1[256] = {0}, freq2[256] = {0};
+    for (int i = 0; username1[i] != '\0'; i++) {
+        freq1[(unsigned char)username1[i]]++;
+    }
+    for (int i = 0; username2[i] != '\0'; i++) {
+        freq2[(unsigned char)username2[i]]++;
+    }
+    for (int i = 0; i < 256; i++) {
+        if (freq1[i] != freq2[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Funcție pentru afișarea utilizatorilor similari
+void list_similar_users(User users[], int user_count, const char *query) {
+    int found = 0;
+    for (int i = 0; i < user_count; i++) {
+        if(strcmp(users[i].username, query) != 0) {
+            if (are_similar(query, users[i].username)) {
+                printf("%s ", users[i].username);
+                found = 1;
+            }
+        }
+    }
+    if (!found) {
+        printf("Nu exista useri similari");
+    }
+    printf("\n");
+}
+
+// Funcție pentru recalcularea dimensiunii bazei de date
+int calculate_new_size(User users[], int user_count) {
+    int new_size = 2;
+    while (1) {
+        Node **temp_table = (Node **)calloc(new_size, sizeof(Node *));
+        int valid = 1;
+
+        for (int i = 0; i < user_count; i++) {
+            int hash_value = hash_function(users[i].username, new_size);
+            int count = 0;
+            Node *current = temp_table[hash_value];
+            while (current) {
+                count++;
+                current = current->next;
+            }
+            if (count >= 2) {
+                valid = 0;
+                break;
+            }
+            insert_user(temp_table, hash_value, users[i]);
+        }
+
+        for (int i = 0; i < new_size; i++) {
+            Node *current = temp_table[i];
+            while (current) {
+                Node *to_free = current;
+                current = current->next;
+                free(to_free);
+            }
+        }
+        free(temp_table);
+
+        if (valid) {
+            return new_size;
+        }
+        new_size++;
+    }
+}
+
+int main() {
+    int n, user_count, option;
+    scanf("%d", &n);
+    scanf("%d", &user_count);
+
+    Node **hash_table = (Node **)calloc(n, sizeof(Node *));
+    User users[MAX_USERS];
+
+    for (int i = 0; i < user_count; i++) {
+        User user;
+        scanf("%s %d %d %d", user.username, &user.year, &user.month, &user.day);
+        users[i] = user;
+        int hash_value = hash_function(user.username, n);
+        // printf("%d\n", hash_value);
+        insert_user(hash_table, hash_value, user);
+    }
+
+    scanf("%d", &option);
+    if (option == 1) {
+        list_majors(hash_table, n);
+    } else if (option == 2) {
+        char query[3][MAX_USERNAME_LENGTH];
+        for (int i = 0; i < 3; i++) {
+            scanf("%s", query[i]);
+            list_similar_users(users, user_count, query[i]);
+        }
+    } else if (option == 3) {
+        int new_size = calculate_new_size(users, user_count);
+        printf("%d\n", new_size);
+    }
+
+    // Eliberare memorie
+    for (int i = 0; i < n; i++) {
+        Node *current = hash_table[i];
+        while (current) {
+            Node *to_free = current;
+            current = current->next;
+            free(to_free);
+        }
+    }
+    free(hash_table);
+
+    return 0;
+}

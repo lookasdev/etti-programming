@@ -1,0 +1,139 @@
+Se citește de la tastatură o secvență de numere întregi aflate în ordine crescătoare până la întâlnirea EOF. Să se stocheze valorile citite într-un arbore binar de căutare echilibrat. Un arbore binar este echilibrat dacă satisface simultan următoarele condiții:
+1. diferența de adâncime dintre subramura stângă și cea dreaptă este maxim 1 pentru orice nod din arbore.
+2. subramura stângă a acelui nod este la rândul său un arbore echilibrat.
+3. subramura dreaptă a acelui nod este la rândul său un arbore echilibrat.
+
+Se vor afișa pe ecran valorile arborelui în postordine.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura unui nod de arbore AVL
+typedef struct Node {
+    int value;         // Valoarea stocată în nod
+    struct Node *left; // Pointer la subarborele stâng
+    struct Node *right;// Pointer la subarborele drept
+    int height;        // Înălțimea nodului
+} Node;
+
+// Funcție pentru a obține înălțimea unui nod
+int height(Node *node) {
+    if (node == NULL)
+        return 0; // Înălțimea unui nod NULL este 0
+    return node->height; // Returnează înălțimea nodului
+}
+
+// Funcție pentru a calcula factorul de echilibru (diferența dintre înălțimea subarborelui stâng și cel drept)
+int getBalance(Node *node) {
+    if (node == NULL)
+        return 0; // Echilibrul unui nod NULL este 0
+    return height(node->left) - height(node->right); // Diferența de înălțime între subarborele stâng și drept
+}
+
+// Funcție de rotație dreapta
+Node* rightRotate(Node *y) {
+    Node *x = y->left;       // Stocăm subarborele stâng al lui y
+    Node *T2 = x->right;     // Stocăm subarborele drept al lui x
+
+    // Se face rotația dreapta
+    x->right = y;            // x devine părintele lui y
+    y->left = T2;            // T2 devine subarborele stâng al lui y
+
+    // Actualizăm înălțimile nodurilor
+    y->height = (height(y->left) > height(y->right)) ? height(y->left) + 1 : height(y->right) + 1;
+    x->height = (height(x->left) > height(x->right)) ? height(x->left) + 1 : height(x->right) + 1;
+
+    return x; // Returnăm noua rădăcină
+}
+
+// Funcție de rotație stânga
+Node* leftRotate(Node *x) {
+    Node *y = x->right;      // Stocăm subarborele drept al lui x
+    Node *T2 = y->left;      // Stocăm subarborele stâng al lui y
+
+    // Se face rotația stânga
+    y->left = x;             // y devine părintele lui x
+    x->right = T2;           // T2 devine subarborele drept al lui x
+
+    // Actualizăm înălțimile nodurilor
+    x->height = (height(x->left) > height(x->right)) ? height(x->left) + 1 : height(x->right) + 1;
+    y->height = (height(y->left) > height(y->right)) ? height(y->left) + 1 : height(y->right) + 1;
+
+    return y; // Returnăm noua rădăcină
+}
+
+// Funcție pentru inserarea unui nod într-un arbore AVL
+Node* insert(Node* node, int value) {
+    // 1. Se face inserarea într-un arbore binar de căutare normal
+    if (node == NULL) {
+        Node* newNode = (Node*)malloc(sizeof(Node)); // Alocăm memorie pentru noul nod
+        newNode->value = value; // Setăm valoarea nodului
+        newNode->left = newNode->right = NULL; // Subarborii sunt NULL la început
+        newNode->height = 1; // Înălțimea nodului este 1 (pentru un singur nod)
+        return newNode; // Returnăm nodul nou creat
+    }
+
+    // 2. Inserăm în arborele binar de căutare
+    if (value < node->value)
+        node->left = insert(node->left, value); // Inserăm în subarborele stâng
+    else if (value > node->value)
+        node->right = insert(node->right, value); // Inserăm în subarborele drept
+    else // Dacă valoarea există deja în arbore, nu se face nimic
+        return node;
+
+    // 3. Actualizăm înălțimea nodului curent
+    node->height = 1 + ((height(node->left) > height(node->right)) ? height(node->left) : height(node->right));
+
+    // 4. Verificăm factorul de echilibru pentru a vedea dacă arborele este dezechilibrat
+    int balance = getBalance(node);
+
+    // Dacă acest nod devine dezechilibrat, există 4 cazuri de rotații
+
+    // Cazul 1: Stânga-Stânga (rotație dreapta)
+    if (balance > 1 && value < node->left->value)
+        return rightRotate(node);
+
+    // Cazul 2: Dreapta-Dreapta (rotație stânga)
+    if (balance < -1 && value > node->right->value)
+        return leftRotate(node);
+
+    // Cazul 3: Stânga-Dreapta (rotație stânga-dreapta)
+    if (balance > 1 && value > node->left->value) {
+        node->left = leftRotate(node->left); // Rotație stânga pe subarborele stâng
+        return rightRotate(node); // Rotație dreapta pe nodul curent
+    }
+
+    // Cazul 4: Dreapta-Stânga (rotație dreapta-stânga)
+    if (balance < -1 && value < node->right->value) {
+        node->right = rightRotate(node->right); // Rotație dreapta pe subarborele drept
+        return leftRotate(node); // Rotație stânga pe nodul curent
+    }
+
+    return node; // Returnăm nodul curent (care poate fi echilibrat deja)
+}
+
+// Funcție pentru a parcurge arborele în postordine și a afișa valorile
+void postOrder(Node *node) {
+    if (node == NULL)
+        return; // Dacă nodul este NULL, nu facem nimic
+
+    postOrder(node->left); // Parcurgem subarborele stâng
+    postOrder(node->right); // Parcurgem subarborele drept
+    printf("%d ", node->value); // Afișăm valoarea nodului
+}
+
+int main() {
+    Node *root = NULL; // Inițial, arborele este gol
+    int value;
+
+    // Citim valorile de la tastatură și le inserăm în arbore
+    while (scanf("%d", &value) != EOF) {
+        root = insert(root, value); // Inserăm fiecare valoare în arbore
+    }
+
+    // Afișăm arborele în postordine
+    postOrder(root);
+    printf("\n"); // Linie nouă după afișare
+
+    return 0; // Încheiem programul
+}

@@ -1,0 +1,125 @@
+Să se creeze un hashmap care va stoca valori întregi. Hashmap-ul inițial va avea dimensiunea 2. Pentru a obține indexul locului (bucket) unde un întreg va fi introdus, se împarte valoarea întregului la dimensiunea hashmap-ului, iar restul împărțirii reprezintă valoarea indexului. 
+
+Coliziunile vor fi gestionate prin metoda "open addressing". Valorile vor fi introduse secvențial în hashmap. Înainte de fiecare inserție se va verifica valoarea factorului de umplere (load factor). Acesta este raportul dintre numărul de elemente existente în hashmap și dimensiunea sa, adică ne oferă informații relativ la cât de "plin" este un hashmap. Dacă valoarea factorului de umplere este <75% se poate introduce un nou element. Altfel, este nevoie de reorganizarea hashmap-ului, procedeu denumit rehashing:
+1. se creează un nou hashmap, cu dimensiune dublă față de hashmap-ul precedent;
+2. se iterează toate elementele din hashmap-ul original și se aplică o nouă funcție de hash (același tip de procesare ca hash-ul original, însă se modifică valoarea din operația modulo) pentru a le găsi poziția în noul hashmap;
+3. se copiază elementele din hashmap-ul original în noul hashmap, pe pozițiile găsite conform pct. 2;
+4. se șterge hashmap-ul original.
+
+Se citește de la tastatură un întreg, în funcție de valoarea căruia se vor executa următoarele funcționalități:
+1. introducere element în hashmap - se citește un întreg de la tastatură și se introduce în hashmap. Dacă factorul de umplere actual este >=75% se va afișa pe ecran mesajul "rehashing" și se va face reorganizarea menționată mai sus.
+2. afișare elemente - se vor afișa toate elementele din hashmap, sub forma:<indice_bucket>: <valoare>
+3. terminare program.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *buckets;
+    int size;
+    int count;
+} HashMap;
+
+// Funcție pentru inițializarea unui hashmap
+HashMap* createHashMap(int size) {
+    HashMap *map = (HashMap *)malloc(sizeof(HashMap));
+    map->size = size;
+    map->count = 0;
+    map->buckets = (int *)malloc(size * sizeof(int));
+    for (int i = 0; i < size; i++) {
+        map->buckets[i] = -1; // -1 indică un bucket gol
+    }
+    return map;
+}
+
+// Eliberarea memoriei hashmap-ului
+void freeHashMap(HashMap *map) {
+    free(map->buckets);
+    free(map);
+}
+
+// Funcția de hash
+int hash(int value, int size) {
+    return value % size;
+}
+
+// Rehashing-ul
+void rehash(HashMap *map) {
+    printf("rehashing\n");
+    int newSize = map->size * 2;
+    HashMap *newMap = createHashMap(newSize);
+
+    for (int i = 0; i < map->size; i++) {
+        if (map->buckets[i] != -1) {
+            int value = map->buckets[i];
+            int index = hash(value, newMap->size);
+
+            while (newMap->buckets[index] != -1) {
+                index = (index + 1) % newMap->size;
+            }
+            newMap->buckets[index] = value;
+            newMap->count++;
+        }
+    }
+
+    free(map->buckets);
+    map->buckets = newMap->buckets;
+    map->size = newMap->size;
+    map->count = newMap->count;
+    free(newMap);
+}
+
+// Inserarea unui element
+void insert(HashMap *map, int value) {
+    if ((float)(map->count) / map->size >= 0.75) {
+        rehash(map);
+    }
+
+    int index = hash(value, map->size);
+    while (map->buckets[index] != -1) {
+        index = (index + 1) % map->size;
+    }
+
+    map->buckets[index] = value;
+    map->count++;
+}
+
+// Afișarea elementelor
+void display(HashMap *map) {
+    for (int i = 0; i < map->size; i++) {
+        if (map->buckets[i] != -1) {
+            printf("%d: %d\n", i, map->buckets[i]);
+        } else {
+            printf("%d: \n", i);
+        }
+    }
+}
+
+int main() {
+    HashMap *map = createHashMap(2);
+    int choice, value;
+
+    while (1) {
+        // printf("1. Introducere element\n");
+        // printf("2. Afisare elemente\n");
+        // printf("3. Terminare program\n");
+        // printf("Alegeți o opțiune: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                // printf("Introduceți un număr: ");
+                scanf("%d", &value);
+                insert(map, value);
+                break;
+            case 2:
+                display(map);
+                break;
+            case 3:
+                freeHashMap(map);
+                return 0;
+            default:
+                // printf("Opțiune invalidă.\n");
+        }
+    }
+}

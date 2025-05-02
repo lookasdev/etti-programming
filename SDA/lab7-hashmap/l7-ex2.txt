@@ -1,0 +1,311 @@
+Să se realizeze un program ce permite citirea de la tastatură a unui text neformatat. Acesta va fi introdus sub forma unei liste dublu înlănțuite de cuvinte. Programul permite afișarea pe ecran a unui meniu cu următoarele operații posibile:
+
+Afișarea cuvintelor din listă;
+Afișarea cuvintelor din listă în ordine inversă;
+Adăugarea unui cuvânt la începutul listei;
+Adăugarea unui cuvânt la finalul listei;
+Adăugarea unui cuvânt în listă, pe o poziție specificată de utilizator;
+Ștergerea primului cuvânt din listă;
+Ștergerea ultimului cuvânt din listă;
+Ștergerea unui cuvânt din listă, aflat pe o poziție specificată de utilizator;
+Ștergerea listei;
+Ieșire din program.
+Fiecare opțiune din meniu va fi implementată folosind funcții.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct NOD {
+    char cuv[101];
+    struct NOD *prev;
+    struct NOD *next;
+};
+
+struct NOD * createNOD(char *cuv) {
+    struct NOD *newNOD = malloc(sizeof(struct NOD));
+
+    strcpy(newNOD->cuv, cuv);
+    newNOD->prev = NULL;
+    newNOD->next = NULL;
+    return newNOD;
+}
+
+struct NOD * getTail(struct NOD * head) {
+    struct NOD *temp = head;
+    
+    while(temp->next != NULL) {
+        temp = temp->next; // asa il determinam pe tail
+    }
+    
+    return temp;
+}
+
+void displayList(struct NOD * head) {
+    struct NOD *temp = head;
+    
+    if (!temp) {
+        printf("Lista este goală.\n");
+        return;
+    }
+    while (temp) {
+        printf("%s ", temp->cuv);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+void displayListReverse(struct NOD * head) {
+    struct NOD *temp = head;
+    if (!temp) {
+        printf("Lista este goală.\n");
+        return;
+    }
+    
+    struct NOD *tail = getTail(head);
+    
+    temp = tail;
+    
+    while (temp) {
+        printf("%s ", temp->cuv);
+        temp = temp->prev;
+    }
+    printf("\n");
+}
+
+struct NOD * addAtBeginning(struct NOD * head, char *cuv) {
+    struct NOD *newNOD = createNOD(cuv);
+    if (!head) {
+        head = newNOD;
+    } else {
+        newNOD->next = head;
+        head->prev = newNOD;
+        head = newNOD;
+    }
+    return head;
+}
+
+struct NOD * addAtEnd(struct NOD * head, char *cuv) {
+    struct NOD *newNOD = createNOD(cuv);
+    
+    struct NOD *tail = getTail(head);
+    
+    if (!tail) {
+        head = newNOD;
+        tail = newNOD;
+    } else {
+        tail->next = newNOD;
+        newNOD->prev = tail;
+        tail = newNOD;
+    }
+    return head;
+}
+
+struct NOD * addAtPosition(struct NOD * head, char *cuv, int position) {
+    struct NOD *temp = head;
+    
+    // struct NOD *tail = getTail(head);
+    
+    if (position <= 0) {
+        printf("Poziția trebuie să fie mai mare decât 0.\n");
+        return head;
+    }
+    if (position == 1) {
+        head = addAtBeginning(head, cuv);
+        return head;
+    }
+
+    for (int i = 1; temp && i < position - 1; i++) {
+        temp = temp->next;
+    }
+    
+    if (!temp) {
+        printf("Poziția este invalidă.\n");
+        return head;
+    }
+    
+    if(temp->next == NULL) {
+        head = addAtEnd(head, cuv);
+    }
+
+    struct NOD *newNOD = createNOD(cuv);
+    newNOD->next = temp->next;
+    newNOD->prev = temp;
+
+    if (temp->next) {
+        temp->next->prev = newNOD; // legam cel de dupa nodul adaugat la el (prev)
+    }
+    // else {
+    //     tail = newNOD; // legam cel de dupa nodul adaugat la el (prev)
+    // }
+    temp->next = newNOD; // legam cel de dinaintea nodului adaugat la el (next)
+    return head;
+}
+
+struct NOD * deleteFirst(struct NOD * head) {
+    struct NOD *temp = head;
+    if (!temp) {
+        printf("Lista este goală.\n");
+        return head;
+    }
+    head = head->next;
+    if (head) {
+        head->prev = NULL;
+    }
+    free(temp);
+    return head;
+}
+
+struct NOD * deleteLast(struct NOD * head) {
+    struct NOD *temp = head;
+    if (!temp) {
+        printf("Lista este goală.\n");
+        return head;
+    }
+    
+    struct NOD *tail = getTail(head);
+    
+    temp = tail;
+    tail = tail->prev;
+    if (tail) {
+        tail->next = NULL;
+    } else {
+        head = NULL;
+    }
+    free(temp);
+    return head;
+}
+
+// Ștergerea unui cuvânt de pe o poziție specificată
+struct NOD * deleteAtPosition(struct NOD * head, int position) {
+    if (position <= 0) {
+        printf("Poziția trebuie să fie mai mare decât 0.\n");
+        return head;
+    }
+    if (position == 1) {
+        head = deleteFirst(head);
+        return head;
+    }
+
+    struct NOD *temp = head;
+    for (int i = 1; temp && i < position; i++) {
+        temp = temp->next;
+    }
+    
+    if (!temp) {
+        printf("Poziția este invalidă.\n");
+        return head;
+    }
+    
+    if(temp->next == NULL) {
+        head = deleteLast(head);
+    }
+
+    if (temp->prev) {
+        temp->prev->next = temp->next;
+    }
+    if (temp->next) {
+        temp->next->prev = temp->prev;
+    }
+    // if (temp == tail) {
+    //     tail = temp->prev;
+    // }
+    free(temp);
+    return head;
+}
+
+struct NOD * deleteList(struct NOD * head) {
+    struct NOD *temp = head;
+    while (temp) {
+        struct NOD *next = temp->next;
+        free(temp);
+        temp = next;
+    }
+    head = NULL; // re init head pt a putea folosi din nou pt a baga alte elem dupa ce le stergem pe toate din lista
+    printf("Lista a fost ștearsă.\n");
+    return head;
+}
+
+// Meniul principal
+void menu(struct NOD * head) {
+    int choice, position;
+    char cuv[101];
+    
+    printf("\nMeniu:\n");
+    printf("1. Afișarea cuvintelor din listă\n");
+    printf("2. Afișarea cuvintelor din listă în ordine inversă\n");
+    printf("3. Adăugarea unui cuvânt la începutul listei\n");
+    printf("4. Adăugarea unui cuvânt la finalul listei\n");
+    printf("5. Adăugarea unui cuvânt pe o poziție specificată\n");
+    printf("6. Ștergerea primului cuvânt din listă\n");
+    printf("7. Ștergerea ultimului cuvânt din listă\n");
+    printf("8. Ștergerea unui cuvânt de pe o poziție specificată\n");
+    printf("9. Ștergerea întregii liste\n");
+    printf("10. Ieșire din program\n");
+    
+    do {
+        
+        printf("Alegeți o opțiune: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("1. Afișarea cuvintelor din listă\n");
+                displayList(head);
+                break;
+            case 2:
+                printf("2. Afișarea cuvintelor din listă în ordine inversă\n");
+                displayListReverse(head);
+                break;
+            case 3:
+                printf("3. Adăugarea unui cuvânt la începutul listei\n");
+                printf("Introduceți cuvântul: ");
+                scanf("%s", cuv);
+                head = addAtBeginning(head, cuv);
+                break;
+            case 4:
+                printf("4. Adăugarea unui cuvânt la finalul listei\n");
+                printf("Introduceți cuvântul: ");
+                scanf("%s", cuv);
+                head = addAtEnd(head, cuv);
+                break;
+            case 5:
+                printf("5. Adăugarea unui cuvânt pe o poziție specificată\n");
+                printf("Introduceți cuvântul: ");
+                scanf("%s", cuv);
+                printf("Introduceți poziția: ");
+                scanf("%d", &position);
+                head = addAtPosition(head, cuv, position);
+                break;
+            case 6:
+                printf("6. Ștergerea primului cuvânt din listă\n");
+                head = deleteFirst(head);
+                break;
+            case 7:
+                printf("7. Ștergerea ultimului cuvânt din listă\n");
+                head = deleteLast(head);
+                break;
+            case 8:
+                printf("8. Ștergerea unui cuvânt de pe o poziție specificată\n");
+                printf("Introduceți poziția: ");
+                scanf("%d", &position);
+                head = deleteAtPosition(head, position);
+                break;
+            case 9:
+                printf("9. Ștergerea întregii liste\n");
+                head = deleteList(head);
+                break;
+            case 10:
+                printf("10. Ieșire din program\n");
+                break;
+            default:
+                printf("Opțiune invalidă!\n");
+        }
+    } while (choice != 10);
+}
+
+int main() {
+    struct NOD *head = NULL;
+    menu(head); // si afisarea listei cu capul head se face in functia menu(head) deci nu trebuie pastrate modificari ale listei si in afara functiei de meniu
+    return 0;
+}

@@ -1,0 +1,117 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura nodului
+struct LISTA {
+    int date;
+    struct LISTA *anterior;
+    struct LISTA *urmator;
+};
+
+// Funcție pentru creare nod
+struct LISTA *inserareNod(struct LISTA *cap, int valoare) {
+    struct LISTA *nodNou = (struct LISTA *)malloc(sizeof(struct LISTA));
+    nodNou->date = valoare;
+    nodNou->anterior = NULL;
+    nodNou->urmator = NULL;
+
+    if (cap == NULL) {
+        return nodNou;
+    }
+
+    struct LISTA *temp = cap;
+    while (temp->urmator != NULL) {
+        temp = temp->urmator;
+    }
+    temp->urmator = nodNou;
+    nodNou->anterior = temp;
+    return cap;
+}
+
+// Funcție pentru afișarea listei
+void afisareLista(struct LISTA *cap) {
+    struct LISTA *temp = cap;
+    while (temp != NULL) {
+        printf("%d\n", temp->date);
+        temp = temp->urmator;
+    }
+}
+
+// Funcție pentru interschimbarea primului și ultimului nod
+struct LISTA *interschimbareNoduri(struct LISTA *cap) {
+    if (cap == NULL || cap->urmator == NULL) {
+        return cap; // Lista este goală sau are un singur nod
+    }
+
+    struct LISTA *prim = cap;
+    struct LISTA *ultim = cap;
+
+    while (ultim->urmator != NULL) {
+        ultim = ultim->urmator;
+    }
+
+    // Refacem legăturile
+    if (prim->urmator == ultim) { // Doar două noduri
+        prim->urmator = NULL;
+        ultim->anterior = NULL;
+        prim->anterior = ultim;
+        ultim->urmator = prim;
+        return ultim;
+    }
+
+    struct LISTA *primUrmator = prim->urmator;
+    struct LISTA *ultimAnterior = ultim->anterior;
+
+    primUrmator->anterior = ultim;
+    ultim->urmator = primUrmator;
+
+    ultimAnterior->urmator = prim;
+    prim->anterior = ultimAnterior;
+
+    prim->urmator = NULL;
+    ultim->anterior = NULL;
+
+    return ultim;
+}
+
+// Funcție pentru transformarea listei în listă circulară dublu înlănțuită
+struct LISTA *transformareCirculara(struct LISTA *cap) {
+    if (cap == NULL) {
+        return NULL;
+    }
+
+    struct LISTA *ultim = cap;
+    while (ultim->urmator != NULL) {
+        ultim = ultim->urmator;
+    }
+
+    // Legături circulare
+    ultim->urmator = cap;
+    cap->anterior = ultim;
+
+    return cap;
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+
+    struct LISTA *cap = NULL;
+
+    for (int i = 0; i < n; i++) {
+        int valoare;
+        scanf("%d", &valoare);
+        cap = inserareNod(cap, valoare);
+    }
+
+    // Afișare inițială
+    afisareLista(cap);
+
+    // Interschimbare primul și ultimul nod
+    cap = interschimbareNoduri(cap);
+
+    // Afișare după interschimbare
+    afisareLista(cap);
+
+    return 0;
+}

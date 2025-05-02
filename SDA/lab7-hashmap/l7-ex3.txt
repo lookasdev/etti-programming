@@ -1,0 +1,240 @@
+Să se scrie o aplicație de tip web browser pentru gestiunea funcționalității de navigare între diferite pagini web. În acest sens, se vor "genera" mai multe pagini web și se va implementa comportamentul unui browser care va putea accesa o pagină prin intermediul URL-ului și a butoanelor back/forward. 
+
+O pagină web este caracterizată de câmpurile:
+
+url
+titlu
+conținut
+Navigarea între pagini diferite se face printr-una dintre funcțiile:
+
+link(char [])
+back()
+forward()
+Navigarea între paginile web va fi stocată în memorie pentru a putea reface istoricul navigării prin funcțiile back/forward. Această istorie va fi implementată sub forma unei liste dublu înlănțuite, cu o modificare: accesarea unei noi pagini prin funcția link(char []) va șterge din listă toate paginile reținute după punctul curent și va introduce în listă noul link. De exemplu, următoarea succesiune de apelări va avea efectele menționate - pagina curentă este indicată îngroșat:
+link(pag_1) - introduce pag_1 în memorie: pag_1
+link(pag_2) - introduce pag_2 în memorie: pag_1 -> pag_2
+link(pag_3) - introduce pag_3 în memorie: pag_1 -> pag_2 -> pag_3
+link(pag_4) - introduce pag_4 în memorie: pag_1 -> pag_2 -> pag_3 -> pag_4
+back() - se mută cu o poziție în memorie: pag_1 -> pag_2 -> pag_3 -> pag_4
+back() - se mută cu o poziție în memorie: pag_1 -> pag_2 -> pag_3 -> pag_4
+forward() - se mută cu o poziție în memorie: pag_1 -> pag_2 -> pag_3 -> pag_4
+back() - se mută cu o poziție în memorie: pag_1 -> pag_2 -> pag_3 -> pag_4
+link(pag_5) - se șterg toate intrările din memorie care urmează după pagina curentă și se introduce pag_5 în memorie: pag_1 -> pag_2 -> pag_5
+Dacă nu mai există nicio pagină în spate/față când se apelează funcțiile back()/forward(), respectiv, pagina curentă nu se modifică.
+
+De la tastatură se vor citi întregi în buclă. În funcție de valoarea lor, se vor executa următoarele comenzi:
+Generare pagină. Se vor citi, suplimentar, următoarele date, fiecare de tipul șir de caractere:
+url
+titlu
+conținut
+Accesare pagină (funcția link) după url. Se introduce de la tastatură un șir de caractere suplimentar și se va naviga către pagina respectivă, reținându-se, în același timp, în memoria browser-ului. Se garantează că pagina respectivă există și este unică.
+Afișare pagină curentă. Se vor afișa, pe rânduri diferite:
+url
+titlu
+conținut
+Navigare în spate: funcția back()
+Navigare în față: funcția forward()
+Ieșire din program.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Page {
+    char url[101];
+    char title[101];
+    char content[501];
+    struct Page* prev;
+    struct Page* next;
+} Page;
+
+typedef struct BrowserDatabase {
+    Page* head;
+} BrowserDatabase;
+
+typedef struct BrowserHistory {
+    Page* current;
+} BrowserHistory;
+
+// Creare pagină
+Page* createPage(char* url, char* title, char* content) {
+    Page* newPage = (Page*)malloc(sizeof(Page));
+    strcpy(newPage->url, url);
+    strcpy(newPage->title, title);
+    strcpy(newPage->content, content);
+    newPage->prev = NULL;
+    newPage->next = NULL;
+    return newPage;
+}
+
+// Adăugare pagină în baza de date
+void addToDatabase(BrowserDatabase* database, char* url, char* title, char* content) {
+    Page* newPage = createPage(url, title, content);
+    if (!database->head) {
+        database->head = newPage;
+    } else {
+        Page* temp = database->head;
+        while (temp->next) {
+            temp = temp->next;
+        }
+        temp->next = newPage;
+        newPage->prev = temp;
+    }
+}
+
+void addToHistory(BrowserHistory* history, char* url, char* title, char* content) {
+    Page* newPage = createPage(url, title, content);
+    if (!history->current) {
+        history->current = newPage;
+    } else {
+        Page* temp = history->current;
+        while (temp->next) {
+            temp = temp->next;
+        }
+        temp->next = newPage;
+        newPage->prev = temp;
+    }
+}
+
+// Găsire pagină în baza de date după URL
+Page* findPage(BrowserDatabase* database, char* url) {
+    Page* temp = database->head;
+    while (temp) {
+        if (strcmp(temp->url, url) == 0) {
+            return temp;
+        }
+        temp = temp->next;
+    }
+    return NULL;
+}
+
+// Funcție link
+void link(BrowserDatabase* database, BrowserHistory* history, char* url) {
+    Page* foundPage = findPage(database, url);
+    if (!foundPage) {
+        // printf("Pagina cu URL-ul %s nu a fost găsită în baza de date!\n", url);
+        return;
+    }
+
+    Page* newPage = createPage(foundPage->url, foundPage->title, foundPage->content);
+
+    if (history->current) {
+        // Șterge toate paginile următoare
+        Page* temp = history->current->next;
+        while (temp) {
+            Page* toDelete = temp;
+            temp = temp->next;
+            free(toDelete);
+        }
+        history->current->next = NULL;
+        newPage->prev = history->current;
+        history->current->next = newPage;
+    }
+    history->current = newPage;
+}
+
+// Navigare înapoi
+void back(BrowserHistory* history) {
+    if (history->current && history->current->prev) {
+        history->current = history->current->prev;
+    } else {
+        // printf("Nu există pagină anterioară!\n");
+    }
+}
+
+// Navigare înainte
+void forward(BrowserHistory* history) {
+    if (history->current && history->current->next) {
+        history->current = history->current->next;
+    } else {
+        // printf("Nu există pagină următoare!\n");
+    }
+}
+
+// Afișare pagină curentă
+void displayCurrentPage(BrowserHistory* history) {
+    if (history->current) {
+        printf("%s\n", history->current->url);
+        printf("%s\n", history->current->title);
+        printf("%s\n", history->current->content);
+    } else {
+        // printf("Nicio pagină deschisă!\n");
+    }
+}
+
+// Eliberare bază de date
+void freeDatabase(BrowserDatabase* database) {
+    Page* temp = database->head;
+    while (temp) {
+        Page* toDelete = temp;
+        temp = temp->next;
+        free(toDelete);
+    }
+    database->head = NULL;
+}
+
+// Eliberare istoric
+void freeHistory(BrowserHistory* history) {
+    while (history->current && history->current->prev) {
+        history->current = history->current->prev;
+    }
+    Page* temp = history->current;
+    while (temp) {
+        Page* toDelete = temp;
+        temp = temp->next;
+        free(toDelete);
+    }
+    history->current = NULL;
+}
+
+// Funcția principală
+int main() {
+    BrowserDatabase database = {NULL};
+    BrowserHistory history = {NULL};
+    int command;
+
+    while (1) {
+        scanf("%d", &command);
+        getchar(); // Consumă '\n' rămas în buffer
+
+        if (command == 1) {
+            char url[101], title[101], content[501];
+            // printf("Introduceți URL: ");
+            scanf(" %[^\n]", url);  // Citește șirul complet până la '\n'
+            // printf("Introduceți Titlu: ");
+            scanf(" %[^\n]", title); // Titlul poate include spații
+            // printf("Introduceți Conținut: ");
+            scanf(" %[^\n]", content); // Conținutul poate include spații
+
+            addToDatabase(&database, url, title, content);
+            addToHistory(&history, url, title, content);
+            
+        } else if (command == 2) {
+            char url[101];
+            // printf("Introduceți URL-ul paginii de accesat: ");
+            scanf(" %[^\n]", url);
+
+            link(&database, &history, url);
+
+        } else if (command == 3) {
+            displayCurrentPage(&history);
+
+        } else if (command == 4) {
+            back(&history);
+
+        } else if (command == 5) {
+            forward(&history);
+
+        } else if (command == 6) {
+            freeHistory(&history);
+            freeDatabase(&database);
+            break;
+
+        } else {
+            // printf("Comandă invalidă!\n");
+        }
+    }
+
+    return 0;
+}

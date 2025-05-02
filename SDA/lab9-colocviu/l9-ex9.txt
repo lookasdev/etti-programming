@@ -1,0 +1,171 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <float.h>
+
+#define MAX_PARTICIPANTS 1000
+
+void afisare_valori(int timpi[], int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%d\n", timpi[i]);
+    }
+}
+
+double calcul_medie(int timpi[], int n) {
+    int suma = 0;
+    for (int i = 0; i < n; i++) {
+        suma += timpi[i];
+    }
+    return (double)suma / n;
+}
+
+void afisare_calificati(int timpi[], int n) {
+    int min[4] = {INT_MAX, INT_MAX, INT_MAX, INT_MAX};
+    int timpiAux[n];
+    for(int i = 0; i < n; i++) {
+        timpiAux[i] = timpi[i];
+    }
+    int index;
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < n; i++) {
+            if (timpiAux[i] != -1) {
+                if (timpiAux[i] < min[k]) {
+                    min[k] = timpiAux[i];
+                    index = i;
+                }
+            }
+        }
+        timpiAux[index] = -1;
+    }
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (timpi[i] == min[j]) {
+                printf("%d\n", timpi[i]);
+                break;
+            }
+        }
+    }
+}
+
+void cursa_eliminare(int timpi[], int n) {
+    int eliminati[MAX_PARTICIPANTS];
+    int eliminati_count = 0;
+
+    while (n > 1) {
+        int max = INT_MIN, max_index = -1;
+        for (int i = 0; i < n; i++) {
+            if (timpi[i] > max) {
+                max = timpi[i];
+                max_index = i;
+            }
+        }
+        eliminati[eliminati_count++] = timpi[max_index];
+
+        for (int i = max_index; i < n - 1; i++) {
+            timpi[i] = timpi[i + 1];
+        }
+        n--;
+    }
+
+    for (int i = 0; i < eliminati_count; i++) {
+        printf("%d\n", eliminati[i]);
+    }
+}
+
+void sanse_castig(int timpi[], int n) {
+    int min[4] = {INT_MAX, INT_MAX, INT_MAX, INT_MAX};
+    int timpiAux[n];
+    for(int i = 0; i < n; i++) {
+        timpiAux[i] = timpi[i];
+    }
+    int index;
+    for (int k = 0; k < 4; k++) {
+        for (int i = 0; i < n; i++) {
+            if (timpiAux[i] != -1) {
+                if (timpiAux[i] < min[k]) {
+                    min[k] = timpiAux[i];
+                    index = i;
+                }
+            }
+        }
+        timpiAux[index] = -1;
+    }
+    
+    int rez[4];
+    int aux = 0;
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (timpi[i] == min[j]) {
+                rez[aux] = timpi[i];
+                aux++;
+                break;
+            }
+        }
+    }
+    
+    aux = 0;
+    int timpiPosibili[10];
+    for(int i = 5; i >= 1; i--) {
+        timpiPosibili[aux] = rez[0] - i;
+        aux++;
+    }
+    timpiPosibili[aux] = rez[0];
+    aux++;
+    for(int i = 1; i < 5; i++) {
+        timpiPosibili[aux] = rez[0] + i;
+        aux++;
+    }
+    
+    // for(int i = 0; i < 10; i++) {
+    //     printf("%d ", timpiPosibili[i]);
+    // }
+    
+    int nrCastiguri;
+    for(int i = 1; i < 4; i++) {
+        nrCastiguri = 0;
+        for(int k = 0; k < 10; k++) {
+            if(timpiPosibili[k] <= rez[i]) {
+                // printf("%d <= %d\n", timpiPosibili[k], rez[i]);
+                nrCastiguri++;
+            } else break;
+        }
+        float sansa = 1.0 * nrCastiguri / 10 * 100;
+        printf("%.2f\n", sansa);
+    }
+}
+
+int main() {
+    int comanda;
+    int timpi[MAX_PARTICIPANTS];
+    int n = 0;
+
+    scanf("%d", &comanda);
+    while (scanf("%d", &timpi[n]) != EOF) {
+        n++;
+    }
+
+    switch (comanda) {
+        case 1:
+            afisare_valori(timpi, n);
+            break;
+        case 2:
+            printf("%.2f\n", calcul_medie(timpi, n));
+            break;
+        case 3:
+            afisare_calificati(timpi, n);
+            break;
+        case 4:
+            cursa_eliminare(timpi, n);
+            break;
+        case 5:
+            sanse_castig(timpi, n);
+            break;
+        default:
+            printf("Comanda invalida!\n");
+            break;
+    }
+
+    return 0;
+}

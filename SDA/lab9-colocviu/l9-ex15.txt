@@ -1,0 +1,164 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structuri pentru articole și liste înlănțuite
+typedef struct Article {
+    char name[21];
+    int size;
+    char color[21];
+} Article;
+
+typedef struct Node {
+    Article article;
+    struct Node* next;
+} Node;
+
+// Funcție de hash
+int hashFunction(const char* name, int size, const char* color, int m) {
+    int sum = 0;
+    for (int i = 0; name[i] != '\0'; i++) sum += name[i];
+    for (int i = 0; color[i] != '\0'; i++) sum += color[i];
+    sum += size;
+    return sum % m;
+}
+
+// Afișare articole citite
+void displayArticlesRead(Article* articles, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%s %d %s\n", articles[i].name, articles[i].size, articles[i].color);
+    }
+}
+
+// Afișare articole în hashmap
+void displayArticlesInHashmap(Node* hashmap[], int m) {
+    for (int i = 0; i < m; i++) {
+        Node* current = hashmap[i];
+        while (current) {
+            printf("%s %d %s %d\n", 
+                current->article.name, 
+                current->article.size, 
+                current->article.color, 
+                i);
+            current = current->next;
+        }
+    }
+}
+
+// Adăugare la sfârșitul listei înlănțuite
+void addToHashmap(Node* hashmap[], int index, Article article) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->article = article;
+    newNode->next = NULL;
+
+    if (hashmap[index] == NULL) {
+        // Dacă lista este goală, noul nod devine primul
+        hashmap[index] = newNode;
+    } else {
+        // Parcurgem lista până la ultimul nod
+        Node* temp = hashmap[index];
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode; // Adăugăm nodul la sfârșitul listei
+    }
+}
+
+// Funcție pentru determinarea dimensiunii minime
+int findMinSize(Article* articles, int n) {
+    int m = n;
+    while(1) {
+        int openAddressing[m];
+        Node* chaining[m];
+
+        // Inițializăm array-urile
+        for (int i = 0; i < m; i++) {
+            openAddressing[i] = -1;
+            chaining[i] = NULL;
+        }
+
+        int valid = 1;
+
+        // Inserare articole
+        for (int i = 0; i < n; i++) {
+            int index = hashFunction(articles[i].name, articles[i].size, articles[i].color, m);
+
+            // Gestionare prin chaining
+            addToHashmap(chaining, index, articles[i]);
+
+            // Gestionare prin open addressing
+            int j = index;
+            while (openAddressing[j] != -1) {
+                j = (j + 1) % m;
+                if (j == index) { valid = 0; break; }
+            }
+            if (valid) openAddressing[j] = i;
+
+            // Verificare structură identică
+            if (j != index) {
+                valid = 0;
+                break;
+            }
+        }
+
+        // Curățare memorie
+        for (int i = 0; i < m; i++) {
+            Node* temp;
+            while (chaining[i]) {
+                temp = chaining[i];
+                chaining[i] = chaining[i]->next;
+                free(temp);
+            }
+        }
+
+        if (valid) return m;
+        
+        m++;
+    }
+}
+
+int main() {
+    int m, n;
+    scanf("%d %d", &m, &n);
+
+    Article articles[n];
+    for (int i = 0; i < n; i++) {
+        scanf("%s %d %s", articles[i].name, &articles[i].size, articles[i].color);
+    }
+
+    int command;
+    scanf("%d", &command);
+
+    if (command == 1) {
+        // Comanda 1: Afișare articole citite
+        displayArticlesRead(articles, n);
+    } else if (command == 2) {
+        // Comanda 2: Afișare articole în hashmap
+        Node* hashmap[m];
+        for (int i = 0; i < m; i++) hashmap[i] = NULL;
+
+        // Inserare articole în hashmap
+        for (int i = 0; i < n; i++) {
+            int index = hashFunction(articles[i].name, articles[i].size, articles[i].color, m);
+            addToHashmap(hashmap, index, articles[i]);
+        }
+
+        displayArticlesInHashmap(hashmap, m);
+
+        // Curățare memorie
+        for (int i = 0; i < m; i++) {
+            Node* temp;
+            while (hashmap[i]) {
+                temp = hashmap[i];
+                hashmap[i] = hashmap[i]->next;
+                free(temp);
+            }
+        }
+    } else if (command == 3) {
+        // Comanda 3: Dimensiunea minimă a hashmap-ului
+        int minSize = findMinSize(articles, n);
+        printf("%d\n", minSize);
+    }
+
+    return 0;
+}

@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+#define MAX_CLIENTI 100
+#define MAX_NUME 51
+
+typedef struct {
+    char nume[MAX_NUME];
+    int produse_totale;
+    bool procesat;
+    unsigned long long suma_totala;
+} Client;
+
+void afiseaza_clienti_criterii(Client clienti[], int nr_clienti) {
+    int afisat = 0;
+    for (int i = 0; i < nr_clienti; i++) {
+        if (clienti[i].produse_totale >= 20 || clienti[i].suma_totala >= 1000) {
+            printf("%s\n", clienti[i].nume);
+            afisat = 1;
+        }
+    }
+    if (!afisat) {
+        printf("-\n");
+    }
+}
+
+void afiseaza_clienti_sume_egale(Client clienti[], int nr_clienti) {
+    int afisat = 0;
+    for (int i = 0; i < nr_clienti; i++) {
+        int ok = 0;
+        if(clienti[i].procesat == true) continue;
+        if(afisat) printf("\n");
+        for (int j = i + 1; j < nr_clienti; j++) {
+            if (clienti[i].suma_totala == clienti[j].suma_totala) {
+                clienti[i].procesat = true;
+                clienti[j].procesat = true;
+                if(!ok) {
+                    printf("%s ", clienti[i].nume);
+                    ok = 1;
+                    afisat = 1;
+                }
+                if (ok) {
+                    printf("%s ", clienti[j].nume);
+                }
+            }
+        }
+        ok = 0;
+    }
+    if (!afisat) {
+        printf("-\n");
+    }
+}
+
+int main() {
+    int comanda;
+    Client clienti[MAX_CLIENTI];
+    int nr_clienti = 0;
+
+    scanf("%d", &comanda);
+    while (1) {
+        char nume[MAX_NUME];
+        unsigned int nr_produse, pret_produs;
+        if (scanf("%s %u %u", nume, &nr_produse, &pret_produs) != 3) {
+            break;
+        }
+
+        int index = -1;
+        for (int i = 0; i < nr_clienti; i++) {
+            if (strcmp(clienti[i].nume, nume) == 0) {
+                index = i;
+                break;
+            }
+        }
+
+        if (index == -1) {
+            index = nr_clienti++;
+            strcpy(clienti[index].nume, nume);
+            clienti[index].produse_totale = 0;
+            clienti[index].suma_totala = 0;
+        }
+        
+        clienti[index].produse_totale += nr_produse;
+        clienti[index].procesat = false;
+        
+        if (comanda == 1) {
+            clienti[index].suma_totala += (unsigned long long)nr_produse * pret_produs;
+        }
+        if (comanda == 2) {
+            int produse_cu_reducere = nr_produse - nr_produse / 5;
+            clienti[index].suma_totala += (unsigned long long)produse_cu_reducere * pret_produs;
+        }
+    }
+
+    if (comanda == 1) {
+        afiseaza_clienti_criterii(clienti, nr_clienti);
+    } else if (comanda == 2) {
+        afiseaza_clienti_sume_egale(clienti, nr_clienti);
+    }
+
+    return 0;
+}

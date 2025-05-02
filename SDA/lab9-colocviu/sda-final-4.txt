@@ -1,0 +1,286 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct nod {
+    int data;
+    char c;
+    struct nod *left;
+    struct nod *right;
+};
+
+struct nod *huffman_tree();
+void generare_coduri(struct nod *radacina, char *cod_curent, int nivel, char coduri[128][16]);
+void codifica_text(const char *text, char coduri[128][16], char *output);
+int calcul_diferenta_memorie(const char *text, char coduri[128][16]);
+void ordoneaza_frecvente(int frecvente[128], int caractere[128], int n);
+void simuleaza_huffman(int frecvente[128], int caractere[128], int n);
+
+int main() {
+    // Creăm arborele Huffman
+    struct nod *huffman = huffman_tree();
+
+    // Generăm codurile Huffman pentru fiecare caracter
+    char coduri[128][16] = {0};  // Codurile Huffman (maxim 15 biți per cod)
+    char cod_curent[16];         // Codul curent în construcție
+    generare_coduri(huffman, cod_curent, 0, coduri);
+
+    // Citire text de la utilizator
+    char ch;
+    int i = 0;
+    char text[1024];
+    while (i < 1024 && (ch = getchar()) != '\n' && ch != EOF) {
+        text[i++] = ch;
+    }
+    text[i] = '\0';  // Null-terminate the string
+    
+    int frecvente[128] = {0};
+    int caractere[128] = {0};
+    int n = 0;
+    for (int i = 0; text[i]; i++) {
+        if (frecvente[(int)text[i]] == 0) caractere[n++] = text[i];
+        frecvente[(int)text[i]]++;
+    }
+    ordoneaza_frecvente(frecvente, caractere, n);
+    
+    // Citire comandă
+    int comanda;
+    scanf("%d", &comanda);
+
+    switch (comanda) {
+        case 1: { // Afișarea caracterelor în ordine crescătoare a frecvenței
+            for (int i = 0; i < n; i++) {
+                printf("%c:%d\n", caractere[i], frecvente[caractere[i]]);
+            }
+            break;
+        }
+
+        case 2: { // Afișarea valorilor utile după 3 pași ai algoritmului Huffman
+            simuleaza_huffman(frecvente, caractere, n);
+            break;
+        }
+
+        case 3: { // Afișarea caracterelor cu codurile Huffman asociate
+            for (int i = 0; i < n; i++) {
+                printf("%c:%s\n", caractere[i], coduri[caractere[i]]);
+            }
+            break;
+        }
+
+        case 4: { // Codificarea textului și afișarea codului binar rezultat
+            char codificat[1024] = {0};
+            codifica_text(text, coduri, codificat);
+            printf("%s\n", codificat);
+            break;
+        }
+
+        case 5: { // Calcularea diferenței de memorie
+            int diferenta = calcul_diferenta_memorie(text, coduri);
+            printf("%d\n", diferenta);
+            break;
+        }
+
+        default:
+            printf("Comanda invalida!\n");
+            break;
+    }
+
+    return 0;
+}
+
+struct nod *huffman_tree() {
+    struct nod *nod_spatiu = malloc(sizeof(struct nod));
+    struct nod *nod_c = malloc(sizeof(struct nod));
+    struct nod *nod_e = malloc(sizeof(struct nod));
+    struct nod *nod_s = malloc(sizeof(struct nod));
+    struct nod *nod_l = malloc(sizeof(struct nod));
+    struct nod *nod_t = malloc(sizeof(struct nod));
+    struct nod *nod_u = malloc(sizeof(struct nod));
+    struct nod *nod_a = malloc(sizeof(struct nod));
+    struct nod *nod_38 = malloc(sizeof(struct nod));
+    struct nod *nod_15 = malloc(sizeof(struct nod));
+    struct nod *nod_23 = malloc(sizeof(struct nod));
+    struct nod *nod_9 = malloc(sizeof(struct nod));
+    struct nod *nod_11 = malloc(sizeof(struct nod));
+    struct nod *nod_6 = malloc(sizeof(struct nod));
+    struct nod *nod_3 = malloc(sizeof(struct nod));
+
+    nod_38->data = 38;
+    nod_38->c = '-';
+    nod_38->left = nod_15;
+    nod_38->right = nod_23;
+
+    nod_15->data = 15;
+    nod_15->c = '-';
+    nod_15->left = nod_spatiu;
+    nod_15->right = nod_9;
+
+    nod_9->data = 9;
+    nod_9->c = '-';
+    nod_9->left = nod_c;
+    nod_9->right = nod_e;
+
+    nod_spatiu->data = 6;
+    nod_spatiu->c = ' ';
+    nod_spatiu->left = NULL;
+    nod_spatiu->right = NULL;
+
+    nod_c->data = 4;
+    nod_c->c = 'c';
+    nod_c->left = NULL;
+    nod_c->right = NULL;
+
+    nod_e->data = 5;
+    nod_e->c = 'e';
+    nod_e->left = NULL;
+    nod_e->right = NULL;
+
+    nod_23->data = 23;
+    nod_23->c = '-';
+    nod_23->left = nod_11;
+    nod_23->right = nod_a;
+
+    nod_11->data = 11;
+    nod_11->c = '-';
+    nod_11->left = nod_s;
+    nod_11->right = nod_6;
+
+    nod_a->data = 12;
+    nod_a->c = 'a';
+    nod_a->left = NULL;
+    nod_a->right = NULL;
+
+    nod_s->data = 5;
+    nod_s->c = 's';
+    nod_s->left = NULL;
+    nod_s->right = NULL;
+
+    nod_6->data = 6;
+    nod_6->c = '-';
+    nod_6->left = nod_3;
+    nod_6->right = nod_u;
+
+    nod_3->data = 3;
+    nod_3->c = '-';
+    nod_3->left = nod_l;
+    nod_3->right = nod_t;
+
+    nod_l->data = 1;
+    nod_l->c = 'l';
+    nod_l->left = NULL;
+    nod_l->right = NULL;
+
+    nod_u->data = 3;
+    nod_u->c = 'u';
+    nod_u->left = NULL;
+    nod_u->right = NULL;
+
+    nod_t->data = 2;
+    nod_t->c = 't';
+    nod_t->left = NULL;
+    nod_t->right = NULL;
+
+    return nod_38;
+}
+
+void generare_coduri(struct nod *radacina, char *cod_curent, int nivel, char coduri[128][16]) {
+    if (radacina->left == NULL && radacina->right == NULL) {
+        cod_curent[nivel] = '\0';
+        strcpy(coduri[(int)radacina->c], cod_curent);
+        return;
+    }
+
+    cod_curent[nivel] = '0';
+    generare_coduri(radacina->left, cod_curent, nivel + 1, coduri);
+
+    cod_curent[nivel] = '1';
+    generare_coduri(radacina->right, cod_curent, nivel + 1, coduri);
+}
+
+void codifica_text(const char *text, char coduri[128][16], char *output) {
+    for (int i = 0; text[i]; i++) {
+        strcat(output, coduri[(int)text[i]]);
+    }
+}
+
+int calcul_diferenta_memorie(const char *text, char coduri[128][16]) {
+    int original = strlen(text) * 8;  // Fiecare caracter ocupă 8 biți
+    int comprimat = 0;
+
+    for (int i = 0; text[i]; i++) {
+        comprimat += strlen(coduri[(int)text[i]]);
+    }
+
+    return original - comprimat;
+}
+
+void ordoneaza_frecvente(int frecvente[128], int caractere[128], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (frecvente[caractere[i]] > frecvente[caractere[j]] ||
+                (frecvente[caractere[i]] == frecvente[caractere[j]] && caractere[i] > caractere[j])) {
+                int temp = caractere[i];
+                caractere[i] = caractere[j];
+                caractere[j] = temp;
+            }
+        }
+    }
+}
+
+void simuleaza_huffman(int frecvente[], int caractere[128], int n) {
+    int temp[101];  // Vector pentru frecvențe
+    for (int i = 0; i < n; i++) {
+        temp[i] = frecvente[caractere[i]];
+    }
+
+    // // Sortare inițială a frecvențelor (ordine crescătoare)
+    // for (int i = 0; i < n - 1; i++) {
+    //     for (int j = i + 1; j < n; j++) {
+    //         if (temp[i] > temp[j]) {
+    //             int aux = temp[i];
+    //             temp[i] = temp[j];
+    //             temp[j] = aux;
+    //         }
+    //     }
+    // }
+
+    int rezultat[101];
+
+    // Simularea pașilor algoritmului Huffman
+    for (int pas = 1; pas <= 3; pas++) {
+        int nou = temp[0] + temp[1]; // Combin cele mai mici două noduri
+
+        // Eliminăm primele două valori și mutăm restul la stânga
+        for (int i = 2; i < n; i++) {
+            temp[i - 2] = temp[i];
+        }
+        n -= 1; // Scădem dimensiunea vectorului (am eliminat două și am adăugat unul)
+
+        // Inserăm noua valoare în poziția corectă pentru a păstra ordinea
+        int poz;
+        for (poz = 0; poz < n - 1; poz++) {
+            if (nou < temp[poz]) {
+                break;
+            }
+        }
+
+        // Mutăm elementele la dreapta pentru a face loc noului nod
+        for (int j = n - 1; j > poz; j--) {
+            temp[j] = temp[j - 1];
+        }
+        temp[poz] = nou; // Inserăm noua valoare la poziția corectă
+
+        // Salvăm rădăcinile arborilor după 3 pași
+        if (pas == 3) {
+            for (int k = 0; k < n; k++) {
+                rezultat[k] = temp[k];
+            }
+        }
+    }
+
+    // Afișăm primele 5 valori utile din rezultat
+    for (int i = 0; i < n; i++) {
+        printf("%d ", rezultat[i]);
+    }
+    printf("\n");
+}

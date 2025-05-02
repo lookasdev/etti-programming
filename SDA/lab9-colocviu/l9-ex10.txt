@@ -1,0 +1,115 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_PERECHI 100
+#define MAX_LUNGIME_NUME 11
+
+typedef struct {
+    char persoana1[MAX_LUNGIME_NUME];
+    char persoana2[MAX_LUNGIME_NUME];
+    double timp;
+} Pereche;
+
+void afisare_valori(Pereche perechi[], int n) {
+    for (int i = 0; i < n; i++) {
+        printf("%s %s %.2lf\n", perechi[i].persoana1, perechi[i].persoana2, perechi[i].timp);
+    }
+}
+
+void afisare_timp_minim(Pereche perechi[], int n) {
+    int index_min = 0;
+    for (int i = 1; i < n; i++) {
+        if (perechi[i].timp < perechi[index_min].timp) {
+            index_min = i;
+        }
+    }
+    printf("%s %s %.2lf\n", perechi[index_min].persoana1, perechi[index_min].persoana2, perechi[index_min].timp);
+}
+
+void afisare_peste_prag(Pereche perechi[], int n) {
+    double suma = 0;
+    for (int i = 0; i < n; i++) {
+        suma += perechi[i].timp;
+    }
+    double media = suma / n;
+
+    for (int i = 0; i < n; i++) {
+        if (perechi[i].timp > media) {
+            printf("%s %s %.2lf\n", perechi[i].persoana1, perechi[i].persoana2, perechi[i].timp);
+        }
+    }
+}
+
+void stafeta_progresiva(Pereche perechi[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (perechi[i].timp > perechi[j].timp) {
+                Pereche temp = perechi[i];
+                perechi[i] = perechi[j];
+                perechi[j] = temp;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        printf("%s %s %.2lf\n", perechi[i].persoana1, perechi[i].persoana2, perechi[i].timp);
+    }
+}
+
+void stafeta_premii(Pereche perechi[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (perechi[i].timp > perechi[j].timp) {
+                Pereche temp = perechi[i];
+                perechi[i] = perechi[j];
+                perechi[j] = temp;
+            }
+        }
+    }
+
+    int premii[] = {10000, 5000, 2000};
+    int num_premii = sizeof(premii) / sizeof(premii[0]);
+
+    for (int i = 0; i < n && i < num_premii; i++) {
+        double premiu_per_membru = premii[i] / 2.0;
+        printf("%s %.0lf %s %.0lf\n", perechi[i].persoana1, premiu_per_membru, perechi[i].persoana2, premiu_per_membru);
+    }
+}
+
+int main() {
+    int n, comanda;
+    Pereche perechi[MAX_PERECHI];
+
+    // printf("Introduceti numarul de perechi: ");
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++) {
+        // printf("Introduceti numele persoanei 1, persoanei 2 si timpul: ");
+        scanf("%s %s %lf", perechi[i].persoana1, perechi[i].persoana2, &perechi[i].timp);
+    }
+
+    // printf("Introduceti comanda (1-5): ");
+    scanf("%d", &comanda);
+
+    switch (comanda) {
+        case 1:
+            afisare_valori(perechi, n);
+            break;
+        case 2:
+            afisare_timp_minim(perechi, n);
+            break;
+        case 3:
+            afisare_peste_prag(perechi, n);
+            break;
+        case 4:
+            stafeta_progresiva(perechi, n);
+            break;
+        case 5:
+            stafeta_premii(perechi, n);
+            break;
+        default:
+            printf("Comanda invalida!\n");
+    }
+
+    return 0;
+}

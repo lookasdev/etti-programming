@@ -1,0 +1,75 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct COADA {
+    int timpPrelucrare;
+    struct COADA *urmator;
+} COADA;
+
+// Funcție pentru adăugarea unui nod în coadă
+COADA *enqueue(COADA *head, int tPrelucrare) {
+    COADA *nou = (COADA *)malloc(sizeof(COADA));
+    nou->timpPrelucrare = tPrelucrare;
+    nou->urmator = NULL;
+
+    if (head == NULL) {
+        return nou;
+    }
+
+    COADA *curent = head;
+    while (curent->urmator != NULL) {
+        curent = curent->urmator;
+    }
+    curent->urmator = nou;
+    return head;
+}
+
+// Funcție pentru afișarea elementelor dintr-o coadă
+void afisareCoada(COADA *head) {
+    COADA *curent = head;
+    while (curent != NULL) {
+        printf("%d\n", curent->timpPrelucrare);
+        curent = curent->urmator;
+    }
+}
+
+// Funcție pentru calcularea timpului total de servire
+int timpTotal(COADA *head) {
+    int total = 0;
+    COADA *curent = head;
+    while (curent != NULL) {
+        total += curent->timpPrelucrare;
+        curent = curent->urmator;
+    }
+    return total;
+}
+
+int main() {
+    int n, tPrelucrare;
+    COADA *par = NULL, *impar = NULL;
+
+    // Citirea numărului de clienți
+    scanf("%d", &n);
+
+    // Citirea timpilor de prelucrare și sortarea în cozi
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &tPrelucrare);
+        if (i % 2 == 0) {
+            par = enqueue(par, tPrelucrare);
+        } else {
+            impar = enqueue(impar, tPrelucrare);
+        }
+    }
+
+    // Afișarea elementelor din coada de indici pari
+    afisareCoada(par);
+
+    // Afișarea elementelor din coada de indici impari
+    afisareCoada(impar);
+
+    // Afișarea timpului total pentru fiecare coadă
+    printf("%d\n", timpTotal(par));
+    printf("%d\n", timpTotal(impar));
+
+    return 0;
+}

@@ -1,0 +1,119 @@
+Se citesc de la tastatură un număr întreg n și n perechi de tipul (nume de oraș, număr întreg). Acestea sunt stocate sub forma unui arbore binar de căutare, folosind drept cheie de comparație numele orașului. Valoarea numerică reprezintă distanța parcursă de la orașul din care s-a ajuns la ele (nodul părinte). Se citește de la tastatură un întreg, reprezentând o comandă, în funcție de valoarea căreia se execută diferite funcționalități:
+
+Se citește numele unui oraș existent în arbore. Să se afișeze pe ecran numărul de orașe diferite în care se poate ajunge din acel oraș (numărul de noduri descendente).
+
+Se citește o pereche de orașe existente în arbore. Să se afișeze pe ecran distanța totală dintre cele 2 orașe.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Node {
+    char city[101];
+    int distance;
+    struct Node* left;
+    struct Node* right;
+} Node;
+
+// Creare nod nou
+Node* createNode(char* city, int distance) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    strcpy(newNode->city, city);
+    newNode->distance = distance;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Inserare în arbore
+Node* insert(Node* root, char* city, int distance) {
+    if (root == NULL) return createNode(city, distance);
+
+    if (strcmp(city, root->city) < 0)
+        root->left = insert(root->left, city, distance);
+    else if (strcmp(city, root->city) > 0)
+        root->right = insert(root->right, city, distance);
+
+    return root;
+}
+
+// Număr descendenți
+int countDescendants(Node* root) {
+    if (root == NULL) return 0;
+    return 1 + countDescendants(root->left) + countDescendants(root->right);
+}
+
+// Căutare nod
+Node* search(Node* root, char* city) {
+    if (root == NULL || strcmp(root->city, city) == 0)
+        return root;
+
+    if (strcmp(city, root->city) < 0)
+        return search(root->left, city);
+    else
+        return search(root->right, city);
+}
+
+// Găsire LCA (cel mai mic strămoș comun)
+Node* findLCA(Node* root, char* city1, char* city2) {
+    if (root == NULL) return NULL;
+
+    if (strcmp(city1, root->city) < 0 && strcmp(city2, root->city) < 0)
+        return findLCA(root->left, city1, city2);
+
+    if (strcmp(city1, root->city) > 0 && strcmp(city2, root->city) > 0)
+        return findLCA(root->right, city1, city2);
+
+    return root; // Strămoș comun
+}
+
+// Găsire distanță de la un nod specificat până la un oraș
+int findDistanceFromNode(Node* root, char* city) {
+    if (root == NULL) return 0;
+
+    if (strcmp(city, root->city) == 0)
+        return 0;
+
+    if (strcmp(city, root->city) < 0)
+        return root->left->distance + findDistanceFromNode(root->left, city);
+    else if (strcmp(city, root->city) > 0)
+        return root->right->distance + findDistanceFromNode(root->right, city);
+}
+
+// Funcția principală
+int main() {
+    Node* root = NULL;
+    int n, distance, command;
+    char city[101];
+
+    // Citire orașe și distanțe
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++) {
+        scanf("%s %d", city, &distance);
+        root = insert(root, city, distance);
+    }
+
+    // Citire comandă
+    scanf("%d", &command);
+
+    if (command == 1) {
+        scanf("%s", city);
+        Node* node = search(root, city);
+        if (node) {
+            int descendants = countDescendants(node) - 1; // Excludem nodul curent
+            printf("%d\n", descendants);
+        }
+    } else if (command == 2) {
+        char city1[101], city2[101];
+        scanf("%s %s", city1, city2);
+
+        Node* lca = findLCA(root, city1, city2); // lowest common ancestor
+        if (lca) {
+            int dist1 = findDistanceFromNode(lca, city1);
+            int dist2 = findDistanceFromNode(lca, city2);
+            printf("%d\n", dist1 + dist2);
+        }
+    }
+
+    return 0;
+}

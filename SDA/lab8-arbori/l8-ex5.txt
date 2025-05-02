@@ -1,0 +1,168 @@
+Să se implementeze o structură de tipul min heap: un arbore binar construit de la frunze către rădăcină în care cheia fiecărui nod o reprezintă suma cheilor copiilor săi. Se citesc de la tastatură un număr întreg n și n valori întregi. Acestea sunt stocate și sortate crescător. Să se afișeze pe ecran valorile arborelui în preordine.
+
+Pentru a construi min heap mai simplu se are în vedere ca fiecare nod părinte să fie creat pe baza celor mai mici două valori din vectorul sortat la momentul respectiv. Exemplu:
+Se pornește cu valorile 5, 13, 1, 8, 10, 12, 32, 17.
+Se sortează valorile: 1, 5, 8, 10, 12, 13, 17, 32.
+Se creează un nod gol.
+Se selectează și elimină cea mai mică valoare din vector (1). Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (5). Aceasta va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 1+ 5 = 6, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată. 
+
+Vectorul devine 6, 8, 10, 12, 13, 17, 32.
+Se creează un nod gol.
+Se selectează și elimină cea mai mică valoare din vector (6).
+Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (8).
+Aceasta va deveni legătura din dreapta. 
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 6 + 8 = 14, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată. 
+
+Vectorul devine 10, 12, 13, 14, 17, 32. 
+Se creează un nod gol. 
+Se selectează și elimină cea mai mică valoare din vector (10).
+Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (12).
+Aceasta va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 10 + 12 = 22, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată.
+
+Vectorul devine 13, 14, 17, 22, 32.
+Se creează un nod gol.
+Se selectează și elimină cea mai mică valoare din vector (13). Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (14).
+Aceasta va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 13 + 14 = 27, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată.
+
+Vectorul devine 17, 22, 27, 32.
+Se creează un nod gol.
+Se selectează și elimină cea mai mică valoare din vector (17). Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (22).
+Aceasta va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 17 + 22 = 39, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată.
+
+Vectorul devine 27, 32, 39.
+Se creează un nod gol.
+Se selectează și elimină cea mai mică valoare din vector (27). Aceasta va deveni legătura din stânga.
+Se selectează și elimină cea mai mică valoare din vector (32).
+Aceasta va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 27 + 32 = 59, iar valoarea sa va fi introdusă în vectorul de valori, pe poziția sortată.
+
+Vectorul devine 39, 59.
+Se creează un nod gol. Deoarece au mai rămas doar 2 valori în vector, acest nod va fi rădăcina arborelui.
+Cea mai mică valoare din vector (39) va deveni legătura din stânga.
+Cea mai mare valoare din vector (59) va deveni legătura din dreapta.
+Nodul nou va reține valoarea sumei celor 2 copii ai săi: 39 + 59 = 98.
+
+Arborele final arată astfel:
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura unui nod din arbore
+typedef struct Node {
+    int value;               // Valoarea nodului
+    struct Node *left, *right; // Pointers către copiii stânga și dreapta
+} Node;
+
+// Funcție pentru crearea unui nod nou
+Node* createNode(int value) {
+    Node* newNode = (Node*)malloc(sizeof(Node)); // Alocăm memorie pentru noul nod
+    newNode->value = value;  // Setăm valoarea nodului
+    newNode->left = NULL;    // Inițial, nodul nu are copii
+    newNode->right = NULL;
+    return newNode;          // Returnăm nodul creat
+}
+
+// Funcție pentru sortarea unui vector în ordine crescătoare
+void sortArray(int* arr, int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (arr[i] > arr[j]) {
+                // Schimbăm valorile dacă sunt în ordine greșită
+                int temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+    }
+}
+
+// Funcție pentru inserarea unui nod într-un vector sortat
+void insertSorted(Node** nodes, int* n, Node* newNode) {
+    int i = *n - 1;
+    // Mutăm elementele vectorului pentru a găsi locul potrivit pentru noul nod
+    while (i >= 0 && nodes[i]->value > newNode->value) {
+        nodes[i + 1] = nodes[i];
+        i--;
+    }
+    nodes[i + 1] = newNode; // Inserăm nodul pe poziția corectă
+    (*n)++;                 // Creștem numărul de noduri
+}
+
+// Funcție pentru construirea arborelui de tip min heap
+Node* buildMinHeap(int* arr, int n) {
+    // Creăm un vector de pointeri către noduri
+    Node** nodes = (Node**)malloc(n * sizeof(Node*));
+
+    // Transformăm fiecare valoare din vector într-un nod
+    for (int i = 0; i < n; i++) {
+        nodes[i] = createNode(arr[i]);
+    }
+
+    int nodeCount = n; // Numărul curent de noduri
+
+    // Continuăm până rămânem cu un singur nod (rădăcina)
+    while (nodeCount > 1) {
+        // Cele mai mici două noduri sunt pe primele poziții
+        Node* left = nodes[0];
+        Node* right = nodes[1];
+
+        // Creăm un nod părinte cu valoarea suma copiilor
+        Node* parent = createNode(left->value + right->value);
+        parent->left = left;    // Nodul stâng devine copilul din stânga
+        parent->right = right; // Nodul drept devine copilul din dreapta
+
+        // Înlăturăm primele două noduri din vector
+        for (int i = 2; i < nodeCount; i++) {
+            nodes[i - 2] = nodes[i];
+        }
+        nodeCount -= 2; // Scădem două noduri din numărul total
+
+        // Inserăm noul nod părinte în vector, pe poziția sortată
+        insertSorted(nodes, &nodeCount, parent);
+    }
+
+    // Nodul rămas în vector este rădăcina arborelui
+    Node* root = nodes[0];
+    free(nodes); // Eliberăm memoria pentru vectorul de noduri
+    return root; // Returnăm rădăcina arborelui
+}
+
+// Funcție pentru traversarea în preordine a arborelui
+void preorderTraversal(Node* root) {
+    if (root == NULL) return; // Condiție de oprire
+    printf("%d\n", root->value); // Afișăm valoarea nodului
+    preorderTraversal(root->left); // Continuăm cu copilul din stânga
+    preorderTraversal(root->right); // Continuăm cu copilul din dreapta
+}
+
+// Funcția principală
+int main() {
+    int n; // Numărul de valori
+    scanf("%d", &n);
+
+    int* arr = (int*)malloc(n * sizeof(int)); // Alocăm memorie pentru vectorul de valori
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]); // Citim valorile de la tastatură
+    }
+
+    // Sortăm valorile în ordine crescătoare
+    sortArray(arr, n);
+
+    // Construim arborele
+    Node* root = buildMinHeap(arr, n);
+
+    // Afișăm valorile arborelui în preordine
+    preorderTraversal(root);
+
+    free(arr); // Eliberăm memoria alocată pentru vector
+    return 0;
+}

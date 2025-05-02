@@ -1,0 +1,91 @@
+Să se scrie un program care parcurge în zig-zag un arbore binar de căutare. Se citesc de la tastatură un întreg n și n valori întregi care vor reprezenta nodurile arborelui. Să se afișeze pe ecran valorile arborelui daca fiecare nivel al arborelui este parcurs în sens invers față de precedentul nivel. Se pornește spre stânga.
+
+Exemplu: pentru valorile arborelui: 47, 35, 65, 64, 34, 36, 78 se obține arborele:
+
+Parcurgerea lui în zig-zag va rezulta în următoarea afișare: 47, 35, 65, 78, 64, 36, 34.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura unui nod din arbore
+typedef struct Node {
+    int data;                // Valoarea stocată în nod
+    struct Node* left;       // Pointer către subarborele stâng
+    struct Node* right;      // Pointer către subarborele drept
+} Node;
+
+// Funcție pentru crearea unui nod nou
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node)); // Alocare memorie pentru nod
+    newNode->data = data;       // Setăm valoarea nodului
+    newNode->left = NULL;       // Inițial, subarborele stâng este gol
+    newNode->right = NULL;      // Inițial, subarborele drept este gol
+    return newNode;             // Returnăm nodul creat
+}
+
+// Inserare în arborele binar de căutare
+Node* insert(Node* root, int data) {
+    if (root == NULL) {         // Dacă arborele este gol, creăm un nod nou
+        return createNode(data);
+    }
+    if (data < root->data) {    // Dacă valoarea este mai mică decât rădăcina
+        root->left = insert(root->left, data); // Inserăm în subarborele stâng
+    } else if (data > root->data) { // Dacă valoarea este mai mare
+        root->right = insert(root->right, data); // Inserăm în subarborele drept
+    }
+    return root;                // Returnăm rădăcina actualizată
+}
+
+// Parcurgerea arborelui în zig-zag
+void zigzagTraversal(Node* root) {
+    if (root == NULL) return;   // Dacă arborele este gol, nu facem nimic
+
+    // Două stive pentru direcțiile de parcurgere
+    Node* stack1[1000];         // Stivă pentru parcurgere dreapta -> stânga
+    Node* stack2[1000];         // Stivă pentru parcurgere stânga -> dreapta
+    int top1 = -1, top2 = -1;   // Inițializăm indicii stivelor ca fiind goale
+
+    // Punem rădăcina în prima stivă
+    stack1[++top1] = root;
+
+    // Cât timp există elemente în oricare dintre stive
+    while (top1 >= 0 || top2 >= 0) {
+        // Parcurgere dreapta -> stânga
+        while (top1 >= 0) {
+            Node* node = stack1[top1--]; // Scoatem elementul din stivă
+            printf("%d\n", node->data); // Afișăm valoarea nodului
+
+            // Adăugăm copii în ordine inversă: dreapta înaintea stângii
+            if (node->right) stack2[++top2] = node->right;
+            if (node->left) stack2[++top2] = node->left;
+        }
+        
+        // Parcurgere stânga -> dreapta
+        while (top2 >= 0) {
+            Node* node = stack2[top2--]; // Scoatem elementul din stivă
+            printf("%d\n", node->data); // Afișăm valoarea nodului
+
+            // Adăugăm copii în ordine inversă: stânga înaintea dreptei
+            if (node->left) stack1[++top1] = node->left;
+            if (node->right) stack1[++top1] = node->right;
+        }
+    }
+}
+
+int main() {
+    int n, value;
+
+    // Citim numărul de noduri din arbore
+    scanf("%d", &n);
+
+    Node* root = NULL; // Inițial, arborele este gol
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &value); // Citim valoarea fiecărui nod
+        root = insert(root, value); // Inserăm valoarea în arbore
+    }
+
+    // Afișăm parcurgerea arborelui în zig-zag
+    zigzagTraversal(root);
+
+    return 0;
+}

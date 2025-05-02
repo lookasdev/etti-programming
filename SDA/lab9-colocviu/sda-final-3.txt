@@ -1,0 +1,219 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+// Structura pentru un jucător
+typedef struct {
+    char name[31];
+} Player;
+
+// Structura pentru un meci
+typedef struct Match {
+    Player player1;
+    Player player2;
+    struct Match *next;
+} Match;
+
+// Creare meci
+Match* create_match(Player p1, Player p2) {
+    Match *new_match = (Match*)malloc(sizeof(Match));
+    new_match->player1 = p1;
+    new_match->player2 = p2;
+    new_match->next = NULL;
+    return new_match;
+}
+
+// Adăugare meci în listă
+Match* add_match(Match *head, Player p1, Player p2) {
+    Match *new_match = create_match(p1, p2);
+    if (!head) {
+        return new_match;
+    }
+    Match *current = head;
+    while (current->next) {
+        current = current->next;
+    }
+    current->next = new_match;
+    return head;
+}
+
+// Afișare bracket inițial
+void display_bracket(Match *head) {
+    Match *current = head;
+    while (current) {
+        printf("%s\n%s\n\n", current->player1.name, current->player2.name);
+        current = current->next;
+    }
+}
+
+// Găsire rundă comună pentru doi jucători
+int find_round(Player players[], int n, char *name1, char *name2) {
+    int index1 = -1, index2 = -1;
+    for (int i = 0; i < n; i++) {
+        if (strcmp(players[i].name, name1) == 0) index1 = i;
+        if (strcmp(players[i].name, name2) == 0) index2 = i;
+    }
+
+    if (index1 == -1 || index2 == -1) return -1;
+
+    int round = 1;
+    while (index1 / 2 != index2 / 2) {
+        index1 /= 2;
+        index2 /= 2;
+        round++;
+    }
+    return round;
+}
+
+// Procesare scoruri pentru o rundă
+Player* process_round(Match *head, int *num_matches) {
+    int k = 0;
+    Match *current = head;
+    Player *winners = (Player*)malloc(sizeof(Player) * (*num_matches / 2));
+
+    while (current) {
+        int p, games1[10], games2[10];
+        int sets1 = 0, sets2 = 0;
+
+        scanf("%d", &p);
+        for (int i = 0; i < p; i++) scanf("%d", &games1[i]);
+        for (int i = 0; i < p; i++) scanf("%d", &games2[i]);
+
+        for (int i = 0; i < p; i++) {
+            if (games1[i] > games2[i]) sets1++;
+            else sets2++;
+        }
+
+        if (sets1 > sets2) {
+            winners[k] = current->player1;
+        } else {
+            winners[k] = current->player2;
+        }
+
+        (k)++;
+        current = current->next;
+    }
+    *num_matches = k;
+    return winners;
+}
+
+
+// Cel mai lung meci
+void longest_match(Match *head) {
+    Match *current = head;
+    Match *longest = NULL;
+    int max_games = 0;
+
+    while (current) {
+        int p, games1[10], games2[10];
+        int total_games = 0;
+
+        scanf("%d", &p);
+        for (int i = 0; i < p; i++) scanf("%d", &games1[i]);
+        for (int i = 0; i < p; i++) scanf("%d", &games2[i]);
+
+        for (int i = 0; i < p; i++) {
+            total_games += games1[i] + games2[i];
+        }
+
+        if (total_games > max_games) {
+            max_games = total_games;
+            longest = current;
+        }
+        current = current->next;
+    }
+
+    if (longest) {
+        printf("%s\n%s\n", longest->player1.name, longest->player2.name);
+    }
+}
+
+// Câștigător turneu
+Player tournament_winner(Player *players, int n) {
+    while (n > 1) {
+        int index = 0;
+        for (int i = 0; i < n; i += 2) {
+            int p, games1[10], games2[10];
+            int sets1 = 0, sets2 = 0;
+
+            scanf("%d", &p);
+            for (int j = 0; j < p; j++) scanf("%d", &games1[j]);
+            for (int j = 0; j < p; j++) scanf("%d", &games2[j]);
+
+            for (int j = 0; j < p; j++) {
+                if (games1[j] > games2[j]) sets1++;
+                else sets2++;
+            }
+
+            if (sets1 > sets2) {
+                players[index++] = players[i];
+            } else {
+                players[index++] = players[i + 1];
+            }
+        }
+        n /= 2;
+    }
+    return players[0];
+}
+
+// Eliberare memorie
+void free_matches(Match *head) {
+    Match *temp;
+    while (head) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    int n, command;
+    scanf("%d", &n);
+
+    Player players[n];
+    for (int i = 0; i < n; i++) {
+        scanf("%s", players[i].name);
+    }
+
+    Match *bracket = NULL;
+    for (int i = 0; i < n; i += 2) {
+        bracket = add_match(bracket, players[i], players[i + 1]);
+    }
+
+    scanf("%d", &command);
+    switch (command) {
+        case 1:
+            display_bracket(bracket);
+            break;
+        case 2: {
+            char name1[31 + 1], name2[31 + 1];
+            scanf("%s %s", name1, name2);
+            int round = find_round(players, n, name1, name2);
+            printf("%d\n", round);
+            break;
+        }
+        case 3: {
+            int num_matches = n;
+            Player *winners = process_round(bracket, &num_matches);
+            for (int i = 0; i < num_matches; i += 2) {
+                printf("%s\n%s\n\n", winners[i].name, winners[i + 1].name);
+            }
+            free(winners);
+            break;
+        }
+        case 4:
+            longest_match(bracket);
+            break;
+        case 5: {
+            Player winner = tournament_winner(players, n);
+            printf("%s\n", winner.name);
+            break;
+        }
+        default:
+            printf("Comanda invalidă!\n");
+    }
+
+    free_matches(bracket);
+    return 0;
+}

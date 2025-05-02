@@ -1,0 +1,200 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct CLIENT {
+    char name[31];
+    int products;
+    struct CLIENT *next;
+};
+
+// Funcție pentru crearea unui nod nou
+struct CLIENT* creare_client(char *name, int products) {
+    struct CLIENT *client = (struct CLIENT*)malloc(sizeof(struct CLIENT));
+    strcpy(client->name, name);
+    client->products = products;
+    client->next = NULL;
+    return client;
+}
+
+// Adăugare client în coadă
+struct CLIENT* adaugare_client(struct CLIENT *head, char *name, int products) {
+    struct CLIENT *nou = creare_client(name, products);
+    if (head == NULL) {
+        return nou;
+    }
+    struct CLIENT *curent = head;
+    while (curent->next != NULL) {
+        curent = curent->next;
+    }
+    curent->next = nou;
+    return head;
+}
+
+// Afișare clienți din coadă
+void afisare_clienti(struct CLIENT *head) {
+    struct CLIENT *curent = head;
+    while (curent != NULL) {
+        printf("%s %d\n", curent->name, curent->products);
+        curent = curent->next;
+    }
+}
+
+// Afișare doar numele clienților
+void afisare_clienti2(struct CLIENT *head) {
+    struct CLIENT *curent = head;
+    while (curent != NULL) {
+        printf("%s\n", curent->name);
+        curent = curent->next;
+    }
+}
+
+// Calcularea numărului total de produse
+int numar_total_produse(struct CLIENT *head) {
+    int total = 0;
+    struct CLIENT *curent = head;
+    while (curent != NULL) {
+        total += curent->products;
+        curent = curent->next;
+    }
+    return total;
+}
+
+// Bifurcare alternativă a cozii
+void bifurcare_alternativa(struct CLIENT *head, struct CLIENT **q1, struct CLIENT **q2) {
+    int toggle = 0;
+    struct CLIENT *curent = head;
+    while (curent != NULL) {
+        if (toggle == 0) {
+            *q1 = adaugare_client(*q1, curent->name, curent->products);
+        } else {
+            *q2 = adaugare_client(*q2, curent->name, curent->products);
+        }
+        toggle = 1 - toggle;
+        curent = curent->next;
+    }
+}
+
+// Distribuire clienți pe baza produselor
+void distribuire_optima(struct CLIENT *head, struct CLIENT **q1, struct CLIENT **q2) {
+    struct CLIENT *curent = head;
+    while (curent != NULL) {
+        int total_q1 = numar_total_produse(*q1);
+        int total_q2 = numar_total_produse(*q2);
+
+        if (total_q1 <= total_q2) {
+            *q1 = adaugare_client(*q1, curent->name, curent->products);
+        } else {
+            *q2 = adaugare_client(*q2, curent->name, curent->products);
+        }
+        curent = curent->next;
+    }
+}
+
+// Eliberare memorie pentru listă
+void elibereaza_lista(struct CLIENT *head) {
+    struct CLIENT *temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    struct CLIENT *coada = NULL;
+    struct CLIENT *q1 = NULL;
+    struct CLIENT *q2 = NULL;
+
+    int comanda, secunde;
+    scanf("%d", &comanda);
+    scanf("%d", &secunde);
+
+    while (1) {
+        char name[31];
+        int products;
+        if (scanf("%s", name) == EOF) break;
+        scanf("%d", &products);
+        coada = adaugare_client(coada, name, products);
+    }
+
+    switch (comanda) {
+        case 1:
+            afisare_clienti(coada);
+            break;
+        case 2:
+            printf("%d\n", numar_total_produse(coada));
+            break;
+        case 3:
+            bifurcare_alternativa(coada, &q1, &q2);
+            afisare_clienti2(q1);
+            afisare_clienti2(q2);
+            break;
+        case 4:
+            distribuire_optima(coada, &q1, &q2);
+            afisare_clienti2(q1);
+            afisare_clienti2(q2);
+            break;
+        case 5: {
+            // Distribuirea optimă
+            distribuire_optima(coada, &q1, &q2);
+            
+            int secundeAux = secunde;
+            
+            // Procesarea clienților în coada 1
+            struct CLIENT *curent = q1;
+            while (curent != NULL && secundeAux > 0) {
+                if (curent->products <= secundeAux) {
+                    secundeAux -= curent->products;
+                    curent->products = 0; // Marcăm clientul ca procesat complet
+                } else {
+                    curent->products -= secundeAux;
+                    secundeAux = 0;
+                }
+                curent = curent->next;
+            }
+            
+            secundeAux = secunde;
+            // Procesarea clienților în coada 2
+            curent = q2;
+            while (curent != NULL && secundeAux > 0) {
+                if (curent->products <= secundeAux) {
+                    secundeAux -= curent->products;
+                    curent->products = 0; // Marcăm clientul ca procesat complet
+                } else {
+                    curent->products -= secundeAux;
+                    secundeAux = 0;
+                }
+                curent = curent->next;
+            }
+        
+            // Afișăm doar numele clienților care au produse neprocesate
+            curent = q1;
+            while (curent != NULL) {
+                if (curent->products > 0) {
+                    printf("%s\n", curent->name);
+                }
+                curent = curent->next;
+            }
+        
+            curent = q2;
+            while (curent != NULL) {
+                if (curent->products > 0) {
+                    printf("%s\n", curent->name);
+                }
+                curent = curent->next;
+            }
+        
+            break;
+        }
+
+        default:
+            printf("Comanda invalida!\n");
+    }
+
+    elibereaza_lista(coada);
+    elibereaza_lista(q1);
+    elibereaza_lista(q2);
+
+    return 0;
+}

@@ -1,0 +1,154 @@
+Implementați conceptul de hash table, folosind drept soluție pentru gestionarea coliziunilor adăugarea de elemente la finalul unei liste simplu înlănțuite, aflată pe poziția de index hash-ul calculat. Trebuie implementate următoarele funcții:
+- funcție de hashing: transformă intrare de dimensiune variabilă într-o valoare de dimensiune fixă. Se va implementa funcția din platformă (suma codurilor ASCII ale tuturor caracterelor din cheie modulo n, unde n este capacitatea maximă a vectorului de hash).
+- funcție de adăugare a unui nod la sfârșitul unei listei;
+- funcție de căutare și afișare a valorilor unui nod în funcție de o cheie.
+
+Se va compara performanța unui hash table cu a unei liste de date simplu înlănțuite. În acest sens, se vor crea un număr mare (50000) de noduri. Ele vor fi stocate atât într-o listă de date simplu înlănțuită, cât și într-un hash table. Se vor accesa fără afișare un număr mare (10000) de noduri după cheie pentru ambele variante. Se va contoriza și compara timpul necesar rulării ambelor variante.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+
+// Structura unui nod al unei liste simplu înlănțuite
+struct nod {
+    char key[31];       // Cheia (un șir de caractere de maxim 30 de caractere)
+    struct nod* next;   // Pointer către următorul nod din listă
+};
+
+// Structura pentru tabelul hash
+struct hashtable {
+    struct nod** entries; // Vector de pointeri la liste simplu înlănțuite (bucket-uri)
+    int size;             // Dimensiunea tabelului (numărul de bucket-uri)
+};
+
+// Funcție pentru generarea unui șir de caractere aleatoriu
+void rand_str(char* dest, size_t length) {
+    char charset[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    // Selectează caractere aleatorii din `charset` pentru a popula șirul
+    while (length-- > 0) {
+        size_t index = (double)rand() / RAND_MAX * (sizeof charset - 1);
+        *dest++ = charset[index];
+    }
+    *dest = '\0'; // Termină șirul cu caracterul NULL
+}
+
+// Funcție pentru a obține timpul curent în milisecunde (pentru măsurători de performanță)
+long long timeInMilliseconds(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (((long long)tv.tv_sec) * 1000) + (tv.tv_usec / 1000);
+}
+
+// Funcție de hash care calculează indexul bucket-ului pentru o cheie
+int hash_function(const char* key, int size) {
+    int sum = 0;
+    for (int i = 0; key[i] != '\0'; i++) {
+        sum += key[i]; // Suma codurilor ASCII ale caracterelor din cheie
+    }
+    return sum % size; // Returnează indexul ca restul împărțirii la dimensiunea tabelului
+}
+
+// Funcție pentru a adăuga un nod la începutul unei liste simplu înlănțuite
+void list_add(struct nod** head, char* key) {
+    struct nod* new_node = malloc(sizeof(struct nod)); // Alocă memorie pentru noul nod
+    strcpy(new_node->key, key);                        // Copiază cheia în nod
+    new_node->next = *head;                            // Leagă nodul la începutul listei
+    *head = new_node;                                  // Actualizează head-ul listei
+}
+
+// Funcție pentru a adăuga o cheie într-un hash table
+void hashtable_add(struct hashtable* table, char* key) {
+    int index = hash_function(key, table->size);       // Calculează indexul bucket-ului
+    list_add(&table->entries[index], key);             // Adaugă cheia în lista bucket-ului respectiv
+}
+
+// Funcție pentru a căuta o cheie într-o listă simplu înlănțuită
+int list_search(struct nod* head, const char* key) {
+    while (head) {                                     // Parcurge lista
+        if (strcmp(head->key, key) == 0) {             // Compară cheia curentă cu cheia căutată
+            return 1;                                  // Găsită
+        }
+        head = head->next;                             // Trecerea la următorul nod
+    }
+    return 0;                                          // Nu a fost găsită
+}
+
+// Funcție pentru a căuta o cheie într-un hash table
+int hashtable_search(struct hashtable* table, const char* key) {
+    int index = hash_function(key, table->size);       // Calculează indexul bucket-ului
+    return list_search(table->entries[index], key);    // Caută cheia în lista bucket-ului respectiv
+}
+
+int main() {
+    // Dimensiuni pentru șiruri și structuri
+    int str_length = 31;        // Lungimea șirurilor aleatorii
+    int num_nodes = 50000;      // Numărul total de noduri generate
+    int hash_table_size = 10007; // Dimensiunea tabelului hash (număr prim)
+
+    // Generarea șirurilor de caractere aleatorii
+    char** random_strings = calloc(num_nodes, sizeof(char*)); // Alocă memorie pentru vectorul de șiruri
+    for (int i = 0; i < num_nodes; i++) {
+        random_strings[i] = calloc(str_length, 1);            // Alocă memorie pentru fiecare șir
+        rand_str(random_strings[i], str_length - 1);          // Generează șirul aleatoriu
+    }
+
+    // Inițializarea structurilor
+    struct nod* list_head = NULL;                             // Lista simplu înlănțuită, inițial goală
+    struct hashtable table;                                   // Tabelul hash
+    table.size = hash_table_size;                             // Setează dimensiunea tabelului
+    table.entries = calloc(hash_table_size, sizeof(struct nod*)); // Alocă bucket-uri pentru tabel
+
+    // Popularea structurilor cu șirurile generate
+    for (int i = 0; i < num_nodes; i++) {
+        list_add(&list_head, random_strings[i]);              // Adaugă în lista simplu înlănțuită
+        hashtable_add(&table, random_strings[i]);             // Adaugă în hash table
+    }
+
+    // Măsurarea performanței căutării în lista simplu înlănțuită
+    long long start_t, end_t1;
+    int num_searches = 10000;                                 // Număr de căutări aleatoare
+
+    start_t = timeInMilliseconds();                           // Începe măsurătoarea timpului
+    for (int i = 0; i < num_searches; i++) {
+        int rand_index = rand() % num_nodes;                  // Selectează o cheie aleatoare
+        list_search(list_head, random_strings[rand_index]);   // Caută cheia în listă
+    }
+    end_t1 = timeInMilliseconds();                            // Sfârșește măsurătoarea timpului
+    printf("List execution time = %lld ms\n", end_t1 - start_t);
+
+    // Măsurarea performanței căutării în hash table
+    start_t = timeInMilliseconds();                           // Începe măsurătoarea timpului
+    for (int i = 0; i < num_searches; i++) {
+        int rand_index = rand() % num_nodes;                  // Selectează o cheie aleatoare
+        hashtable_search(&table, random_strings[rand_index]); // Caută cheia în hash table
+    }
+    end_t1 = timeInMilliseconds();                            // Sfârșește măsurătoarea timpului
+    printf("Hashtable execution time = %lld ms\n", end_t1 - start_t);
+
+    // Dezalocarea memoriei utilizate
+    for (int i = 0; i < num_nodes; i++) {
+        free(random_strings[i]);                              // Eliberează fiecare șir
+    }
+    free(random_strings);                                     // Eliberează vectorul de șiruri
+
+    struct nod* temp;
+    while (list_head) {                                       // Eliberează fiecare nod din listă
+        temp = list_head;
+        list_head = list_head->next;
+        free(temp);
+    }
+
+    for (int i = 0; i < hash_table_size; i++) {               // Eliberează fiecare bucket din hash table
+        struct nod* entry = table.entries[i];
+        while (entry) {
+            temp = entry;
+            entry = entry->next;
+            free(temp);
+        }
+    }
+    free(table.entries);                                      // Eliberează tabelul hash
+
+    return 0;
+}

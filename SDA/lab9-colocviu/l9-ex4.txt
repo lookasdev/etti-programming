@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structura nodului pentru lista dublu înlănțuită
+typedef struct LISTA {
+    int data;
+    struct LISTA *anterior;
+    struct LISTA *urmator;
+} LISTA;
+
+// Funcție pentru crearea unui nod nou
+LISTA* creareNod(int data) {
+    LISTA* nodNou = (LISTA*)malloc(sizeof(LISTA));
+    nodNou->data = data;
+    nodNou->anterior = NULL;
+    nodNou->urmator = NULL;
+    return nodNou;
+}
+
+// Funcție pentru adăugarea unui nod la sfârșitul listei
+LISTA* adaugaLaSfarsit(LISTA* cap, int data) {
+    LISTA* nodNou = creareNod(data);
+    if (!cap) {
+        return nodNou;
+    }
+    LISTA* temp = cap;
+    while (temp->urmator) {
+        temp = temp->urmator;
+    }
+    temp->urmator = nodNou;
+    nodNou->anterior = temp;
+    return cap;
+}
+
+// Funcție pentru afișarea listei în ordine inversă
+void afisareInversa(LISTA* cap) {
+    if (!cap) return;
+    LISTA* temp = cap;
+    while (temp->urmator) {
+        temp = temp->urmator;
+    }
+    while (temp) {
+        printf("%d\n", temp->data);
+        temp = temp->anterior;
+    }
+}
+
+// Funcție pentru inserarea unui nod pe prima poziție
+LISTA* inserareLaInceput(LISTA* cap, int data) {
+    LISTA* nodNou = creareNod(data);
+    if (!cap) {
+        return nodNou;
+    }
+    nodNou->urmator = cap;
+    cap->anterior = nodNou;
+    return nodNou;
+}
+
+// Funcție pentru ștergerea și eliberarea memoriei tuturor nodurilor
+void stergereLista(LISTA* cap) {
+    LISTA* temp;
+    while (cap) {
+        temp = cap;
+        cap = cap->urmator;
+        free(temp);
+    }
+}
+
+int main() {
+    int n, x, val;
+    LISTA* cap = NULL;
+
+    // Citirea numărului de noduri
+    scanf("%d", &n);
+
+    // Citirea valorilor pentru noduri și adăugarea lor în listă
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &val);
+        cap = adaugaLaSfarsit(cap, val);
+    }
+
+    // Citirea valorii pentru nodul ce va fi inserat pe prima poziție
+    scanf("%d", &x);
+
+    // Afișare inițială în ordine inversă
+    afisareInversa(cap);
+
+    // Inserarea nodului pe prima poziție
+    cap = inserareLaInceput(cap, x);
+
+    // Afișare după inserție în ordine inversă
+    afisareInversa(cap);
+
+    // Ștergerea listei și eliberarea memoriei
+    stergereLista(cap);
+
+    return 0;
+}
