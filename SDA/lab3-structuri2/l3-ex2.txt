@@ -1,0 +1,66 @@
+Dându-se un număr n și apoi n numere complexe (adică componenta reală și imaginară pentru fiecare din ele), să se afișeze numărul complex cu modulul minim.
+
+Date de intrare
+Pe prima linie se află un număr n, reprezentând numărul de valori complexe. n este maxim 65535. Pe următoarele n linii se află o pereche de valori fracționare ce reprezintă componentele valorii complexe, separate prin virgulă.
+
+Date de ieșire
+La ieșire se vor afișa două numere fracționare separate prin spațiu ce reprezintă numărul complex cu modulul minim. Dacă există mai multe astfel de perechi, se va afișa primul din listă.
+
+Exemplu
+Intrare:
+
+4
+1.0,2.0
+0.0,1.0
+1.0,0.0
+2.0,2.0
+Ieșire:
+
+0.0 1.0
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+struct nr_complex {
+    float parte_reala;
+    float parte_imaginara;
+};
+
+void citire_date(struct nr_complex *p) {
+    scanf("%f %f", &(p->parte_reala), &(p->parte_imaginara));
+}
+
+void afisare_date(struct nr_complex *p) {
+    printf("%.1f %.1f\n", p->parte_reala, p->parte_imaginara);
+}
+
+float calc_modul(struct nr_complex *p) {
+    return sqrt(pow(p->parte_reala, 2) + pow(p->parte_imaginara, 2));
+}
+
+int main()
+{
+    int n;
+    float min_modul = 999.9f;
+    scanf("%d", &n);
+    
+    struct nr_complex nr_complexe[n];
+    
+    for(int i = 0; i < n; i++) {
+        citire_date(nr_complexe+i);
+        if(calc_modul(nr_complexe+i) < min_modul) {
+            min_modul = calc_modul(nr_complexe+i);
+        }
+    }
+    
+    for(int i = 0; i < n; i++) {
+        if(min_modul == calc_modul(nr_complexe+i)) {
+            afisare_date(nr_complexe+i);
+            break; // ne trebuie doar primul
+        }
+    }
+
+    return 0;
+}

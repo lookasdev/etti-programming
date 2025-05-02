@@ -1,0 +1,209 @@
+Un restaurant își instalează un software pentru a putea ține evidența mâncării care este în curs de gătit și a ordinii în care aceasta este servită clienților.
+
+Comenzile care pot veni la bucătarie sunt:
++ numar nume_mancare - Unde numar reprezintă câte minute durează fiecare mâncare să fie făcută și nume_mancare are un singur cuvânt. Se garantează că nume_mancare nu conține cifre (ex: + 45 sarmale);
+- numar - Ceea ce înseamnă că trec 'numar' minute fără alte comenzi de adăugat (ex: - 15);
+? - Reprezentând întrebarea clienților: Cât timp până iese următoarea mâncare? 
+Date de intrare:
+Pe prima linie se află un număr r, reprezentând tipul restaurantului;
+Pe următoarele linii, până la EOF, comenzi conform specificației de mai sus.
+Tipul restaurantului poate fi:
+0 - de cartier - fiind un restaurant mic, nu are decât un aragaz și nu poate găti decât o mâncare odată. Se gătește în ordinea sosirii comenzilor;
+1 - restaurant mare - are 3 aragazuri și deci poate găti 3 feluri de mâncare în paralel;
+2 - fast food mare - are 3 aragazuri, dar păstrează unul doar pentru comenzi care durează 15 minute sau mai puțin; orice astfel de comenzi se pun doar pe acest aragaz.
+Date de ieșire:
+Numele mâncării care este gata, atunci când trece suficient timp ca ea sa fie gătită, sau, în cazul comenzilor de tip "?", timpul necesar până iese următoarea mâncare.
+
+Exemplu:
+Input:
+
+0
++ 45 sarmale 
++ 10 ciorba 
+- 15
+?
++ 10 salata 
+- 40
+Output:
+
+30
+sarmale
+ciorba
+Explicație: Restaurantul e de tipul 0. Se adaugă în coada de la bucătărie sarmalele ce durează 45 de minute și apoi ciorba care durează 10 minute. Trec apoi 15 minute în care nu se termină nicio mâncare, dar acum sarmalele mai au doar 30 minute. Pentru caracterul ”?” de la intrare se afișează 30. Se adaugă o salată de 10 minute. Trec apoi încă 40 de minute. În acest timp, sarmalele și ciorba au avut timp să se facă, dar salata ar mai fi avut nevoie de înca 10 minute.
+
+Mențiuni:
+Se garantează că nu apar comenzi de tipul "?" dacă toate aragazurile sunt goale.
+Se garantează că nu vin comenzi astfel încât 2 mâncăruri să iasă în același timp.
+Pentru restaurantul mare, alocarea mâncare - aragaz se face în sistem round-robin, adică (mâncare1 -> aragaz1, mâncare2 -> aragaz2, mâncare3 -> aragaz3, mâncare4 -> aragaz1, mâncare5 -> aragaz2, etc.).
+Pentru restaurantul de tip fast food se procedează tot în sistem round-robin, doar că aragazul numărul 3 este folosit doar pentru comenzile scurte, deci rămâne round-robin între doar 2 aragazuri.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct NOD {
+    int time;
+    char name[51];
+    struct NOD *next;
+};
+
+struct NOD * createNode(int time, char *name) {
+    struct NOD * new_node = malloc(sizeof(struct NOD));
+
+    new_node->time = time;
+    strcpy(new_node->name, name);
+    new_node->next = NULL;
+    return new_node;
+}
+
+struct NOD * enqueue(struct NOD *head, int time, char *name) {
+    struct NOD * new_NOD = createNode(time, name);
+
+    if (head == NULL) {
+        return new_NOD;
+    }
+
+    struct NOD *current = head;
+    while (current->next != NULL) {
+        current = current->next;
+    }
+    current->next = new_NOD;
+    return head;
+}
+
+struct NOD * dequeue(struct NOD *head) {
+    if (head == NULL) {
+        return NULL;
+    }
+
+    struct NOD *temp = head;
+    head = head->next;
+    printf("%s\n", temp->name);
+    free(temp);
+    return head;
+}
+
+struct NOD * passTime(struct NOD *head, int time) {
+    while (head != NULL && time > 0) {
+        if (head->time <= time) {
+            time -= head->time;
+            head = dequeue(head);
+        } else {
+            head->time -= time;
+            time = 0;
+        }
+    }
+    return head;
+}
+
+void passTime2(struct NOD *queues[], int elapsed_time, int num_queues) {
+    while (elapsed_time > 0) { // repetam pana cand timpul care trebuia scurs a fost procesat pt toate cozile(aragazurile)
+        int min_time = 1e9;
+        int active_queues = 0;
+
+        // Găsim timpul minim global din toate cozile active
+        for (int i = 0; i < num_queues; i++) {
+            if (queues[i] != NULL) {
+                active_queues++;
+                if (queues[i]->time < min_time) { // se uita la prima mancare de pe fiecare aragaz(coada)
+                    min_time = queues[i]->time;
+                }
+            }
+        }
+
+        // Dacă nu mai avem cozi active, ieșim
+        if (active_queues == 0) {
+            break;
+        }
+
+        // Determinăm cât timp putem avansa
+        int time_to_advance = (min_time <= elapsed_time) ? min_time : elapsed_time;
+        elapsed_time -= time_to_advance;
+
+        // Reducem timpul pentru fiecare coadă și procesăm comenzile finalizate
+        for (int i = 0; i < num_queues; i++) {
+            if (queues[i] != NULL) {
+                
+                queues[i]->time -= time_to_advance;
+
+                // Eliminăm și afișăm comenzile finalizate
+                if(queues[i]->time == 0) queues[i] = dequeue(queues[i]);
+                
+                // while (queues[i] != NULL && queues[i]->time == 0) {
+                //     queues[i] = dequeue(queues[i]);
+                // }
+            }
+        }
+    }
+}
+
+void freeQueue(struct NOD *head) {
+    while (head != NULL) {
+        struct NOD *temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    int r;
+    scanf("%d", &r);
+    struct NOD *queue = NULL;
+    struct NOD *queues[3] = {NULL};
+
+    char input[101];
+    int round_robin = 0;
+    int round_robin_fast_food = 0;
+    while(scanf("%s", input) != EOF) {
+        if (strcmp(input,"+") == 0) {
+            int time;
+            char name[51];
+            scanf("%d %s", &time, name);
+
+            if (r == 0) { // Restaurant mic
+                queue = enqueue(queue, time, name);
+            } else if (r == 1) { // Restaurant mare
+                int queue_index = round_robin % 3;
+                round_robin++;
+                queues[queue_index] = enqueue(queues[queue_index], time, name);
+            } else if (r == 2) { // Fast Food mare
+                if (time <= 15) {
+                    queues[2] = enqueue(queues[2], time, name);
+                } else {
+                    int queue_index = round_robin_fast_food % 2;
+                    round_robin_fast_food++;
+                    queues[queue_index] = enqueue(queues[queue_index], time, name);
+                }
+            }
+        } else if (strcmp(input, "-") == 0) {
+            int elapsed_time;
+            scanf("%d", &elapsed_time);
+            // printf("%d\n", elapsed_time); // debug
+            if (r == 0) {
+                if(queue != NULL) {
+                    queue = passTime(queue, elapsed_time);
+                }
+            } else if (r == 1 || r == 2) {
+                passTime2(queues, elapsed_time, 3);
+            }
+        } else if (input[0] == '?') {
+            if (r == 0) {
+                if (queue != NULL) {
+                    printf("%d\n", queue->time);
+                }
+            }
+            // pt tip 1 si tip 2 nu avem nevoie de comanda aceasta (ar trb sa arate timpul min pana cand e gata urm mancare de pe aragazuri (mancarea de pe prima pozitie a aragazurilor care se termina de gatit cel mai repede) - verif primul elem adica mancare din coada queue a fiecarui aragaz)
+        }
+    }
+
+    if (r == 0) {
+        freeQueue(queue);
+    } else {
+        for (int i = 0; i < 3; i++) {
+            freeQueue(queues[i]);
+        }
+    }
+
+    return 0;
+}

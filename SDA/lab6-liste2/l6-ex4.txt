@@ -1,0 +1,181 @@
+Spre disperarea voastră, bunica a început să joace Bingo. Pentru că nu se descurcă deloc și a început să piardă bani (pe care ar fi putut să vi-i dea vouă), ați decis s-o ajutați să trișeze cu un program. Jocul are următoarele reguli: bunica primește o foaie de hârtie pe care sunt așejate niște numere într-o matrice de n x n (numerele nu sunt plasate în ordine și nu se repetă); apoi, organizatorul strigă o altă serie de numere (care nu sunt nici ele în ordine dar se pot repeta). De fiecare dată când un număr strigat se regăsește pe foaie, acesta se va tăia cu pixul. Dacă la un moment dat toate numerele sunt tăiate, se strigă BINGO! și jocul este câștigat.
+
+Date de intrare
+
+Pe prima linie este n, dimensiunea matricei. Pe următoarea linie sunt n x n valori numerice care reprezintă matricea. Pe a treia linie, până la EOF, se regăsesc numerele strigate de organizator. n este un număr fără semn pe 64 de biți, toate celelalte valori sunt valori numerice întregi pe 32 de biți.
+
+Date de ieșire
+Dacă la un moment dat jocul este câștigat (toate numerele din matrice se regăsesc în secvența strigată de organizator), se va afișa "BINGO!", altfel, se vor afișa numerele rămase (ne-tăiate), în ordine crescătoare. 
+
+Exemplu 1
+
+Intrare:
+
+3
+8 4 7 3 1 0 6 2 5
+5 73 21 6 98 4 7 1 3 9 83 3 2 8 1 7 12 0 4
+Ieșire:
+
+BINGO!
+Exemplu 2
+
+Intrare:
+
+3
+8 4 7 3 1 0 6 2 5
+73 21 6 98 4 7 3 9 83 3 2 8 7 12 4
+Ieșire:
+
+0 1 5
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct NOD {
+    int value;
+    int citit;
+    struct NOD * next;
+};
+
+struct NOD * creare_nod(int value){
+    struct NOD * nod = malloc(sizeof(struct NOD));
+    nod -> value = value;
+    nod -> citit = 0;
+    nod -> next = NULL;
+    return nod;
+}
+
+struct NOD * adaugare_nod_sfarsit_lista(struct NOD * head, int value) {
+    int i = 0;
+    struct NOD * nod_curent, * nod_nou;
+
+    if (head == NULL) {
+        head = creare_nod(value);
+        return head;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        if (nod_curent -> next == NULL) {
+            nod_nou = creare_nod(value);
+            nod_curent -> next = nod_nou;
+            return head;
+        }
+        nod_curent = nod_curent -> next;
+    }
+}
+
+void contains(struct NOD * head, int value) {
+    struct NOD * ptr = head;
+    while(ptr != NULL) {
+        if (ptr->value == value) {
+            ptr->citit = 1;
+            break;
+        }
+        ptr = ptr->next;
+    }
+}
+
+int bingo(struct NOD * head) {
+    struct NOD * ptr = head;
+    while(ptr != NULL) {
+        if(ptr->citit == 0) return 0;
+        ptr = ptr->next;
+    }
+    return 1;
+}
+
+// void show_unread_numbers (struct NOD * head) {
+//     struct NOD * ptr = head;
+//     while(ptr != NULL) {
+//         if(ptr->citit == 0) printf("%d ", ptr->value);
+//         ptr = ptr->next;
+//     }
+// }
+
+void show_sorted_unread_numbers(struct NOD *head) {
+    struct NOD *sorted = NULL; // Lista temporară pentru sortare
+    struct NOD *ptr = head;
+
+    // Copiază elementele necitite în lista temporară
+    while (ptr != NULL) {
+        if (ptr->citit == 0) {
+            struct NOD *new_node = creare_nod(ptr->value);
+
+            // Inserare sortată în lista temporară
+            if (sorted == NULL || sorted->value >= new_node->value) {
+                new_node->next = sorted;
+                sorted = new_node;
+            } else {
+                struct NOD *current = sorted;
+                while (current->next != NULL && current->next->value < new_node->value) {
+                    current = current->next;
+                }
+                new_node->next = current->next;
+                current->next = new_node;
+            }
+        }
+        ptr = ptr->next;
+    }
+
+    // Afișare lista sortată
+    struct NOD *sorted_ptr = sorted;
+    while (sorted_ptr != NULL) {
+        printf("%d ", sorted_ptr->value);
+        sorted_ptr = sorted_ptr->next;
+    }
+    printf("\n");
+
+    // Eliberare memorie pentru lista temporară
+    while (sorted != NULL) { // eliberare de la stanga la dreapta a nodurilor listei
+        struct NOD *temp = sorted;
+        sorted = sorted->next;
+        free(temp);
+    }
+}
+
+void afisare_lista(struct NOD * head){
+    int i = 0;
+    struct NOD * nod_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        printf("%d: %d\n", i++, nod_curent -> value);
+        nod_curent = nod_curent -> next;
+    }
+}
+
+int main() {
+    struct NOD * lista_bingo = NULL;
+    
+    int n;
+    scanf("%d", &n);
+    
+    int nr;
+    for(int i = 0; i < n*n; i++) {
+        scanf("%d", &nr);
+        lista_bingo = adaugare_nod_sfarsit_lista(lista_bingo, nr);
+    }
+
+    while(scanf("%d", &nr)!=EOF) {
+        contains(lista_bingo, nr);
+        if(bingo(lista_bingo)) {
+            printf("BINGO!\n");
+            exit(0);
+        }
+    }
+    
+    // afisare_lista(lista_bingo);
+    
+    show_sorted_unread_numbers(lista_bingo);
+    
+    return 0;
+}

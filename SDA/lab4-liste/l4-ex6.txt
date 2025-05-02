@@ -1,0 +1,22 @@
+A venit Crăciunul. Moșul are un sac mare mare cu cadouri și trebui să îl împartă vouă și prietenilor voștri. Ca să nu supere pe nimeni, va lua câte un cadou din sac, și îl va da unuia din voi, apoi următorul cadou va fi dăruit următorului prieten, șamd, în cerc, până se termină cadourile. Să se afișeze ce cadouri a primit fiecare din voi. 
+
+Date de intrare
+Pe prima linie se afla un număr n reprezentând numărul de cadouri pe care le are moșul la el. Pe a doua linie se află aceste n cadouri separate prin unul sau mai multe whitespace. Pe a treia linie se află numele voastre, separate prin unul sau mai multe spații. Nici un cuvânt nu poate depăși 30 de caractere.
+
+Date de ieșire
+La ieșire se va fișa o linie pentru fiecare din voi care să conțină numele vostru, urmat de caracterele ": " urmat de cadouri, separate prin spațiu. Pentru a ușura afișarea, se cere un caracter spațiu și un caracter newline la sfârșitul fiecărei linii. 
+
+Exemplu
+
+Intrare:
+
+7
+creioane masinuta minge ciocolata tricou bicicleta joc_video
+Mihai Andrei Ioana
+Ieșire:
+
+Mihai: creioane ciocolata joc_video 
+Andrei: masinuta tricou 
+Ioana: minge bicicleta 
+
+

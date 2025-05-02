@@ -1,0 +1,186 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct tren{
+    int id;
+    int putere;
+    int pasageri[10]; // pasageri <-> &pasageri[0] 
+};
+
+void afisare_trenuri(struct tren * p_tren, int nr_trenuri){
+    for (int i=0; i<nr_trenuri; i++){
+        printf("%d\n", p_tren[i].id);
+        printf("%d\n", (p_tren+i)->putere);
+        for (int j=0; j<10; j++){
+            printf("%d ", *((p_tren+i)->pasageri+j));
+        }
+        printf("\n");
+    }
+}
+
+void verificare_pasageri(struct tren * p_tren, int nr_trenuri, int id_temp){
+    for (int i=0; i<nr_trenuri; i++){
+        if (id_temp == (p_tren+i)->id){
+            int max_pasag = (p_tren+i)->putere / 10;
+            int total = 0;
+            for (int j=0; j<10; j++){
+                total += *((p_tren+i)->pasageri+j);
+            }
+            int exces = total - max_pasag;
+            
+            // printf("%d\n", exces); // eroare baterie teste
+            
+            for (int j=9; j>=0; j--){
+                if (exces >= *((p_tren+i)->pasageri+j)){
+                    exces -= *((p_tren+i)->pasageri+j);
+                    *((p_tren+i)->pasageri+j) = 0;
+                }
+                else {
+                    *((p_tren+i)->pasageri+j) -= exces;
+                    exces = 0;
+                    break;
+                }
+            }
+            
+            for (int j=0; j<10; j++){
+                printf("%d ", *((p_tren+i)->pasageri+j));
+            }
+            printf("\n");
+        }
+    }
+    
+}
+
+void urcare_pasageri(struct tren * p_tren, int nr_trenuri, int temp_id, int adaos){
+    for (int i=0; i<nr_trenuri; i++){
+        if (temp_id == (p_tren+i)->id){
+            int max_pasag = (p_tren+i)->putere / 10;
+            int total = 0;
+            for (int j=0; j<10; j++){
+                total += *((p_tren+i)->pasageri+j);
+            }
+            int urca = max_pasag - total;
+            int out = adaos - urca;
+            
+            printf("%d\n", out);
+            
+            for (int j=0; j<10; j++){
+                if (30-*((p_tren+i)->pasageri+j) < urca){
+                    urca -= 30-*((p_tren+i)->pasageri+j);
+                    *((p_tren+i)->pasageri+j) = 30;
+                }
+                else {
+                    *((p_tren+i)->pasageri+j) += urca;
+                    urca = 0;
+                    break;
+                }
+            }
+            
+            for (int j=0; j<10; j++){
+                printf("%d ", *((p_tren+i)->pasageri+j));
+            }
+            printf("\n");
+        }
+    }
+    
+}
+
+void transfer_pasageri(struct tren * p_tren, int temp_id_s, int temp_id_d, int nr_pasageri_transferati, int nr_trenuri) {
+    int aux = nr_pasageri_transferati;
+    //int i_tren_s, i_tren_d;
+    for (int i=0; i<nr_trenuri; i++){
+        if (temp_id_s == (p_tren+i)->id){
+            //i_tren_s = i;
+            for (int j=9; j>=0; j--){
+                if (nr_pasageri_transferati >= *((p_tren+i)->pasageri+j)){
+                    nr_pasageri_transferati -= *((p_tren+i)->pasageri+j);
+                    *((p_tren+i)->pasageri+j) = 0;
+                }
+                else {
+                    *((p_tren+i)->pasageri+j) -= nr_pasageri_transferati;
+                    nr_pasageri_transferati = 0;
+                    break;
+                }
+            }
+        }
+    }
+    
+    nr_pasageri_transferati = aux;
+    
+    for (int i=0; i<nr_trenuri; i++){
+        if (temp_id_d == (p_tren+i)->id){
+            //i_tren_d = i;
+            for (int j=0; j<10; j++){
+                if (30-*((p_tren+i)->pasageri+j) < nr_pasageri_transferati){
+                    nr_pasageri_transferati -= 30-*((p_tren+i)->pasageri+j);
+                    *((p_tren+i)->pasageri+j) = 30;
+                }
+                else {
+                    *((p_tren+i)->pasageri+j) += nr_pasageri_transferati;
+                    nr_pasageri_transferati = 0;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+int main(){
+    int n;
+    int comanda;
+    scanf("%d", &n);
+    
+    struct tren * trenuri = malloc(n*sizeof(struct tren));
+    // struct tren * trenuri = (struct tren *) malloc(n*sizeof(struct tren)); // in C++
+    for (int i=0; i<n; i++){
+        scanf("%d", &(trenuri+i)->id);
+        scanf("%d", &(trenuri+i)->putere);
+        for (int j=0; j<10; j++){
+            scanf("%d", (trenuri+i)->pasageri+j);
+            // scanf("%d", (&(trenuri+i)->pasageri[0]+j));
+            // scanf("%d", &trenuri[i].pasageri[j]);
+            // scanf("%d", &(trenuri+i)->pasageri[j]);
+        }
+    }
+    
+    scanf("%d", &comanda);
+    
+    switch(comanda){
+        case 1:{
+            afisare_trenuri(trenuri, n);
+            break;
+        }
+        
+        case 2:{
+            int id_temp;
+            scanf("%d", &id_temp);
+            verificare_pasageri(trenuri, n, id_temp);
+            break;
+        }
+        
+        case 3:{
+            int id_temp;
+            int adaos;
+            scanf("%d%d", &id_temp, &adaos);
+            urcare_pasageri(trenuri, n, id_temp, adaos);
+            break;
+        }
+        
+        case 4:{
+            int id_temp_s;
+            int id_temp_d;
+            int nr_pasageri_transferati;
+            scanf("%d%d%d", &id_temp_s, &id_temp_d, &nr_pasageri_transferati);
+            transfer_pasageri(trenuri, id_temp_s, id_temp_d, nr_pasageri_transferati, n);
+            afisare_trenuri(trenuri, n);
+            break;
+        }
+        
+        default:{
+            exit(0);
+        }
+        
+    }
+    
+    return 0;
+}

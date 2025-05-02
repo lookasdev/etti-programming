@@ -1,0 +1,93 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+struct student{
+    
+  char nume[31];
+  int note[10];
+    
+};
+
+void citire(struct student * Student, int nr_stud, int nr_note){
+    
+    for(int i=0; i<nr_stud; i++){
+        scanf("%s", (Student+i)->nume);
+       
+        for(int j=0; j<nr_note; j++){
+            scanf("%d", &(Student+i)->note[j]);
+           
+        }
+    }
+}
+
+void afisare(struct student * p_student, int nr_stud, int nr_note){
+    
+    for(int i=0; i<nr_stud; i++){
+        
+        printf("%s", (p_student+i)->nume);
+        
+        for(int j=0; j<nr_note; j++){
+            printf(" %d", *((p_student+i)->note+j));
+            
+        }
+        printf("\n");
+    }
+}
+
+bool check_integralist(struct student * p_student, int nr_note) {
+    for(int i=0; i<nr_note; i++){
+        if(p_student->note[i] < 5) return false;
+    }
+    return true;
+}
+
+void max (struct student * p_student, int nr_stud, int nr_note){
+    for(int i=0; i<nr_note; i++){
+        int max = 0;
+        char nume_rez[21];
+        for(int j=0; j<nr_stud; j++){
+            if(check_integralist(p_student+j, nr_note)) {
+                if(p_student[j].note[i] > max) {
+                    strcpy(nume_rez, p_student[j].nume);
+                    max = p_student[j].note[i];
+                }
+            }
+        }
+        printf("%s %d\n", nume_rez, max);
+    }
+}
+
+int main(){
+    
+    int nr_studenti;
+    int nr_note;
+    
+    scanf("%d", &nr_studenti);
+    scanf("%d", &nr_note);
+    
+    
+    struct student * Studenti = malloc(nr_studenti * sizeof(struct student));
+    
+    citire(Studenti, nr_studenti, nr_note);
+    
+    
+    int comanda;
+    scanf("%d", &comanda);
+    
+    switch(comanda){
+    
+        case 1:
+        afisare(Studenti, nr_studenti, nr_note);
+        break;
+        
+        case 2:
+        max(Studenti, nr_studenti, nr_note);
+        break;
+    
+
+    }
+    
+    return 0;
+}

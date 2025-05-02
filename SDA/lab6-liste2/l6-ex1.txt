@@ -1,0 +1,111 @@
+Ați fost angajați de un dicționar online să le rescrieți softul de căutare de cuvinte. Ei vă pun la dispozitie datele într-un format CSV și voi trebuie să construiți dicționarul și apoi să realizați căutările cerute de clienți.
+
+Date de intrare
+Pe prima linie se află un număr n reprezentând numărul de cuvinte din dicționar.
+
+Pe următoarele n linii se găsesc: un cuvânt, urmat de o virgulă, urmat de o secvență de cuvinte ce reprezintă definiția cuvântului.
+
+După aceste n linii se află o secvență de dimensiune necunoscută de cuvinte (până la sfarșitul streamului) care trebuie căutate în baza de date.
+
+Un cuvânt nu poate depăși 30 de caractere, iar o definiție nu poate depăși 1024 de caractere.
+
+Date de ieșire
+Pentru fiecare cuvânt ce trebuie căutat, se va afișa cuvântul, urmat de ": ", urmat de definiția lui din dicționar. Dacă cuvântul nu există în dicționar, se va afișa "-". După fiecare linie de ieșire se va adăuga un caracter newline.
+
+Exemplu
+
+Intrare:
+
+3
+pisica,Animal domestic cu blana care miauna
+caine,Animal domestic cu blana care latra
+elefant,Animal salbatic cu trompa
+caine rata pisica
+Ieșire:
+
+caine: Animal domestic cu blana care latra
+rata: -
+pisica: Animal domestic cu blana care miauna
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// dictionar sub forma unei liste simplu inlantuite
+
+struct nod{
+    char cuvant[31]; // 31 = 30 caractere + '\0'
+    char definitie[1025];
+    struct nod * next;
+};
+
+// Adaugarea de elemente:
+// 1. crearea unui nou element;
+// 2. stabilirea legaturilor noului element;
+
+struct nod * creare_element(){
+    struct nod * nod_nou = NULL;
+    nod_nou = malloc (sizeof(struct nod));
+    if (nod_nou == NULL){ // alocarea memoriei a esuat
+        printf("Alocarea memoriei a esuat!");
+        return NULL;
+    }
+    
+    // memoria a fost alocata cu succes:
+    scanf("%[^,],%[^\n]", nod_nou->cuvant, nod_nou->definitie); // "sir,de caractere\n" <- \n = trailing newline
+    getchar(); // "consumam" caracterul '\n' ramas in buffer
+    
+    nod_nou -> next = NULL;
+    
+    return nod_nou;
+}
+
+struct nod * inserare_element_inceput_dictionar(struct nod * head){
+    struct nod * nod_nou = creare_element();
+    nod_nou -> next = head; // nod_nou a devenit noul inceput de lista
+    return nod_nou;
+}
+
+void afisare_elemente(struct nod * head){
+    while (head != NULL){
+        printf("%s = %s\n", head->cuvant, head->definitie);
+        head = head -> next;
+    }
+}
+
+// Functie care intoarce definitia unui cuvant dat din dictionar
+// f(key) = value
+char * cautare_definitie(struct nod * head, char * key){
+    // Parcurgem dictionarul element cu element
+    // Comparam fiecare cuvant din dictionar vs key
+    // - daca key se gaseste in dictionar: intoarcem definitia
+    // - daca nu se gaseste: intoarcem "-" (char *)
+    while (head != NULL){
+        if (strcmp(head -> cuvant, key) == 0){
+            return head -> definitie;
+        }
+        head = head -> next;
+    }
+    return "-";
+}
+
+int main(){
+    int n;
+    char sir[31];
+    struct nod * dictionar = NULL;
+    
+    scanf("%d", &n); // 3'\n'pisica,Animal domestic cu blana care miauna'\n'
+    getchar();
+    
+    for (int i=0; i<n; i++){
+        dictionar = inserare_element_inceput_dictionar(dictionar);
+    }
+    
+    // afisare_elemente(dictionar);
+    
+    while (scanf("%s", sir) != EOF){
+        printf("%s: %s\n", sir, cautare_definitie(dictionar, sir));
+    }
+    
+    return 0;
+}

@@ -1,0 +1,172 @@
+Sa se realizeze in limbajul C o aplicație pentru o companie de transport feroviar destinată terminalului de plecări pentru o gară centrală a unui oraș. Se consideră că toate trenurile pornesc din această gară.
+
+Gara este caracterizată de un nume și un număr de trenuri asociat.
+
+Fiecare tren are un identificator, un număr de vagoane în componență și o rută pe care o urmează.
+
+Un vagon este complet caracterizat de harta scaunelor pe care le include. 
+
+O rută presupune o secvență de stații și o distanță totală (suma distanțelor dintre fiecare 2 stații consecutive).
+
+O stație este caracterizată de un nume și coordonatele sale carteziene.
+
+Călătorul va reține destinație unde dorește să ajungă și toate trenurile care conțin acea stație pe ruta lor.
+
+
+
+Mențiuni:
+Numele gării este un pointer către date de tip char. Prin urmare, va fi utilă scrierea unei funcții care să citească un șir de dimensiune oarecare de la tastatură. Această funcție poate fi reutilizată pentru citirea numelui stației. Se pot executa următorii pași:
+alocă memorie dinamic pentru un caracter;
+citește, în buclă, caractere de la tastatură;
+verifică dacă fiecare caracter citit este diferit de EOF și de '\n' (tasta Enter);
+dacă este diferit, caracterul citit va fi stocat în memoria alocată dinamică;
+se realocă memoria dinamic pentru a stoca un nou caracter;
+la finalul citirii șirului și, implicit, a ieșirii din buclă, se adaugă caracterul '\0' (NUL char) la finalul șirului.
+Harta de scaune a fiecărui vagon poate fi modelată sub forma unui tablou bi-dimensional (matrice) inițializat cu valori aleatoare de 0 și 1, unde 0 reprezintă un loc liber și 1 reprezintă un loc ocupat. Pentru a obține valori aleatoare de 0 sau 1 se poate folosi funcția rand() din biblioteca <stdlib.h>, care generează întregi într-un mod aleator.
+
+Stațiile vor conține 2 coordonate reale. Considerăm că gara este prima stație pentru toate rutele, i.e. nu este stație de tranzit. Coordonatele gării pot fi considerate (0, 0). Distanța euclidiană între 2 puncte de coordonate (x 1, y1), respectiv (x2, y2) este:
+sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+
+Pentru o abordare eficientă, începeți rezolvarea cu structurile de nivel de imbricare ridicat, precum stațiile, rutele etc. De asemenea, realizați o interfață care să permită inițializarea gării și, apoi, interacțiunea călătorului cu gara. 
+
+A fost creată o baterie de teste pentru a nu trebui să introduceți de fiecare dată toate informațiile, deoarece ar dura foarte mult timp. Aceasta va fi folosită doar pentru partea de input, urmând ca output-ul să fie evaluat manual de fiecare, în parte, dacă este corect sau nu. Altfel spus, nu se face nicio verificare automată a datelor de ieșire. Meniul începe cu introducerea unei valoari de comandă (1/2/3). În funcție de aceasta fluxul se va ramifica astfel:
+inițializare gară:
+se citește numele gării;
+se citește numărul de trenuri ce urmează a fi create. Pentru fiecare tren:
+se citește identificatorul trenului;
+se citește numărul de vagoane ale trenului. Pentru fiecare vagon:
+se citește numărul de rânduri de scaune;
+se citește numărul de coloane de scaune;
+se citește numărul de stații din care este compusă ruta. Pentru fiecare stație:
+se citește numele stației;
+se citește coordonata x a stației;
+se citește coordonata y a stației;
+afișare gară;
+selecție destinație pentru călător - se citește numele destinației călătorului. Este de dorit să se afișeze toate trenurile a căror rută conține destinația călatorului.
+Structurile care vor fi folosite se pretează următoarei diagrame:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct statie {
+    char *nume_statie;
+    float coord_x;
+    float coord_y;
+};
+
+struct ruta {
+    int nr_statii;
+    struct statie *statii;
+    float distanta_totala;
+};
+
+struct vagon {
+    int *harta_scaune;
+    int randuri_scaune;
+    int coloane_scaune;
+};
+
+struct tren {
+    int id_tren;
+    int nr_vagoane;
+    struct vagon *vagoane;
+    struct ruta *route;
+};
+
+struct gara {
+    char *nume_gara;
+    int nr_trenuri;
+    struct tren *trenuri;
+};
+
+struct calator {
+    char destinatie[255];
+    int *trenuri_destinatie;
+    int nr_trenuri_destinatie_gasite;
+};
+
+char* citire_nume() {
+    char* nume = NULL;
+    int lungime = sizeof(char);
+    nume = malloc(lungime);
+    
+    char c;
+    //while((c = getc(stdin)) != '\n' && c != EOF) {
+    while((c = getc(stdin)) != '\n') {
+        *(nume+lungime-1) = c;
+        ++lungime;
+        nume = realloc(nume, lungime);
+    }
+    *(nume+lungime-1) = '\0';
+    return nume;
+}
+
+// void citire_gara(struct gara *G) {
+//     G->nume_gara = citire_nume();
+//     int nr_trenuri;
+//     scanf("%d", &(G->nr_trenuri));
+//     for(int i = 0; i < G->nr_trenuri; i++) {
+//         scanf("%d", &(G->(trenuri+i)->id_tren));
+//         scanf("%d", &(G->(trenuri+i)->nr_vagoane));
+//         for(int j = 0; i < G->(trenuri+i)->nr_vagoane; j++) {
+//             scanf("%d", &(G->(trenuri+i)->(vagoane+j)->randuri_scaune));
+//             scanf("%d", &(G->(trenuri+i)->(vagoane+j)->coloane_scaune));
+//         }
+//         scanf("%d", &(G->(trenuri+i)->route->nr_statii));
+//         for (int j = 0; j < G->(trenuri+i)->route->nr_statii; j++) {
+//             G->(trenuri+i)->route->(statii+j)->nume_statie = citire_nume();
+//             scanf("%d", &(G->(trenuri+i)->route->(statii+j)->coord_x));
+//             scanf("%d", &(G->(trenuri+i)->route->(statii+j)->coord_y));
+//         }
+//     }
+// }
+
+void citire_gara(struct gara *G) {
+    G->nume_gara = citire_nume();
+    scanf("%d", &(G->nr_trenuri));
+    G->trenuri = malloc(G->nr_trenuri * sizeof(struct tren)); // Allocate memory for trenuri
+    for(int i = 0; i < G->nr_trenuri; i++) {
+        scanf("%d", &(G->trenuri[i].id_tren));
+        scanf("%d", &(G->trenuri[i].nr_vagoane));
+        G->trenuri[i].vagoane = malloc(G->trenuri[i].nr_vagoane * sizeof(struct vagon)); // Allocate memory for vagoane
+        for(int j = 0; j < G->trenuri[i].nr_vagoane; j++) {
+            scanf("%d", &(G->trenuri[i].vagoane[j].randuri_scaune));
+            scanf("%d", &(G->trenuri[i].vagoane[j].coloane_scaune));
+        }
+        scanf("%d", &(G->trenuri[i].route->nr_statii));
+        G->trenuri[i].route->statii = malloc(G->trenuri[i].route->nr_statii * sizeof(struct statie)); // Allocate memory for statii
+        for (int j = 0; j < G->trenuri[i].route->nr_statii; j++) {
+            G->trenuri[i].route->statii[j].nume_statie = citire_nume();
+            scanf("%f", &(G->trenuri[i].route->statii[j].coord_x));
+            scanf("%f", &(G->trenuri[i].route->statii[j].coord_y));
+        }
+    }
+}
+
+void afisare_gara(struct gara *G) {
+    printf("%s\n", G->nume_gara);
+    for(int i = 0; i < G->nr_trenuri; i++) {
+        
+    }
+}
+
+int main() {
+    struct gara *G = NULL;
+    int comanda;
+    do {
+        scanf("%d", &comanda);
+        if (comanda == 1) {
+            citire_gara(G);
+        }
+        if (comanda == 2) {
+            afisare_gara(G);
+        }
+        if (comanda == 3) {
+            printf("aici");
+            //selectie_destinatie();
+        }
+    } while(comanda != 0);
+
+    return 0;
+}

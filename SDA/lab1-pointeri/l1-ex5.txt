@@ -1,0 +1,63 @@
+Să se realizeze un program ce permite interschimbarea a două linii ale unei matrice pătratice de elemente întregi. Se vor defini şi utiliza funcţii diferite pentru citirea, afişarea şi pentru interschimbarea liniilor unei matrice. Operaţiile se vor realiza folosind pointeri.
+
+Pentru evaluarea automată a problemei:
+
+INPUT:
+un întreg reprezentând dimensiunea n, a matricei pătratice n x n;
+un întreg reprezentând indexul primei linii care urmează să fie interschimbată;
+un întreg reprezentând indexul celei de-a doua linii care urmează să fie interschimbată;
+n * n întregi reprezentând elementele matricei.
+OUTPUT:
+n * n întregi reprezentând elementele matricei rezultate.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int* citire_matrice(int dim) {
+    int* M = NULL;
+    M = (int*) malloc(dim * dim * sizeof(int));
+
+    for (int i = 0; i < dim; i++)
+        for (int j = 0; j < dim; j++)
+            scanf("%d", M + dim * i + j);
+    return M;
+}
+
+void afisare_matrice(int* M, int dim) {
+    for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < dim; j++) {
+            printf("%d ", *(M + dim * i + j));
+        }
+        printf("\n");
+    }
+}
+
+void interschimbare_linii(int* M, int dim, int l1, int l2) {
+    for(int j = 0; j < dim; j++) {
+        int aux = *(M + l1*dim + j);
+        *(M + l1*dim + j) = *(M + l2*dim + j); 
+        *(M + l2*dim + j) = aux; 
+    }
+}
+
+void eliberare_matrice(int* M) {
+    if (M != NULL)
+        free(M);
+}
+
+int main() {
+    int dim, l1, l2; // l1 si l2 vor fi interschimbate
+    scanf("%d", &dim);
+    scanf("%d", &l1);
+    scanf("%d", &l2);
+    
+    int* M = citire_matrice(dim);
+    
+    interschimbare_linii(M, dim, l1, l2);
+    
+    afisare_matrice(M, dim);
+    
+    eliberare_matrice(M);
+
+    return 0;
+}

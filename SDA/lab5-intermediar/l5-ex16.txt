@@ -1,0 +1,151 @@
+#include <stdio.h>
+
+#define MAX 20
+
+// directii: sus, dreapta, jos, stanga
+int dx[] = {-1, 0, 1, 0}; // deplasare pe linii (sus si jos) -> controlat cu x
+int dy[] = {0, 1, 0, -1}; // deplasare pe coloane (dreapta si stanga) -> controlat cu y
+
+int is_valid(int x, int y, int n, int matrix[MAX][MAX], int visited[MAX][MAX]) {
+    return x >= 0 && x < n && y >= 0 && y < n && matrix[x][y] != 1 && !visited[x][y];
+}
+
+void command_1() {
+    char c;
+    while (scanf(" %c", &c) != EOF) {
+        printf("%c\n", c);
+    }
+}
+
+void command_2(int start_x, int start_y, int n, int matrix[MAX][MAX]) {
+    int visited[MAX][MAX] = {0};
+    char c;
+    int x = start_x, y = start_y;
+    while (scanf(" %c", &c) != EOF) {
+        visited[x][y] = 1;
+        int next_x = x, next_y = y;
+        if (c == 'u') next_x--;
+        else if (c == 'd') next_x++;
+        else if (c == 'l') next_y--;
+        else if (c == 'r') next_y++;
+
+        if (is_valid(next_x, next_y, n, matrix, visited)) {
+            x = next_x;
+            y = next_y;
+        }
+    }
+    printf("%d %d\n", x, y);
+}
+
+void command_3(int n, int matrix[MAX][MAX], int start_x, int start_y) {
+    int visited[MAX][MAX] = {0}; // reset matrice de vizitare
+    int path[MAX * MAX][2], steps = 0;
+    int x = start_x, y = start_y;
+
+    while (1) {
+        visited[x][y] = 1; // mark as visited
+        path[steps][0] = x;
+        path[steps][1] = y;
+        steps++;
+
+        for (int dir = 0; dir < 4; dir++) {
+            int next_x = x + dx[dir];
+            int next_y = y + dy[dir];
+            if (is_valid(next_x, next_y, n, matrix, visited)) {
+                x = next_x;
+                y = next_y;
+                break; // iese din for
+            }
+        }
+
+        if ((x == 0 || x == n - 1 || y == 0 || y == n - 1)) { // verif margine
+            path[steps][0] = x;
+            path[steps][1] = y;
+            steps++;
+            break; // iese din while
+        }
+    }
+
+    // show steps in reversed order
+    for (int i = steps - 1; i >= 0; i--) {
+        printf("%d %d\n", path[i][0], path[i][1]);
+    }
+}
+
+void command_4(int n, int matrix[MAX][MAX], int start_x, int start_y) {
+    int visited[MAX][MAX] = {0}; // reset matrice de vizitare
+    int x = start_x, y = start_y;
+
+    printf("%d %d\n", x, y);
+    visited[x][y] = 1; // mark celula init ca vizitata
+
+    while (1) {
+        for (int dir = 0; dir < 4; dir++) {
+            int step = (matrix[x][y] == 2) ? 2 : 1; // try bonus step first
+            int next_x = x + dx[dir] * step;
+            int next_y = y + dy[dir] * step;
+
+            if (is_valid(next_x, next_y, n, matrix, visited)) {
+                x = next_x;
+                y = next_y;
+                printf("%d %d\n", x, y);
+                visited[x][y] = 1; // Marcăm celula ca vizitată
+                break; // asta
+            }
+
+            // daca deplasarea cu 2 pasi nu a fost posibila(nu s-a ajuns la break-ul "asta" din for), incercam deplasarea normala, cu un pas
+            if (step == 2) {
+                next_x = x + dx[dir] * 1;
+                next_y = y + dy[dir] * 1;
+                if (is_valid(next_x, next_y, n, matrix, visited)) {
+                    x = next_x;
+                    y = next_y;
+                    printf("%d %d\n", x, y);
+                    visited[x][y] = 1; // Marcăm celula ca vizitată
+                    break;
+                }
+            }
+        }
+
+        if ((x == 0 || x == n - 1 || y == 0 || y == n - 1)) { // verif margine
+            break;
+        }
+    }
+}
+
+int main() {
+    int n;
+    int matrix[MAX][MAX];
+
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            scanf("%d", &matrix[i][j]);
+        }
+    }
+    
+    int start_x, start_y;
+    scanf("%d %d", &start_x, &start_y);
+    
+    int command;
+    scanf("%d", &command);
+
+    switch (command) {
+        case 1: {
+            command_1();
+            break;
+        }
+        case 2: {
+            command_2(start_x, start_y, n, matrix);
+            break;
+        }
+        case 3:
+            command_3(n, matrix, start_x, start_y);
+            break;
+        case 4:
+            command_4(n, matrix, start_x, start_y);
+            break;
+    }
+
+    return 0;
+}

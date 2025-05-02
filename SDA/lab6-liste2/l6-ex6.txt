@@ -1,0 +1,105 @@
+Se dă un număr n de la tastatură și apoi o secvență foarte lungă de numere întregi între 0 și n, inclusiv. Numerele se pot repeta. Să se determine câte valori sunt lipsă din intervalul [0; n] în lista de numere.
+
+Date de intrare
+Prima valoare este n, apoi un număr necunoscut (dar mare) de numere în intervalul [0; n]. 
+
+Exemplu:
+
+10
+7 4 2 5 8 9 3 4 7 3 1 9 3 2 10
+Date de ieșire
+Se va afișa un singur număr reprezentând câte valori din intervalul [0, n] lipsesc din lista de numere.
+
+Exemplu (pentru intrarea de mai sus): 
+
+2
+(lipsesc numerele 0 și 6).
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct NOD {
+    int value;
+    struct NOD * next;
+};
+
+struct NOD * creare_nod(int value){
+    struct NOD * nod = malloc(sizeof(struct NOD));;
+    nod -> value = value;
+    nod -> next = NULL;
+    return nod;
+}
+
+struct NOD * adaugare_nod_sfarsit_lista(struct NOD * head, int value) {
+    int i = 0;
+    struct NOD * nod_curent, * nod_nou;
+
+    if (head == NULL) {
+        head = creare_nod(value);
+        return head;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        if (nod_curent -> next == NULL) {
+            nod_nou = creare_nod(value);
+            nod_curent -> next = nod_nou;
+            return head;
+        }
+        nod_curent = nod_curent -> next;
+    }
+}
+
+int contains(struct NOD * head, int value) {
+    struct NOD * ptr = head;
+    while(ptr != NULL) {
+        if (ptr->value == value) return 1;
+        ptr = ptr->next;
+    }
+    return 0;
+}
+
+int numere_lipsa(struct NOD * head, int limit) {
+    int contor = 0;
+    for(int i = 0; i <= limit; i++) {
+        // if(!contains(head, i)) printf("%d ", i);
+        if(!contains(head, i)) contor++;
+    }
+    return contor;
+}
+
+void afisare_lista(struct NOD * head){
+    int i = 0;
+    struct NOD * nod_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        printf("%d: %d\n", i++, nod_curent -> value);
+        nod_curent = nod_curent -> next;
+    }
+}
+
+int main() {
+    struct NOD * lista_numere = NULL;
+    
+    int limit;
+    scanf("%d", &limit);
+    
+    int nr;
+    while(scanf("%d", &nr)!=EOF) {
+        if(!contains(lista_numere, nr)) lista_numere = adaugare_nod_sfarsit_lista(lista_numere, nr); // verif unicitate
+        // lista_numere = adaugare_nod_sfarsit_lista(lista_numere, nr);
+    }
+    // afisare_lista(lista_numere);
+    int rez = numere_lipsa(lista_numere, limit);
+    printf("%d", rez);
+    return 0;
+}

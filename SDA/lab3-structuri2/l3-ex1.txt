@@ -1,0 +1,71 @@
+Sunteți angajați de ministerul învățamântului să scrieți un program care să listeze toți elevii care au promovat examenul de bacalaureat. De la tastatură se introduce un număr n reprezentând numărul de candidați, apoi pe următoarele n linii, un nume de elev (format din exact două cuvinte: nume și prenume) și notele la cele patru materii, format fracționar, valori între 1 și 10. Să se afișeze toți studenții care au promovat examenul de bacalaureat (media mai mare ca 6, fiecare notă mai mare ca 5) în ordinea inversă a introducerii lor, împreună cu media de promovare, afișată cu fix două zecimale.
+
+Exemplu de date de intrare:
+4
+Gheorghe Gita 8 7 5.5 10
+Vuia Vasile 4 10 10 10
+Andreescu Andra 9 10 9 10
+Elenescu Elena 5 5 5 5
+Ieșirea pentru intrarea de mai sus:
+Andreescu Andra 9.50
+Gheorghe Ghita 7.63
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+struct elev {
+    char nume[255];
+    char prenume[255];
+    float note[4];
+};
+
+void citire_date(struct elev *p) {
+    scanf("%s %s", p->nume, p->prenume);
+    for(int i = 0; i < 4; i++) {
+        //scanf("%f", &p->note[i]);
+        scanf("%f", p->note+i);
+    }
+}
+
+float calc_medie(struct elev *p) {
+    float suma = 0.0f;
+    for(int i = 0; i < 4; i++) {
+        suma += p->note[i];
+    }
+    return suma / 4;
+}
+
+bool a_promovat(struct elev *p) {
+    for(int i = 0; i < 4; i++) {
+        if(p->note[i] <= 5.0f) {
+            return false;
+        }
+    }
+    return calc_medie(p) > 6.0f;
+}
+
+void afisare_elev(struct elev *p) {
+    printf("%s %s ", p->nume, p->prenume);
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    
+    struct elev elevi[n];
+    
+    for(int i = 0; i < n; i++) {
+        citire_date(elevi+i);
+        //citire_date(&elevi[i]);
+    }
+    
+    for(int i = n - 1; i >= 0; i--) {
+        if(a_promovat(elevi+i)) {
+            afisare_elev(elevi+i);
+            printf("%.2f\n", calc_medie(elevi+i));
+        }
+    }
+    
+    return 0;
+}

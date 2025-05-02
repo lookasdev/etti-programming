@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+struct NAVA
+{
+    int PF;
+    int PS;
+};
+
+bool lupta(int aparator_PF, int aparator_PS, int atacator_PF, int atacator_PS) {
+    while(true) {
+        aparator_PS -= atacator_PF; // nava inamica ataca prima
+        if(aparator_PS < 0) {
+            return false;
+        }
+
+        atacator_PS-= aparator_PF; // nava proprie ataca apoi
+        if(atacator_PS < 0) {
+            return true;
+        }
+    }
+}
+
+int main()
+{
+
+    struct NAVA *flota_prorie = NULL;
+    struct NAVA *flota_adversa = NULL;
+    int n, nr_victorii = 0;
+
+    flota_prorie = (struct NAVA *)malloc(sizeof(struct NAVA));
+    scanf("%d %d", &flota_prorie->PS, &flota_prorie->PF);
+
+    scanf("%d", &n);
+    flota_adversa = (struct NAVA*) malloc(n * sizeof(struct NAVA));
+    
+    for (int i = 0; i < n; ++i)
+        scanf("%d %d", &(flota_adversa + i)->PS, &(flota_adversa + i)->PF);
+
+    for (int i = 0;  i < n ; i++)
+        if( lupta( flota_prorie->PF, flota_prorie->PS, (flota_adversa+i)->PF, (flota_adversa+i)->PS ) )
+            nr_victorii++;
+        
+
+    printf("%d\n", nr_victorii);
+
+    free(flota_prorie);
+    free(flota_adversa);
+
+    return 0;
+}
+
+

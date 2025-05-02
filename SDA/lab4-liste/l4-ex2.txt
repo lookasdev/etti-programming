@@ -1,0 +1,151 @@
+Sunteți un dezvoltator de aplicații software și lucrați la o aplicație de tip calendar. Pentru ca aplicația să aibă succes, trebuie să poată să realizeze funcții uzuale, cum ar fi: adăugarea de evenimente în calendar, afișarea evenimentelor [în ordine cronologică] și căutare de evenimente după dată, respectiv titlu. În acest context, doriți să folosiți formatul yyyymmdd (y = year/an, m = month/lună, d = day/zi, ex: 20210407) pentru a reprezenta data evenimentului, lucru ce permite și indexarea lui. Să se implementeze codul care realizează aplicația menționată, astfel încât să permiteți adăugarea de evenimente, afișarea de evenimente și căutarea de evenimente după titlu, respectiv dată. 
+
+Se va citi de la tastatură (fluxul stdin) un întreg c, în buclă, reprezentând selecția unei comenzi. În funcție de valoarea comenzii se vor executa astfel:
+comanda de adăugare eveniment: se citește un șir de caractere fără spații reprezentând titlul unui eveniment, urmat de un număr întreg reprezentând ziua evenimentului în formatul menționat (ex: "Workshop 20210407"). Evenimentul se adaugă la sfârșitul evenimentelor deja existente în calendar.
+comanda de căutare a unui eveniment după titlu: se citește un șir de caractere fără spații reprezentând titlul unui eveniment. Se afișează, în consolă, toate datele în care a avut loc evenimentul respectiv, fiecare pe un nou rând. Dacă există mai multe repetări ale aceluiași eveniment, se vor afișa în ordinea în care au fost introduse de la tastatură.
+comanda de căutare a evenimentelor după dată: se citește un număr întreg reprezentând data unui eveniment în formatul menționat. Se afișează în consolă, numele tuturor evenimentelor ce au avut loc în acea dată, fiecare pe un nou rând. Dacă mai multe evenimente au avut loc în aceeași dată, se vor afișa în ordinea în care au fost introduse de la tastatură.
+comanda de afișare a tuturor evenimentelor: se afișează în consolă, evenimentele în ordinea în care au fost introduse. Afișarea unui eveniment se face sub forma <titlu> <dată>, fiecare eveniment pe un nou rând.
+comanda de afișare a tuturor evenimentelor în ordine cronologică. Dacă mai multe evenimente au avut loc în aceeași dată, se vor afișa în ordinea în care au fost introduse de la tastatură, fiecare pe un nou rând. Afișarea unui eveniment se face sub forma <titlu> <dată>, fiecare eveniment pe un nou rând.
+comanda de întrerupere și ieșire din program.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct EVENIMENT {
+    char titlu[51];
+    int data;
+    struct EVENIMENT *next;
+};
+
+struct EVENIMENT* creare_eveniment(char *titlu, int data) {
+    struct EVENIMENT *eveniment = (struct EVENIMENT*)malloc(sizeof(struct EVENIMENT));
+    if (eveniment == NULL) {
+        printf("Eroare: memoria nu a putut fi alocată!\n");
+        return NULL;
+    }
+    strcpy(eveniment->titlu, titlu);
+    eveniment->data = data;
+    eveniment->next = NULL;
+    return eveniment;
+}
+
+struct EVENIMENT* adaugare_eveniment(struct EVENIMENT *head, char *titlu, int data) {
+    struct EVENIMENT *nou = creare_eveniment(titlu, data);
+    if (head == NULL) {
+        return nou;
+    }
+    struct EVENIMENT *curent = head;
+    while (curent->next != NULL) {
+        curent = curent->next;
+    }
+    curent->next = nou;
+    return head;
+}
+
+void afisare_evenimente(struct EVENIMENT *head) {
+    struct EVENIMENT *curent = head;
+    while (curent != NULL) {
+        printf("%s %d\n", curent->titlu, curent->data);
+        curent = curent->next;
+    }
+}
+
+void cauta_evenimente_titlu(struct EVENIMENT *head, const char *titlu) {
+    struct EVENIMENT *curent = head;
+    int gasit = 0;
+    while (curent != NULL) {
+        if (strcmp(curent->titlu, titlu) == 0) {
+            printf("%d\n", curent->data);
+            gasit = 1;
+        }
+        curent = curent->next;
+    }
+    if (!gasit) {
+        printf("Eveniment inexistent.\n");
+    }
+}
+
+void cauta_evenimente_data(struct EVENIMENT *head, int data) {
+    struct EVENIMENT *curent = head;
+    int gasit = 0;
+    while (curent != NULL) {
+        if (curent->data == data) {
+            printf("%s\n", curent->titlu);
+            gasit = 1;
+        }
+        curent = curent->next;
+    }
+    if (!gasit) {
+        printf("Eveniment inexistent.\n");
+    }
+}
+
+void elibereaza_lista(struct EVENIMENT *head) {
+    struct EVENIMENT *temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+void afisare_evenimente_cronologic(struct EVENIMENT *head) {
+    if (head == NULL) return;
+
+    struct EVENIMENT *sorted = NULL; // lista sortată inițial goală
+    struct EVENIMENT *curent = head;
+
+    while (curent != NULL) {
+        struct EVENIMENT *next = curent->next;
+
+        // Inserare în lista sortată
+        if (sorted == NULL || curent->data < sorted->data) {
+            curent->next = sorted;
+            sorted = curent;
+        } else {
+            struct EVENIMENT *temp = sorted;
+            while (temp->next != NULL && temp->next->data <= curent->data) {
+                temp = temp->next;
+            }
+            curent->next = temp->next;
+            temp->next = curent;
+        }
+        curent = next;
+    }
+
+    afisare_evenimente(sorted); // afișăm lista sortată
+}
+
+int main() {
+    struct EVENIMENT *calendar = NULL;
+    int comanda;
+
+    while (1) {
+        scanf("%d", &comanda);
+
+        if (comanda == 1) {
+            char titlu[51];
+            int data;
+            scanf("%s %d", titlu, &data);
+            calendar = adaugare_eveniment(calendar, titlu, data);
+        } else if (comanda == 2) {
+            char titlu[50];
+            scanf("%s", titlu);
+            cauta_evenimente_titlu(calendar, titlu);
+        } else if (comanda == 3) {
+            int data;
+            scanf("%d", &data);
+            cauta_evenimente_data(calendar, data);
+        } else if (comanda == 4) {
+            afisare_evenimente(calendar);
+        } else if (comanda == 5) {
+            afisare_evenimente_cronologic(calendar);
+        } else if (comanda == 6) {
+            elibereaza_lista(calendar);
+            break;
+        }
+    }
+
+    return 0;
+}

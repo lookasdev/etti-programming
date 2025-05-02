@@ -1,0 +1,191 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct NOD {
+    char cuvant[20];
+    struct NOD * next;
+};
+
+struct NOD * creare_nod(){
+    struct NOD * nod;
+
+    /* alocare memorie nod*/
+    nod = (struct NOD * ) malloc(sizeof(struct NOD));
+
+    if (nod == NULL) {
+        printf("Eroare: memoria nu a putut fi alocata!\n");
+        return NULL;
+    }
+
+    /* citire valori nod */
+    //printf("\nIntroduceti cuvant:");
+    scanf("%s", nod -> cuvant);
+
+    nod -> next = NULL;
+
+    return nod;
+}
+
+struct NOD * adaugare_nod_sfarsit_lista(struct NOD * head) {
+    int i = 0;
+    struct NOD * nod_curent, * nod_nou;
+
+    if (head == NULL) {
+        //printf("Atentie: lista este goala.");
+        head = creare_nod();
+        //printf("Cuvantul a fost adaugat.\n");
+        return head;
+    }
+
+    /*parcurge lista element cu element pentru a ajunge la ultimul nod*/
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        if (nod_curent -> next == NULL) {
+            /* creare si inserare nod nou in lista */
+            nod_nou = creare_nod();
+            nod_curent -> next = nod_nou;
+
+            //printf("Cuvantul a fost adaugat.\n");
+            return head;
+        }
+        nod_curent = nod_curent -> next;
+    }
+}
+
+struct NOD * populare_lista(struct NOD * head, int n){
+    int i;
+    for (i = 0; i < n; i++){
+        head = adaugare_nod_sfarsit_lista(head);
+    }
+    return head;
+}
+
+void afisare_lista(struct NOD * head){
+    int i = 0;
+    struct NOD * nod_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        /* afisare valoare curenta si pozitionare nod urmator */
+        printf("%s\n", nod_curent -> cuvant);
+        nod_curent = nod_curent -> next;
+    }
+}
+
+struct NOD * inverseazaGrupuriDeN(struct NOD* cap, int n) {
+    struct NOD* curent = cap;
+    struct NOD* anterior = NULL;
+    struct NOD* urmator = NULL;
+    int contor = 0;
+
+    // Inversează primele `n` noduri din grup
+    while (curent != NULL && contor < n) {
+        urmator = curent->next;
+        curent->next = anterior;
+        anterior = curent;
+        curent = urmator;
+        contor++;
+    }
+
+    // La acest punct, `anterior` este noul cap al grupului inversat
+    // `cap` este acum ultimul nod al grupului inversat
+
+    // Conectează ultimul nod al grupului inversat la capul următorului grup de `n`
+    if (urmator != NULL) {
+        cap->next = inverseazaGrupuriDeN(urmator, n);
+    }
+
+    // Returnează noul cap al grupului inversat
+    return anterior;
+}
+
+struct NOD * stergere_nod_pozitia_x(struct NOD * head, int x) {
+    if (head == NULL) {
+        printf("nu exista lista");
+        return NULL;
+    }
+    
+    // Cazul în care trebuie să ștergem primul nod
+    if (x == 1) {
+        struct NOD * temp = head;
+        head = head->next;
+        free(temp);
+        return head;
+    }
+    
+    struct NOD * current = head;
+    struct NOD * anterior = NULL;
+    int pozitie = 0;
+    
+    // Parcurgem lista pentru a ajunge la nodul de pe poziția x
+    while (current != NULL && pozitie < x-1) { // pozitie ajunge sa fie indicele elementului anterior celui care trb sters (x-1 pt ca al 7lea elem este pe pozitia 6, nu 7; numaratoare incepand de la 0)
+        anterior = current;
+        current = current->next;
+        pozitie++;
+    }
+    
+    // Dacă x este mai mare decât numărul de noduri, returnăm lista fără modificări
+    if (current == NULL) {
+        printf("NO BUENO");
+        return head;
+    }
+    
+    // Ștergem nodul de la poziția x
+    anterior->next = current->next;
+    free(current);
+    
+    return head;
+}
+
+void elibereaza_lista(struct NOD* head) {
+    struct NOD* temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    struct NOD * lista_istorice = NULL;
+    
+    int nr;
+    scanf("%d", &nr);
+    
+    lista_istorice = populare_lista(lista_istorice, nr);
+    
+    int comanda;
+    scanf("%d", &comanda);
+    if(comanda == 1) {
+        afisare_lista(lista_istorice);
+    } else if (comanda == 2) {
+        lista_istorice = inverseazaGrupuriDeN(lista_istorice, 3);
+        afisare_lista(lista_istorice);
+    } else if (comanda == 3) {
+        int n;
+        scanf("%d", &n);
+        lista_istorice = inverseazaGrupuriDeN(lista_istorice, n);
+        afisare_lista(lista_istorice);
+    } else if (comanda == 4) {
+        lista_istorice = inverseazaGrupuriDeN(lista_istorice, 3);
+        int offset = 0; // structura listei se modifica in mom in care stergem un elem din ea
+        for(int i = 0; i < nr; i++) {
+            if ((i+1) % 7 == 0) {
+                lista_istorice = stergere_nod_pozitia_x(lista_istorice, (i+1)-offset); // (i+1) pt ca functia de stergere lucreaza cu index incepand cu 1
+                offset++;
+            }
+        }
+        afisare_lista(lista_istorice);
+    }
+    
+    elibereaza_lista(lista_istorice);
+    
+    return 0;
+}

@@ -1,0 +1,23 @@
+De sărbătorile de Paște gașca voastră de prieteni a hotărât să meargă la waterpark, unde se organizează un concurs pe toboganele cu apă. Sunt trei tobogane în fața cărora se formează trei cozi. Concurenții se așează la cele trei cozi în funcție de preferințe, dar nu se poate pleca pe tobogane până când nu e cel puțin o persoană în fiecare coadă. Să se afișeze în ordine perechile de trei concurenți care pleacă odată. Dacă la sfârșit rămân concurenți care nu pot pleca (pentru că există cel puțin o coadă goală), aceștia nu se afișează.
+
+Date de intrare
+Pe fiecare linie se dă un nume de persoană (un singur cuvânt de maxim 30 de caractere) urmat de unul din numerele 1, 2 sau 3, reprezentând coada la care se așează concurentul. Datele de intrare se termină cu EOF.
+
+Date de ieșire
+La ieșire se va afișa e fiecare linie cate o pereche de trei concurenți care pleacă odată, separați prin spațiu. Fiecare linie este terminată cu un caracter newline. 
+
+Exemplu
+
+Intrare:
+
+Andrei 1
+Ioana 1
+Dan 2
+Ionel 3
+Oana 3
+Mihai 2
+Vlad 1
+Ieșire:
+
+Andrei Dan Ionel
+Ioana Mihai Oana

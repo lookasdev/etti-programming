@@ -1,0 +1,31 @@
+Să se realizeze un program ce permite citirea de la tastatură a unui vector de maxim 10 elemente numere întregi. Să se afişeze pe ecran (adresele de memorie ale elementelor vectorului şi) suma elementelor acestuia. Operațiile se vor realiza prin intermediul pointerilor.
+
+
+Pentru evaluarea automată a problemei:
+
+INPUT:
+un întreg, n, reprezentând numărul de elemente ale vectorului;
+n întregi, reprezentând elementele vectorului;
+OUTPUT:
+suma elementelor vectorului.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int V[10], dim;
+    
+    do {
+        scanf("%d", &dim);
+    } while ((dim < 1) || (dim > 10));
+    
+    for (int i = 0; i < dim; i++)
+        scanf("%d", V+i); // stocare la adresele V+i <-> &V[i]
+    
+    int suma = 0;
+    for (int i = 0; i < dim; i++)
+        suma += *(V+i);
+    printf("%d\n", suma);
+    return 0;
+}

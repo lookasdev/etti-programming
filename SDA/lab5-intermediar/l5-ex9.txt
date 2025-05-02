@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct elev{
+  char nume[21];
+  char cod[21];
+  int note[10];
+    
+};
+
+void citire(struct elev * Elevi, int nr_elevi){
+    for(int i=0; i<nr_elevi; i++){
+       scanf("%s %s", &Elevi[i].nume, &Elevi[i].cod);
+    
+         for(int j = 0; j<9; j++){
+            scanf("%d", &Elevi[i].note[j]);
+         }    
+    }
+}
+
+void afisare(struct elev * Elevi, int nr_elevi){
+    for(int i=0; i<nr_elevi; i++){
+       printf("%s\n%s\n", Elevi[i].nume, Elevi[i].cod);
+        for(int j = 0; j<9; j++){
+            printf("%d ", Elevi[i].note[j]);
+         }  
+     printf("\n"); 
+    }
+    
+}
+
+float medie(int note[10]){
+    float suma = 0;
+    for(int i=0; i<9; i++){
+      suma += note[i];
+    }
+    return suma/9;
+}
+
+int sortare_mediana(struct elev * Elevi, int nr_elevi){
+    char cod_identificare[21];
+    scanf("%s", &cod_identificare); 
+    // printf("Cod: %s ", cod_identificare);
+    for(int i=0; i<nr_elevi; i++){
+        
+        if(strcmp(Elevi[i].cod, cod_identificare)==0){
+           
+            for(int j=0; j<(9-1); j++){
+                for(int k=j+1; k<9; k++){
+                    
+                    if(Elevi[i].note[j]>Elevi[i].note[k]){
+                        int aux;
+                        aux = Elevi[i].note[j];
+                        Elevi[i].note[j] = Elevi[i].note[k];
+                        Elevi[i].note[k] = aux;
+                    }
+                }
+                
+            }
+            
+            // for(int j=0; j<9; j++){
+            //     printf("%d ", Elevi[i].note[j]);
+            // }
+            return Elevi[i].note[4];
+        }
+    }
+ 
+}
+
+
+int main(){
+    
+    int nr_elevi;
+    scanf("%d", &nr_elevi);
+    
+    struct elev *Elevi = malloc(nr_elevi*sizeof(struct elev));
+    
+    citire(Elevi, nr_elevi);
+    
+    int comanda;
+    
+    scanf("%d", &comanda);
+    
+    switch(comanda){
+        
+        case 1:
+        afisare(Elevi, nr_elevi);
+        break;
+        
+        case 2:
+        float medie_max = medie(Elevi[0].note);
+        int index_max = 0;
+        for(int i=0; i < nr_elevi; i++){
+            float medie_curenta = medie(Elevi[i].note);
+            if(medie_curenta > medie_max){
+                medie_max = medie_curenta;
+                index_max = i;
+            }
+        }
+        printf("%s\n", Elevi[index_max].nume);
+        break;
+        
+        case 3:
+        for(int i=0; i<nr_elevi; i++){
+            float medie_actuala = medie(Elevi[i].note);
+            if(medie_actuala < 6){
+                printf("%s\n", Elevi[i].nume);
+            }
+         }
+        break;
+        
+        case 4:
+        int rezultat = sortare_mediana(Elevi, nr_elevi);
+        printf("\n%d", rezultat);
+        
+        break;
+    }
+
+    return 0;
+}

@@ -1,0 +1,28 @@
+Lucrați la casieria unei librării și trebuie să scanați cărțile cu care vin clienții la casă. Problema este că în timp ce voi scanați, ei mai vin și cu alte volume și le pun deasupra teancului de scanat. Ca să nu dărâmați teancul, voi veți lua tot timpul din vârful acestuia. Afișați în ce ordine se vor scana carțile. 
+
+Date de intrare
+Pe fiecare linie de intrare se află una din următoarele două variante:
+
++ nume_volum care indică faptul că s-a adăugat un volum cu numele specificat în vârful teancului.
+- care indică faptul că ați scanat un volum din vârful teancului.
+Numele volumelor nu pot depăși 128 de caractere.
+
+Date de ieșire
+La ieșire, se vor afișa volumele scanate, în ordinea corectă, pe o singură linie, separate prin virgule. Dacă nu există cărți în teanc la întâlnirea unui "-", acesta se ignoră. Pentru simplificarea afișării, se cere caracterul virgulă și după ultimul volum scanat. NU adăugați un caracter newline la sfârșitul liniei.
+
+Exemplu
+
+Intrare:
+
++ Ciresarii
++ Toate panzele sus
+-
++ Dune
++ Fundatia
+-
+-
+-
+-
+Ieșire:
+
+Toate panzele sus,Fundatia,Dune,Ciresarii,

@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+struct jucator{
+    char nume[100];
+    int carti[3];
+};
+void creare_jucator(struct jucator *p){
+    scanf("%s", p->nume);
+    for(int i=0; i<3; i++){
+        scanf("%d", (p->carti+i));
+    }
+}
+
+void afisare_jucator(struct jucator *p){
+    printf("%s\n", p->nume);
+    for(int i=0; i<3; i++){
+        printf("%d\n", *(p->carti+i));
+    }
+}
+int calc_suma(struct jucator*p){
+    int suma=0;
+    for(int i=0; i<3; i++){
+        suma += *(p->carti+i);
+    }
+    return suma;
+}
+void afisare(struct jucator *p){
+    printf("%s\n", p->nume);
+}
+
+int main(){
+    int test;
+    scanf("%d", &test);
+    
+    if (test == 1){
+        int n;
+        scanf("%d", &n);
+        struct jucator jucatori[n];
+        
+        for(int i=0; i<n; i++){
+            creare_jucator(jucatori+i);
+            afisare_jucator(jucatori+i);
+        }
+        
+    }
+    
+    if(test == 2){
+        int n;
+        int max=0;
+        scanf("%d", &n);
+        struct jucator jucatori[n];
+        
+        for(int i=0; i<n; i++){
+            creare_jucator(jucatori+i);
+            if(calc_suma(jucatori+i)>max){
+                max = calc_suma(jucatori+i);
+            }
+        }
+        for(int i=0;i<n;i++){
+            if(calc_suma(jucatori+i)==max){
+                afisare(jucatori+i);
+            }
+        }
+    }
+    
+    return 0;
+}

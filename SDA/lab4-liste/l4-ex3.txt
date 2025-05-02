@@ -1,0 +1,146 @@
+Sunteți un dezvoltator de aplicații software pentru mobil și doriți să realizați un joc de cărți simplificat. În fiecare rundă, fiecare jucător extrage câte o carte din setul de cărți în ordinea în care s-au înscris în joc. Cărțile extrase de jucători sunt apoi comparate iar la finalul rundei, jucătorul care a extras cartea cu cea mai mică valoare este exclus din joc, moment ce declanșează o nouă rundă. Jocul continuă în acest fel până când va ramâne un singur jucător în joc, acesta fiind declarat câștigător. Pachetul din care jucătorii vor extrage cărți conține câte o carte din fiecare categorie: 14 (King), 13 (Queen), 12 (Jack), 11 (Ace), 10, ..., 2, toate de aceeași culoare, astfel că doi sau mai mulți jucători nu pot avea aceași categorie de carte. Să se implementeze codul care să realizeze aplicația menționată, astfel încât să permiteți adăugarea de jucători în ordinea înscrierii lor în joc, extragerea unei cărți de joc din setul de cărți precum și afișarea jucătorilor rămași în fiecare rundă de joc. 
+
+Date de intrare
+Se vor citi de la tastatură (fluxul stdin) următoarele date:
+
+Un număr întreg n reprezentând numărul inițial de jucători;
+
+De pe următoarele n linii: un șir de caractere reprezentând numele fiecărui jucător înregistrat;
+
+Pentru fiecare rundă de joc, un set de numere întregi de dimensiune egală cu numărul de jucători din rundă, reprezentând cărțile extrase de către aceștia.
+
+Date de ieșire
+Programul va afişa pe ecran (stream-ul standard de ieşire) numele jucătorilor rămași după fiecare rundă, în ordinea înscrierii în joc. Pentru simplificarea afișării, fiecare nume va fi urmat de caracterul newline. 
+
+
+
+Intrare
+
+Ieșire
+
+3
+
+Andrei
+
+Mihai
+
+Iulia
+
+Andrei
+
+Mihai
+
+Iulia
+
+8
+
+10
+
+7
+
+/* Iulia a extras cartea 7. Fiind cartea cu cea mai mică valoarea din rundă, Iulia va fi eliminată din joc.*/
+
+Andrei
+
+Mihai
+
+6
+
+14
+
+/* Andrei a extras cartea 6. Fiind cartea cu cea mai mică valoarea din rundă, Andrei va fi eliminat din joc şi Mihai este desemnat câştigător.*/
+
+Mihai
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Jucator {
+    char nume[51];
+    struct Jucator* next;
+};
+
+struct Jucator* adauga_jucator(struct Jucator* head, char* nume) {
+    struct Jucator* nou_jucator = (struct Jucator*)malloc(sizeof(struct Jucator));
+    strcpy(nou_jucator->nume, nume);
+    nou_jucator->next = NULL;
+
+    if (head == NULL) {
+        return nou_jucator;
+    }
+
+    struct Jucator* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = nou_jucator;
+    return head;
+}
+
+void afisare_jucatori(struct Jucator* head) {
+    struct Jucator* temp = head;
+    while (temp != NULL) {
+        printf("%s\n", temp->nume);
+        temp = temp->next;
+    }
+}
+
+struct Jucator* extrage_minim_si_elimina(struct Jucator* head, int* carti, int numar_jucatori) {
+    if (head == NULL) return NULL;
+
+    struct Jucator *curent = head, *anterior = NULL;
+    struct Jucator *curent_min = head, *anterior_min = NULL;
+    int valoare_min = carti[0];
+    
+    // gasim jucatorul cu valoarea minima
+    for (int i = 0; i < numar_jucatori; i++) {
+        if (carti[i] < valoare_min) {
+            valoare_min = carti[i];
+            anterior_min = anterior;
+            curent_min = curent;
+        }
+        anterior = curent;
+        curent = curent->next;
+    }
+
+    // elim jucatorul cu valoarea minima
+    if (anterior_min == NULL) {
+        head = head->next;  // daca este capul listei
+    } else { // daca nu este capul listei
+        anterior_min->next = curent_min->next;
+        free(curent_min);
+    }
+    
+    return head;
+}
+
+int main() {
+    int n;
+    scanf("%d", &n);
+    
+    struct Jucator* head = NULL;
+    char nume[51];
+    
+    for (int i = 0; i < n; i++) {
+        scanf("%s", nume);
+        head = adauga_jucator(head, nume);
+    }
+    
+    int numar_jucatori = n;
+    afisare_jucatori(head);
+    while (numar_jucatori > 1) {
+        int carti[numar_jucatori];
+        
+        for (int i = 0; i < numar_jucatori; i++) {
+            scanf("%d", &carti[i]);
+        }
+        
+        head = extrage_minim_si_elimina(head, carti, numar_jucatori);
+        numar_jucatori--;
+        
+        afisare_jucatori(head);
+    }
+    
+    return 0;
+}

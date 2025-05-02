@@ -1,0 +1,108 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+struct semnal{
+    char nume[11];
+    int id;
+    int esantion[20];
+};
+
+void citire_date(struct semnal *p){
+    scanf("%s", p->nume);
+    scanf("%d", &(p->id));
+    for(int i=0; i<20; i++){
+        scanf("%d", p->esantion+i);
+    }
+}
+
+void afisare_date(struct semnal *p){
+    printf("%s\n", p->nume);
+    printf("%d\n", p->id);
+    for(int i=0; i<20; i++){
+        printf("%d ", *(p->esantion+i));
+    }
+    printf("\n");
+}
+
+float calc_putere(struct semnal *p){
+    int suma=0;
+    for(int i=0; i<20; i++){
+        suma += pow(*(p->esantion+i), 2);
+    }
+    return (float)suma/20;
+}
+
+int calc_distanta(struct semnal *p, int semnal_nou[20]){
+    int suma=0;
+    for(int i=0; i<20; i++){
+        suma += pow((*(p->esantion+i)-*(semnal_nou+i)),2);
+    }
+    return suma;
+}
+
+int main(){
+    int n;
+    scanf("%d", &n);
+    struct semnal semnale[n];
+    
+    for(int i=0; i<n; i++){
+        citire_date(semnale+i);
+    }
+    
+    int comanda;
+    scanf("%d", &comanda);
+    if(comanda == 1){
+        for(int i=0; i<n; i++){
+            afisare_date(semnale+i);
+        }
+    }
+    if(comanda == 2){
+        float max=0.0f;
+        for(int i=0; i<n; i++){
+            if(calc_putere(semnale+i) > max){
+                max = calc_putere(semnale+i);
+            }
+        }
+        for(int i=0; i<n; i++){
+            if(calc_putere(semnale+i)==max){
+                printf("%s\n", (semnale+i)->nume);
+            }
+        }
+    }
+    
+    if(comanda == 3){
+        int query;
+        scanf("%d", &query);
+        for(int i=0; i<n; i++){
+            if(((semnale+i)->id) == query){
+                printf("%s\n", (semnale+i)->nume);
+            }
+        }
+    }
+    
+    if(comanda == 4){
+        int semnal_nou[20];
+        int min=9999;
+        for(int i=0; i<20; i++){
+            scanf("%d", (semnal_nou+i));
+        }
+        
+        for(int i=0; i<n; i++){
+            if(calc_distanta(semnale+i, semnal_nou) < min){
+                min = calc_distanta(semnale+i, semnal_nou);
+            }
+        }
+        for(int i=0; i<n; i++){
+            if(calc_distanta(semnale+i, semnal_nou) == min){
+                printf("%s\n", (semnale+i)->nume);
+            }
+        }
+        
+        
+    }
+    
+    
+    return 0;
+}

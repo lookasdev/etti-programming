@@ -1,0 +1,308 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_NAME 51
+
+typedef struct {
+    char nume[MAX_NAME];
+    char prenume[MAX_NAME];
+    int loc;
+} Pasager;
+
+typedef struct {
+    Pasager *pasageri;
+    int num_pasageri;
+} ListaPasageri;
+
+void init_lista(ListaPasageri *lista) {
+    lista->num_pasageri = 0;
+    lista->pasageri = malloc(lista->num_pasageri * sizeof(Pasager));
+}
+
+void adauga_pasager(ListaPasageri *lista, char *nume, char *prenume, int loc) {
+    lista->pasageri = realloc(lista->pasageri, (lista->num_pasageri+1) * sizeof(Pasager));
+    strcpy(lista->pasageri[lista->num_pasageri].nume, nume);
+    strcpy(lista->pasageri[lista->num_pasageri].prenume, prenume);
+    lista->pasageri[lista->num_pasageri].loc = loc;
+    lista->num_pasageri++;
+}
+
+void elibereaza_lista(ListaPasageri *lista) {
+    free(lista->pasageri);
+}
+
+void afisare_persoane(ListaPasageri *lista) {
+    for (int i = 0; i < lista->num_pasageri; i++) {
+        printf("%s %s\n", lista->pasageri[i].nume, lista->pasageri[i].prenume);
+    }
+}
+
+void alegere_cel_mai_bun_avion(int locuri_per_rand, int randuri, int configuratii[][2], int num_configuratii, ListaPasageri *lista) {
+    int capacitate_nevoita = lista->num_pasageri;
+    int best_index = -1;
+    int best_capacitate = locuri_per_rand * randuri;
+
+    for (int i = 0; i < num_configuratii; i++) {
+        int capacitate_configuratie = configuratii[i][0] * configuratii[i][1];
+        if (capacitate_configuratie >= capacitate_nevoita && capacitate_configuratie < best_capacitate) {
+            best_capacitate = capacitate_configuratie;
+            best_index = i;
+        }
+    }
+
+    printf("%d %d\n", configuratii[best_index][0], configuratii[best_index][1]);
+    
+}
+
+void alocare_locuri2(int locuri_per_rand, int randuri, ListaPasageri *lista) {
+    int total_locuri = locuri_per_rand * randuri;
+    int stanga = 1, dreapta = total_locuri;
+    
+    int altS = 0;
+    int altD = 0;
+    int locuriPrioritareS[total_locuri+1];
+    int locuriPrioritareD[total_locuri+1];
+    int indexS = 0;
+    int indexD = 0;
+    int index = 0;
+    while(stanga <= dreapta) {
+        if(index % 2 == 0) {
+            locuriPrioritareS[indexS] = stanga;
+            indexS++;
+            if (!altS) {
+                stanga += locuri_per_rand - 1;
+                altS = 1;
+            } else {
+                stanga += 1;
+                altS = 0;
+            }
+        }
+        else if (index % 2 == 1) {
+            locuriPrioritareD[indexD] = dreapta;
+            indexD++;
+            if (!altD) {
+                    dreapta -= locuri_per_rand - 1;
+                    altD = 1;
+                } else {
+                    dreapta -= 1;
+                    altD = 0;
+                }
+        }
+        index++;
+    }
+    
+    // for(int i = 0; i < indexS; i++) {
+    //     printf("%d ",  locuriPrioritareS[i]);
+    // }
+    // printf("\n\n\n");
+    
+    // for(int i = 0; i < indexD; i++) {
+    //     printf("%d ",  locuriPrioritareD[i]);
+    // }
+    // printf("\n\n\n");
+    
+    
+
+    int locuriFolosite[total_locuri + 1];  // Corectat la dimensiunea totală a locurilor
+    for (int i = 1; i <= total_locuri; i++) {
+        locuriFolosite[i] = 0;
+    }
+    
+    for(int i = 0; i < lista->num_pasageri; i++) { // daca avem locuri rezervate sunt asignate
+        if (lista->pasageri[i].loc != 0) {
+            locuriFolosite[lista->pasageri[i].loc] = 1;
+            // printf("%d ", lista->pasageri[i].loc); // debug
+        }
+    }
+    int index_pasager = 0;
+    int k = 0; // add din S sau D
+    while (index_pasager < lista->num_pasageri) {
+        if(lista->pasageri[index_pasager].loc != 0) {
+            index_pasager++;
+            continue;
+        } else {
+            if(k % 2 == 0) { // add primul S liber
+                for(int i = 0; i < indexS; i++) {
+                    if(locuriFolosite[locuriPrioritareS[i]] == 0) {
+                        lista->pasageri[index_pasager].loc = locuriPrioritareS[i];
+                        locuriFolosite[locuriPrioritareS[i]] = 1;
+                        k++;
+                        break;
+                    }
+                    if(i == indexS-1) {
+                        // Caută locuri libere dacă nu s-au putut aloca la geamuri
+                        if (lista->pasageri[index_pasager].loc == 0) {
+                            int index = 1;
+                            while (index <= total_locuri && locuriFolosite[index] != 0) {
+                                index++;
+                            }
+                            lista->pasageri[index_pasager].loc = index;
+                            locuriFolosite[index] = 1;
+                        }
+                    }
+                }
+            } else if (k % 2 == 1) { // add primul D liber
+                for(int i = 0; i < indexD; i++) {
+                    if(locuriFolosite[locuriPrioritareD[i]] == 0) {
+                        lista->pasageri[index_pasager].loc = locuriPrioritareD[i];
+                        locuriFolosite[locuriPrioritareD[i]] = 1;
+                        k++;
+                        break;
+                    }
+                    if(i == indexD-1) { 
+                        // Caută locuri libere dacă nu s-au putut aloca la geamuri
+                        if (lista->pasageri[index_pasager].loc == 0) {
+                            int index = 1;
+                            while (index <= total_locuri && locuriFolosite[index] != 0) {
+                                index++;
+                            }
+                            lista->pasageri[index_pasager].loc = index;
+                            locuriFolosite[index] = 1;
+                        }
+                    }
+                }
+            }
+            index_pasager++;
+        }
+        
+    }
+
+    // Sortare după numărul locului
+    for (int i = 0; i < lista->num_pasageri - 1; i++) {
+        for (int j = i + 1; j < lista->num_pasageri; j++) {
+            if (lista->pasageri[i].loc > lista->pasageri[j].loc) {
+                Pasager temp = lista->pasageri[i];
+                lista->pasageri[i] = lista->pasageri[j];
+                lista->pasageri[j] = temp;
+            }
+        }
+    }
+    // printf("\n\n\n"); // debug
+    // Afișare rezultat
+    for (int i = 0; i < lista->num_pasageri; i++) {
+        printf("%s %s %d\n", lista->pasageri[i].nume, lista->pasageri[i].prenume, lista->pasageri[i].loc);
+    }
+}
+
+void alocare_locuri(int locuri_per_rand, int randuri, ListaPasageri *lista) {
+    int total_locuri = locuri_per_rand * randuri;
+    int stanga = 1, dreapta = total_locuri;
+    int index_pasager = 0;
+    
+    int altS = 0;
+    int altD = 0;
+    
+    int locuriFolosite[total_locuri + 1];  // Corectat la dimensiunea totală a locurilor
+    for (int i = 1; i <= total_locuri; i++) {
+        locuriFolosite[i] = 0;
+    }
+    
+    while (index_pasager < lista->num_pasageri) {
+        if (index_pasager % 2 == 0 && stanga <= total_locuri && locuriFolosite[stanga] == 0) {
+        lista->pasageri[index_pasager].loc = stanga;
+        locuriFolosite[stanga] = 1;
+        if (!altS) {
+            stanga += locuri_per_rand - 1;
+            altS = 1;
+        } else {
+            stanga += 1;
+            altS = 0;
+        }
+        } else if (index_pasager % 2 == 1 && dreapta > 0 && locuriFolosite[dreapta] == 0) {
+            lista->pasageri[index_pasager].loc = dreapta;
+            locuriFolosite[dreapta] = 1;
+            if (!altD) {
+                dreapta -= locuri_per_rand - 1;
+                altD = 1;
+            } else {
+                dreapta -= 1;
+                altD = 0;
+            }
+        }
+
+        // Caută locuri libere dacă nu s-au putut aloca la geamuri
+        if (lista->pasageri[index_pasager].loc == 0) {
+            int index = 1;
+            while (index <= total_locuri && locuriFolosite[index] != 0) {
+                index++;
+            }
+            lista->pasageri[index_pasager].loc = index;
+            locuriFolosite[index] = 1;
+        }
+        index_pasager++;
+    }
+
+    // Sortare după numărul locului
+    for (int i = 0; i < lista->num_pasageri - 1; i++) {
+        for (int j = i + 1; j < lista->num_pasageri; j++) {
+            if (lista->pasageri[i].loc > lista->pasageri[j].loc) {
+                Pasager temp = lista->pasageri[i];
+                lista->pasageri[i] = lista->pasageri[j];
+                lista->pasageri[j] = temp;
+            }
+        }
+    }
+    // Afișare rezultat
+    for (int i = 0; i < lista->num_pasageri; i++) {
+        printf("%s %s %d\n", lista->pasageri[i].nume, lista->pasageri[i].prenume, lista->pasageri[i].loc);
+    }
+}
+
+int main() {
+    int comanda;
+    scanf("%d", &comanda);
+    int locuri_per_rand, randuri;
+    scanf("%d %d", &locuri_per_rand, &randuri);
+
+    ListaPasageri *lista = malloc(sizeof(ListaPasageri));
+    init_lista(lista);
+    
+    if (comanda == 1) {
+        while (1) {
+            char nume[MAX_NAME], prenume[MAX_NAME];
+            scanf("%s", nume);
+            if (strcmp(nume, "STOP") == 0) break;
+            scanf("%s", prenume);
+            adauga_pasager(lista, nume, prenume, 0);
+        }
+        afisare_persoane(lista);
+    } else if (comanda == 2) {
+        while (1) {
+            char nume[MAX_NAME], prenume[MAX_NAME];
+            scanf("%s", nume);
+            if (strcmp(nume, "STOP") == 0) break;
+            scanf("%s", prenume);
+            adauga_pasager(lista, nume, prenume, 0);
+        }
+        int configuratii[4][2];
+        for (int i = 0; i < 4; i++) {
+            scanf("%d %d", &configuratii[i][0], &configuratii[i][1]);
+        }
+        alegere_cel_mai_bun_avion(locuri_per_rand, randuri, configuratii, 4, lista);
+    } else if (comanda == 3) {
+        while (1) {
+            char nume[MAX_NAME], prenume[MAX_NAME];
+            scanf("%s", nume);
+            if (strcmp(nume, "STOP") == 0) break;
+            scanf("%s", prenume);
+            adauga_pasager(lista, nume, prenume, 0);
+        }
+        alocare_locuri(locuri_per_rand, randuri, lista);
+    } else if (comanda == 4) {
+        while (1) {
+            char nume[MAX_NAME], prenume[MAX_NAME];
+            int loc_citit;
+            scanf("%s", nume);
+            if (strcmp(nume, "STOP") == 0) break;
+            scanf("%s", prenume);
+            scanf("%d", &loc_citit);
+            adauga_pasager(lista, nume, prenume, loc_citit);
+        }
+        alocare_locuri2(locuri_per_rand, randuri, lista);
+    }
+
+    elibereaza_lista(lista);
+
+    return 0;
+}

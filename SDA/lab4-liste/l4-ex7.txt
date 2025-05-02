@@ -1,0 +1,1 @@
+Se citește de la tastatură un cuvânt în limba germană (adică foarte foarte lung, chiar necunoscut de lung), fără spații. Se cere să se afișeze cuvântul de la sfârșit la început, reordonând literele astfel încât să alterneze vocalele și consoanele. După ce unele din ele se termină, restul se afișează neintercalate.

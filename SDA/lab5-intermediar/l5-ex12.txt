@@ -1,0 +1,238 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct client {
+    char nume[20];
+    int nr_produse;
+    int nr_produse_original;
+    struct client * next;
+};
+
+struct casa {
+    int nr_total_obiecte;
+    struct client * lista_clienti;
+    struct casa * next;
+};
+
+struct client * creare_client(char *nume, int nr_produse){
+    struct client * client_nou = malloc(sizeof(struct client));
+    client_nou->nr_produse = nr_produse;
+    client_nou->nr_produse_original = nr_produse;
+    strcpy(client_nou->nume, nume);
+    client_nou->next = NULL;
+    return client_nou;
+}
+
+struct casa * creare_casa() {
+    struct casa * casa_noua = malloc(sizeof(struct casa));
+    casa_noua->nr_total_obiecte = 0;
+    casa_noua->lista_clienti = NULL;
+    casa_noua->next = NULL;
+    return casa_noua;
+}
+
+struct client * adaugare_client_final(struct client * head_lista_clienti, char *nume, int nr_produse){
+    struct client * client_nou = creare_client(nume, nr_produse);
+    struct client * tmp_client = head_lista_clienti;
+    
+    if (head_lista_clienti == NULL){
+        return client_nou;
+    }
+    
+    while(tmp_client->next != NULL){
+        tmp_client = tmp_client->next;
+    }
+    
+    tmp_client->next = client_nou;
+    
+    return head_lista_clienti;
+}
+
+struct casa * adaugare_casa_final(struct casa * head_lista_case){
+    struct casa * casa_noua = creare_casa();
+    struct casa * tmp_casa = head_lista_case;
+    
+    if (head_lista_case == NULL){
+        return casa_noua;
+    }
+    
+    while(tmp_casa->next != NULL){
+        tmp_casa = tmp_casa->next;
+    }
+    
+    tmp_casa->next = casa_noua;
+    
+    return head_lista_case;
+}
+
+void afisare(struct client * head_lista_clienti){
+    while (head_lista_clienti){
+        printf("%s %d\n", head_lista_clienti->nume, head_lista_clienti->nr_produse);
+        head_lista_clienti = head_lista_clienti->next;
+    }
+}
+
+int min_nr_produse_la_casa(struct casa * head_lista_case){
+    int min = head_lista_case->nr_total_obiecte;
+    while (head_lista_case){
+        if (head_lista_case->nr_total_obiecte < min){
+            min = head_lista_case->nr_total_obiecte;
+        }
+        head_lista_case = head_lista_case->next;
+    }
+    return min;    
+}
+
+struct casa * distribuire_optima_clienti(struct casa * head_lista_case, struct client * head_lista_clienti){
+    struct client * tmp_client = head_lista_clienti;
+    struct casa * tmp_casa = head_lista_case;
+    
+    while(tmp_client){
+        int min_nr_produse = min_nr_produse_la_casa(head_lista_case); // se recalc casa optima pt fiecare client ce vrea sa se aseze la una dintre case
+        while(tmp_casa){
+            if (tmp_casa->nr_total_obiecte == min_nr_produse){
+                // adaugam clientul la casa curenta
+                tmp_casa->lista_clienti = adaugare_client_final(tmp_casa->lista_clienti, tmp_client->nume, tmp_client->nr_produse);
+                tmp_casa->nr_total_obiecte += tmp_client->nr_produse;
+                break;
+            }
+            tmp_casa = tmp_casa->next;
+        }
+        tmp_casa = head_lista_case;
+        tmp_client = tmp_client->next;
+    }
+    return head_lista_case;
+}
+
+struct casa * distribuire_round_robin_clienti(struct casa * head_lista_case, struct client * head_lista_clienti){
+    struct client * tmp_client = head_lista_clienti;
+    struct casa * tmp_casa = head_lista_case;
+    
+    while(tmp_client){
+        while(tmp_casa){
+            tmp_casa->lista_clienti = adaugare_client_final(tmp_casa->lista_clienti, tmp_client->nume, tmp_client->nr_produse);
+            tmp_casa->nr_total_obiecte += tmp_client->nr_produse;
+            tmp_casa = tmp_casa->next;
+            tmp_client = tmp_client->next;
+            if (tmp_casa == NULL){
+                tmp_casa = head_lista_case; // o luam din nou de la casa1 unde asignam din nou persoane la cozi
+            }
+            if (tmp_client == NULL){ // iese si din primul while pt ca e NULL tmp_client
+                break;
+            }
+        }
+    }
+    return head_lista_case;
+}
+
+int timp_total_procesare(struct casa * head_lista_case){ // timp dupa care au iesit din magazin toti clientii
+    int max = head_lista_case->nr_total_obiecte;
+    while(head_lista_case){
+        if (head_lista_case->nr_total_obiecte > max){
+            max = head_lista_case->nr_total_obiecte;
+        }
+        head_lista_case = head_lista_case->next;
+    }
+    return max;
+}
+
+struct client *procesare_clienti(struct casa *head_lista_case) {
+    struct client *lista_iesire = NULL; // Lista pentru clienții care părăsesc magazinul
+    while (1) {
+        struct casa *tmp_casa = head_lista_case;
+        int minim = 1e9;
+
+        // Găsim timpul minim pentru procesare
+        while (tmp_casa) {
+            if (tmp_casa->lista_clienti && tmp_casa->lista_clienti->nr_produse < minim) {
+                minim = tmp_casa->lista_clienti->nr_produse;
+            }
+            tmp_casa = tmp_casa->next;
+        }
+
+        // Ieșim din buclă dacă toate casele sunt goale (minim-ul a ramas neschimbat)
+        if (minim == 1e9) {
+            break;
+        }
+
+        tmp_casa = head_lista_case;
+        // Reducem timpul și scoatem clienții procesați
+        while (tmp_casa) {
+            if (tmp_casa->lista_clienti) {
+                tmp_casa->lista_clienti->nr_produse -= minim;
+                if (tmp_casa->lista_clienti->nr_produse == 0) {
+                    // Adăugăm clientul procesat în lista de ieșire
+                    lista_iesire = adaugare_client_final(lista_iesire, tmp_casa->lista_clienti->nume, tmp_casa->lista_clienti->nr_produse_original);
+                    tmp_casa->lista_clienti = tmp_casa->lista_clienti->next; // se schimba head-ul listei de clienti pentru ca primul nod a fost procesat(clientul a scanat toate produsele si a iesit din magazin)
+                }
+            }
+            tmp_casa = tmp_casa->next; // se uita doar la clientii cei mai din fata randurilor la case (al caror e randul sa scaneze logic)
+        }
+    }
+    return lista_iesire;
+}
+
+int main(){
+    struct client * lista_clienti = NULL;
+    
+    struct casa * lista_case = NULL;
+    struct casa * lista_case_1 = NULL;
+    struct casa * lista_case_2 = NULL;
+    
+    int nr_case_deschise;
+    scanf("%d", &nr_case_deschise);
+    
+    for (int i=0; i<nr_case_deschise; i++){
+        lista_case = adaugare_casa_final(lista_case);
+        lista_case_1 = adaugare_casa_final(lista_case_1);
+        lista_case_2 = adaugare_casa_final(lista_case_2);
+    }
+    
+    int nr_clienti;
+    scanf("%d", &nr_clienti);
+    
+    for (int i=0; i<nr_clienti; i++){
+        char temp_nume[21];
+        int temp_nr_produse;
+        scanf("%s %d", temp_nume, &temp_nr_produse);
+        lista_clienti = adaugare_client_final(lista_clienti, temp_nume, temp_nr_produse);
+    }
+    
+    int comanda;
+    scanf("%d", &comanda);
+    
+    switch (comanda){
+        case 1:{
+            afisare(lista_clienti);
+            break;
+        }
+        
+        case 2:{
+            lista_case = distribuire_optima_clienti(lista_case, lista_clienti);
+            while(lista_case){
+                afisare(lista_case->lista_clienti);
+                lista_case = lista_case->next;
+            }
+            break;
+        }
+        
+        case 3: {
+            lista_case = distribuire_round_robin_clienti(lista_case, lista_clienti);
+            struct client * lista_iesire = procesare_clienti(lista_case);
+            afisare(lista_iesire);
+            break;
+        }
+
+        case 4:{
+            lista_case_1 = distribuire_optima_clienti(lista_case_1, lista_clienti);
+            lista_case_2 = distribuire_round_robin_clienti(lista_case_2, lista_clienti);
+            
+            printf("%d", timp_total_procesare(lista_case_1) - timp_total_procesare(lista_case_2));
+            
+            break;
+        }
+    }
+    
+    return 0;
+}

@@ -1,0 +1,76 @@
+Ați primit o listă cu studenții de la Electronică ce conține numele și mediile lor. Să se determine câți din studenți vor lua bursă de merit și câți bursă de performanță. Pentru ca un student să ia bursă de performanță trebuie să fie integralist și sa aibă media mai mare sau egală de 9.80. Pentru bursă de merit, studentul trebuie să fie integralist și să aibă media între 8 și 9.80.
+
+Date de intrare
+Pe prima linie se află un număr n, reprezentând numărul de studenți. n este maxim 65535. Pe următoarele n linii se află un nume, un prenume, și 5 note ce se vor media, toate separate prin spații.
+
+Date de ieșire
+La ieșire se vor afișa două numere întregi: numărul de bursieri cu bursă de merit și numărul de bursieri cu bursă de performanță.
+
+Exemplu
+Intrare:
+
+4
+Andrei Vasile 8 8 6 9 8
+Ghita vasile 10 10 10 9 10
+Ioana Oana 10 3 10 10 10
+Andrei Ioana 9 9 8 9 9
+Ieșire:
+
+1 1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+struct student {
+    char nume[255];
+    char prenume[255];
+    int note[5];
+};
+
+void citire_date(struct student *p) {
+    scanf("%s", p->nume);
+    scanf("%s", p->prenume);
+    for(int i = 0; i < 5; i++) {
+        scanf("%d", p->note+i);
+    }
+}
+
+bool verif_integralist(struct student *p) {
+    for(int i = 0; i < 5; i++) {
+        if (*(p->note+i) < 5) return false;
+    }
+    return true;
+}
+
+float calc_medie(struct student *p) {
+    float suma = 0;
+    for(int i = 0; i < 5; i++) {
+        suma += *(p->note+i);
+    }
+    return suma / 5;
+}
+
+int main()
+{
+    int n;
+    int nr_bursieri_merit = 0;
+    int nr_bursieri_perf = 0;
+    scanf("%d", &n);
+    struct student *studenti = malloc(n*sizeof(struct student));
+    for(int i = 0; i < n; i++) {
+        citire_date(studenti+i);
+        if (verif_integralist(studenti+i))
+        {
+            if(calc_medie(studenti+i) >= 9.80)
+                nr_bursieri_perf++;
+            if(calc_medie(studenti+i) > 8 && calc_medie(studenti+i) < 9.80)
+                nr_bursieri_merit++;
+        }
+    }
+    
+    printf("%d %d\n", nr_bursieri_merit, nr_bursieri_perf);
+    
+    return 0;
+}

@@ -1,0 +1,152 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct Jucator {
+    char nume[21];
+    int echipa;
+    int hitpoints;
+    struct Jucator* next;
+};
+
+struct Jucator* adauga_jucator(struct Jucator* head, char* nume, int echipa, int hitpoints) {
+    struct Jucator* jucator_nou = (struct Jucator*)malloc(sizeof(struct Jucator));
+    strcpy(jucator_nou->nume, nume);
+    jucator_nou->echipa = echipa;
+    jucator_nou->hitpoints = hitpoints;
+    jucator_nou->next = NULL;
+    
+    if (head == NULL) {
+        return jucator_nou;
+    }
+
+    struct Jucator* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = jucator_nou;
+    return head;
+}
+
+void afiseaza_echipa(struct Jucator* head) {
+    int i = 0;
+    struct Jucator * jucator_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    jucator_curent = head;
+
+    while (jucator_curent != NULL) {
+        /* afisare valoare curenta si pozitionare nod urmator */
+        printf("%s %d %d\n", jucator_curent->nume, jucator_curent->echipa, jucator_curent->hitpoints);
+        jucator_curent = jucator_curent -> next;
+    }
+}
+
+// Funcție pentru a lovi jucătorul la indexul specificat și a-l elimina dacă hitpoints ajunge la 0
+struct Jucator* loveste_jucator(struct Jucator* head, int index, int* scor) {
+    struct Jucator* prev = NULL;
+    struct Jucator* current = head;
+
+    while (current != NULL && index > 0) {
+        prev = current;
+        current = current->next;
+        index--;
+    }
+
+    if (current == NULL) return head; // Index invalid sau lista goală
+
+    current->hitpoints--;
+    (*scor)++;
+    if (current->hitpoints <= 0) {
+        if (prev == NULL) {
+            struct Jucator* nou_head = current->next;
+            free(current);
+            return nou_head;
+        } else {
+            prev->next = current->next;
+            free(current);
+            current = NULL;
+        }
+    }
+    return head;
+}
+
+void simuleaza_lovituri_si_afisare(struct Jucator* echipa1, struct Jucator* echipa2, int comanda) { // atentie! trebuie facuta afisarea in functie pentru ca nu avem pointer la pointer(**) si modificarile (stergerile) nu vor fi vizibile in main(se vor afisa si jucatorii eliminati din memorie cu caractere ciudate)
+    int scor_echipa1 = 0, scor_echipa2 = 0, index;
+    int runda = 0; // 0 pentru echipa 1, 1 pentru echipa 2
+
+    while (1) {
+        scanf("%d", &index);
+        if (index == 100) break;
+
+        if (index != -1) {
+            if (runda % 2 == 0) { // Echipa 1 atacă
+                echipa2 = loveste_jucator(echipa2, index, &scor_echipa1);
+            } else { // Echipa 2 atacă
+                echipa1 = loveste_jucator(echipa1, index, &scor_echipa2);
+            }
+        }
+        runda++;
+    }
+    
+    if (comanda == 3) {
+        printf("%d\n", scor_echipa1);
+        printf("%d\n", scor_echipa2);
+    } else if (comanda == 4)
+    {
+        afiseaza_echipa(echipa1);
+        afiseaza_echipa(echipa2);
+    }
+}
+
+int main() {
+    int numar_jucatori;
+    scanf("%d", &numar_jucatori);
+
+    struct Jucator* echipa1 = NULL;
+    struct Jucator* echipa2 = NULL;
+
+    for (int i = 0; i < numar_jucatori; i++) {
+        char nume[21];
+        int echipa, hitpoints;
+        scanf("%s %d %d", nume, &echipa, &hitpoints);
+        if (echipa == 1) {
+            echipa1 = adauga_jucator(echipa1, nume, echipa, hitpoints);
+        } else if (echipa == 2) {
+            echipa2 = adauga_jucator(echipa2, nume, echipa, hitpoints);
+        }
+    }
+
+    int comanda;
+    scanf("%d", &comanda);
+
+    if (comanda == 1) {
+        afiseaza_echipa(echipa1);
+        afiseaza_echipa(echipa2);
+    } else if (comanda == 2) {
+        int hitpoints_echipa1 = 0, hitpoints_echipa2 = 0;
+        
+        struct Jucator* temp = echipa1;
+        while (temp != NULL) {
+            hitpoints_echipa1 += temp->hitpoints;
+            temp = temp->next;
+        }
+        
+        temp = echipa2;
+        while (temp != NULL) {
+            hitpoints_echipa2 += temp->hitpoints;
+            temp = temp->next;
+        }
+        printf("%d\n", hitpoints_echipa1 > hitpoints_echipa2 ? 1 : 2);
+    } else if (comanda == 3) {
+        simuleaza_lovituri_si_afisare(echipa1, echipa2, 3);
+    } else if (comanda == 4) {
+        simuleaza_lovituri_si_afisare(echipa1, echipa2, 4);
+    }
+
+    return 0;
+}

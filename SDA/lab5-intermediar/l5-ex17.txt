@@ -1,0 +1,116 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+struct Rover {
+    int x, y;  // coordonatele curente ale roverului
+    int map_x, map_y;  // dimensiunile hartii
+    int obstacol_x, obstacol_y;  // coordonatele obstacolului (daca exista)
+    char directii[100][11];  // lista de directii
+    int num_directii;  // nr de directii adaugate
+};
+
+int avanseaza(struct Rover *rover, char *directie) {
+    int nou_x = rover->x, nou_y = rover->y;
+
+    if (strcmp(directie, "sus") == 0) nou_x--;
+    else if (strcmp(directie, "jos") == 0) nou_x++;
+    else if (strcmp(directie, "stanga") == 0) nou_y--;
+    else if (strcmp(directie, "dreapta") == 0) nou_y++;
+
+    if (nou_x == rover->obstacol_x && nou_y == rover->obstacol_y) {
+        return 0;  // roverul nu avanseaza
+    }
+
+    if (nou_x >= 0 && nou_x < rover->map_x && nou_y >= 0 && nou_y < rover->map_y) {
+        rover->x = nou_x;
+        rover->y = nou_y;
+        return 1;  // roverul avanseaza
+    }
+    
+    return 0;  // roverul nu avanseaza
+}
+
+void adauga_directie(struct Rover *rover, char* directie, bool *blocat) {
+    if (rover->num_directii < 100) {
+        strcpy(rover->directii[rover->num_directii++], directie);
+
+        // avansam roverul in directia specif
+        if (!avanseaza(rover, directie)) {
+            (*blocat) = true;
+        }
+        else {
+            // printf("%d %d\n", rover->x, rover->y); // debug
+        }
+    }
+}
+
+void afiseaza_directii(struct Rover *rover) {
+    for (int i = 0; i < rover->num_directii; i++) {
+        printf("%s\n", rover->directii[i]);
+    }
+}
+
+void afiseaza_coordonate(struct Rover *rover) {
+    printf("%d %d\n", rover->x, rover->y);
+}
+
+void intoarcere_acasa(struct Rover *rover) {
+    for (int i = rover->num_directii - 1; i >= 0; i--) {
+        char* directie_opusa;
+
+        if (strcmp(rover->directii[i], "sus") == 0) directie_opusa = "jos";
+        else if (strcmp(rover->directii[i], "jos") == 0) directie_opusa = "sus";
+        else if (strcmp(rover->directii[i], "stanga") == 0) directie_opusa = "dreapta";
+        else if (strcmp(rover->directii[i], "dreapta") == 0) directie_opusa = "stanga";
+
+        if (!avanseaza(rover, directie_opusa)) {
+            break; // daca roverul nu poate avansa iesim din functie
+        }
+        
+        printf("%s\n", directie_opusa);
+    }
+}
+
+void seteaza_obstacol(struct Rover *rover, int x, int y) {
+    rover->obstacol_x = x;
+    rover->obstacol_y = y;
+}
+
+int main() {
+    struct Rover* rover = malloc(sizeof(struct Rover));
+    rover->num_directii = 0;
+    rover->obstacol_x = -1;  // nu exista obstacol initial
+    rover->obstacol_y = -1;
+
+    scanf("%d %d", &rover->map_x, &rover->map_y);
+    scanf("%d %d", &rover->x, &rover->y);
+
+    int comanda;
+    bool blocat = false;
+    while (1) {
+        scanf("%d", &comanda);
+
+        if (comanda == 1) {
+            char directie[11];
+            scanf("%s", directie);
+            if (!blocat) adauga_directie(rover, directie, &blocat);
+        } else if (comanda == 2) {
+            afiseaza_directii(rover);
+            break; // baterie de teste gresita
+        } else if (comanda == 3) {
+            intoarcere_acasa(rover);
+        } else if (comanda == 4) {
+            afiseaza_coordonate(rover);
+        } else if (comanda == 5) {
+            int obstacol_x, obstacol_y;
+            scanf("%d %d", &obstacol_x, &obstacol_y);
+            seteaza_obstacol(rover, obstacol_x, obstacol_y);
+        } else if (comanda == 6) {
+            break;
+        }
+    }
+
+    return 0;
+}

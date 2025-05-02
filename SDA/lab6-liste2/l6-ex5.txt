@@ -1,0 +1,138 @@
+Ați primit din nou o listă de cumpărături, doar că de aceasta dată de la o companie care dorește să înceapă producția în masă a unui echipament. Aveți contract cu un furnizor care poate livra o parte din echipamente și care v-a transmis o listă de produse pe care le au în stoc. Stocul acestora este extrem de mare, având zeci de mii de produse. Având lista de cumpărături și catalogul furnizorului, afișați câte din produse pot fi achiziționate de la acel furnizor.
+
+
+
+Atenție: evaluarea durează peste două minute.
+
+
+
+Date de intrare
+Pe prima linie se află un număr n reprezentând numărul de echipamente de pe lista de cumpărături. Următoarele n cuvinte, separate prin whitespace, reprezintă lista de cumpărături. Următoarele cuvinte, până la EOF, reprezintă lista de produse din catalogul furnizorului, separate prin spațiu. Nu se repetă nici un echipament pe lista de cumpărături sau în catalog.
+
+Exemplu:
+
+5
+motor_diesel saibe oglinzi anvelope scaune
+piulite suruburi saibe cuie ciocane surubelnite
+
+Date de ieșire
+
+La ieșire se va afișa un singur număr reprezentând numărul de produse de pe lista de cumpărături care poate fi achiziționat de la furnizor.
+
+Exemplu (pentru intrarea de mai sus):
+1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct NOD {
+    char nume_produs[21];
+    struct NOD * next;
+};
+
+struct NOD * creare_nod(char* nume_produs){
+    struct NOD * nod = malloc(sizeof(struct NOD));;
+    strcpy(nod -> nume_produs, nume_produs);
+    nod -> next = NULL;
+    return nod;
+}
+
+struct NOD * adaugare_nod_sfarsit_lista(struct NOD * head, char* nume_produs) {
+    int i = 0;
+    struct NOD * nod_curent, * nod_nou;
+
+    if (head == NULL) {
+        head = creare_nod(nume_produs);
+        return head;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        if (nod_curent -> next == NULL) {
+            nod_nou = creare_nod(nume_produs);
+            nod_curent -> next = nod_nou;
+            return head;
+        }
+        nod_curent = nod_curent -> next;
+    }
+}
+
+int contains(struct NOD * head, char* nume_produs) {
+    struct NOD * ptr = head;
+    while(ptr != NULL) {
+        if (strcmp(ptr->nume_produs, nume_produs) == 0) return 1;
+        ptr = ptr->next;
+    }
+    return 0;
+}
+
+struct NOD * intersectie(struct NOD * head1, struct NOD * head2) {
+    struct NOD * rez = NULL;
+    struct NOD * ptr1 = head1;
+    struct NOD * ptr2 = head2;
+    while(ptr2 != NULL) {
+        if(contains(head1, ptr2->nume_produs)) rez = adaugare_nod_sfarsit_lista(rez, ptr2->nume_produs);
+        ptr2 = ptr2->next;
+    }
+    
+    return rez;
+}
+
+int numara_nodurile(struct NOD * head) {
+    int contor = 0;
+    struct NOD * ptr = head;
+    while(ptr != NULL) {
+        contor++;
+        ptr = ptr->next;
+    }
+    
+    return contor;
+}
+
+void afisare_lista(struct NOD * head){
+    int i = 0;
+    struct NOD * nod_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        printf("%d: %s\n", i++, nod_curent -> nume_produs);
+        nod_curent = nod_curent -> next;
+    }
+}
+
+int main() {
+    struct NOD * lista_cumparaturi = NULL;
+    struct NOD * lista_produse = NULL;
+    
+    int n;
+    scanf("%d", &n);
+    
+    char nume_produs[21];
+    for(int i = 0; i < n; i++) {
+        scanf("%s", nume_produs);
+        lista_cumparaturi = adaugare_nod_sfarsit_lista(lista_cumparaturi, nume_produs);
+    }
+
+    while(scanf("%s", nume_produs)!=EOF) {
+        lista_produse = adaugare_nod_sfarsit_lista(lista_produse, nume_produs);
+    }
+    
+    struct NOD * rez = intersectie(lista_cumparaturi, lista_produse);
+    int rez_final = numara_nodurile(rez);
+    
+    printf("%d", rez_final);
+    
+    // afisare_lista(rez);
+    // afisare_lista(lista_cumparaturi);
+    // afisare_lista(lista_produse);
+
+    return 0;
+}

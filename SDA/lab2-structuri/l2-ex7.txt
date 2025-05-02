@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct produs {
+    int cod;
+    char tip;
+    float pret;
+    int procent;
+};
+
+void citire_date(struct produs *p) {
+    scanf("%x", &(p->cod));
+    //getchar(); // sau un spatiu inainte de %c
+    scanf(" %c", &(p->tip));
+    if(p->tip=='p') {
+        scanf("%f", &(p->pret));
+    }
+    if(p->tip=='c') {
+        scanf("%d", &(p->procent));
+    }
+}
+
+int main()
+{
+    int b, n; 
+    scanf("%d", &b);
+    scanf("%d", &n);
+    
+    //struct produs Produse[b]; // sau cu malloc
+    struct produs *Produse = malloc(b*sizeof(struct produs));
+    
+    for(int i = 0; i < b; i++) {
+        citire_date(Produse+i);
+    }
+    
+    float suma_produse = 0;
+    int procent_reducere = 0;
+    
+    for(int i = 0; i < n; i++) {
+        int cod_scanat;
+        scanf("%x", &cod_scanat);
+        for(int j = 0; j < b; j++) {
+            if((Produse+j)->cod == cod_scanat && (Produse+j)->tip == 'p') {
+                suma_produse += (Produse+j)->pret;
+                break;
+            } else if((Produse+j)->cod == cod_scanat && (Produse+j)->tip == 'c') {
+                procent_reducere += (Produse+j)->procent;
+                break;
+            }
+        }
+    }
+    
+    printf("%.2f\n", suma_produse - (1.0 * procent_reducere/100 * suma_produse));
+    
+    return 0;
+}

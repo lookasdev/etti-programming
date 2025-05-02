@@ -1,0 +1,69 @@
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<math.h>
+#include<stdbool.h>
+
+struct punct{
+    double x;
+    double y;
+    double z;
+    bool vizitat;
+};
+
+struct nava{
+    int nr_puncte;
+    struct punct *puncte;
+    struct punct *start;
+};
+
+void citire_date(struct nava *p){
+    scanf("%d", &(p->nr_puncte));  
+    p->puncte = malloc(p->nr_puncte * sizeof(struct punct));
+    p->start = malloc(sizeof(struct punct));
+    for(int i=0; i<((p->nr_puncte) - 1); i++){
+        scanf("%lf %lf %lf", &(p->puncte[i].x), &(p->puncte[i].y), &(p->puncte[i].z));
+        p->puncte[i].vizitat = false;
+    }
+    scanf("%lf %lf %lf", &(p->start->x), &(p->start->y), &(p->start->z));
+}
+
+float calc_distanta(struct punct *p1, struct punct *p2){
+    return sqrt(pow((p1->x - p2->x), 2) + pow((p1->y - p2->y), 2) + pow((p1->z - p2->z), 2));
+}
+
+float dist_to_closest_planet(struct nava *n){
+    double dist_min = 1e6;
+    int index_planeta;
+    for(int i=0; i<(n->nr_puncte - 1); i++){
+        if(n->puncte[i].vizitat == false){
+            if(calc_distanta(n->start, n->puncte+i) < dist_min){
+                dist_min = calc_distanta(n->start, n->puncte+i);
+                index_planeta = i;
+            }
+        }
+    }
+    n->puncte[index_planeta].vizitat = true;
+    n->start = n->puncte+index_planeta; 
+    //printf("%d\n", index_planeta);
+    return dist_min;
+}
+
+int main(){
+    int nr_nave;
+    scanf("%d", &nr_nave);
+    struct nava *nave = malloc(nr_nave * sizeof(struct nava));
+    
+    for(int i=0; i<nr_nave; i++){
+        citire_date(nave+i);
+    }
+    
+    for(int i=0; i<nr_nave; i++){
+        double dist=0.0f;
+        for(int j=0; j<((nave+i)->nr_puncte - 1); j++){
+            dist += dist_to_closest_planet(nave+i);
+        }
+        printf("%.2lf\n", dist);
+    }
+    return 0;
+}

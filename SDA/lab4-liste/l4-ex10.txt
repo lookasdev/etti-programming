@@ -1,0 +1,21 @@
+Vom simula un proces simplificat de producție într-o fabrică. Fabrica primește materie primă, care trece printr-un proces de recepție, apoi prin producție, apoi prin livrare. Deci toate produsele pot fi in una din cele 4 stări: nerecepționate, recepționate, procesate, livrate. La ușa fabricii ajung un număr de camioane cu materie primă pe care fabrica le va procesa. Scrieți un program care să simuleze acest proces.
+
+Date de intrare
+Pe prima linie se dă un număr n reprezentând numărul de camioane cu materie primă care ajung la poarta fabricii. Pe a doua linie se află n coduri numerice (numere întregi, fără semn, pe 32 de biți) care identifică camioanele, separate prin whitespace, în ordinea în care acestea au ajuns la fabrică.
+
+Pe a treia linie se află o secvență de 0 sau mai multe litere: r, p sau l, care reprezintă procesul ce se va executa în fabrica: recepție, producție sau livrare. În fiecare moment poate avea loc doar unul dintre cele 3 procese.
+
+Exemplu:
+
+5
+100 134 15 71 43
+rplrrppl
+Date de ieșire
+La ieșire se vor afișa pe 4 rânduri, codurile materiilor prime aflate în lanțul de producție astfel încât: pe prima linie se vor afișa codurile nerecepționate, pe a doua linie codurile camioanelor recepționate, pe a treia linie codurile care au trecut prin producție și pe a patra linie codurile produselor livrate. Pentru ușurință, după fiecare cod afișat se va scrie un spațiu și se va adăuga un caracter newline și după ultima linie.
+
+Exemplu (pentru intrarea de mai sus):
+
+71 43 
+
+15 
+100 134 

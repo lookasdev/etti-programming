@@ -1,0 +1,76 @@
+Să se realizeze un program ce permite stocarea de date pentru N fişiere audio. Fiecare fişier va conţine următoarele informaţii: un vector de lungime 10 cu valori numere întregi cuprinse între 0 şi 255 (secvenţa audio), un şir de caractere de lungime 20 (numele fişierului) şi un vector de lungime 10 cu valori numere reale, cuprinse între 0 şi 1 (secvenţa audio normalizată). Programul va calcula şi afişa pe ecran, pentru fiecare fişier, numele şi secvenţa audio normalizată, calculată după următoarea formulă:
+
+secventanorm(i)=secventa(i)−minimmaxim−minim
+
+unde secventa(i)
+ este valoarea elementului de indice i
+ în cadrul secvenţei originale, maxim
+ şi minim
+ reprezintă valoarea maximă, respectiv minimă a secvenţei originale, iar secventanorm(i)
+ reprezintă valoarea normalizată corespunzătoare elementului de indice i
+ din secvenţa originală.
+
+Date de intrare:
+- nr de fisiere (int)
+- pentru fiecare fisier:
+- numele fisierului (sir de caractere)
+- valorile secventei audio (10 nr intregi)
+
+Date de iesire:
+- pentru fiecare fisier, in ordinea citirii de la tastatura:
+- valorile secventei audio normalizate (10 nr reale cu 2 zecimale)
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct fisier{
+  char nume[20];
+  int secv_audio[10];
+  float secv_audio_norm[10];
+};
+
+void citire_fisier(struct fisier * p) {
+    scanf ("%s", p->nume);
+    for(int i = 0; i < 10; i++) {
+        scanf("%d", p->secv_audio+i);
+    }
+}
+
+void printare_fisier (struct fisier * p) {
+    for(int i = 0; i < 10; i++) {
+        printf("%.2f ", *(p->secv_audio_norm+i));
+    }
+    printf("\n");
+}
+
+void calcul_secv_audio_norm(struct fisier * p) {
+    int maxx = -1;
+    int minn = 256;
+    for(int i = 0; i < 10; i++) {
+        if (*(p->secv_audio+i) > maxx) maxx = *(p->secv_audio+i);
+        if (*(p->secv_audio+i) < minn) minn = *(p->secv_audio+i);
+    }
+    
+    //printf("%d %d \n\n", maxx, minn);
+    
+    for(int i = 0; i < 10; i++) {
+        *(p->secv_audio_norm+i) = (float)(*(p->secv_audio+i) - minn) / (maxx - minn);
+    }
+}
+
+int main()
+{
+    int nr;
+    scanf("%d", &nr);
+    struct fisier* fisiere = (struct fisier*)malloc(nr*sizeof(struct fisier));
+    //struct fisier* fisiere = malloc(nr*sizeof(struct fisier));
+    
+    for(int i = 0; i < nr; i++){
+        citire_fisier(fisiere + i);
+        calcul_secv_audio_norm(fisiere + i);
+        printare_fisier(fisiere + i);
+    }
+    
+    return 0;
+}

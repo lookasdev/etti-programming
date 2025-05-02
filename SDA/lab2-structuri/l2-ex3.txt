@@ -1,0 +1,97 @@
+Să se realizeze un program ce permite stocarea imaginilor unei secvenţe video. Fiecare imagine va conţine următoarele informaţii: o matrice de dimensiune m x n de valori <=16 (imagine), un şir de caractere de maxim 10 elemente (nume) şi histograma imaginii (numărul de apariţii ale fiecărei valori din matrice).
+
+Date de intrare:
+
+numarul de imagini din secventa video (int)
+numarul de linii al unei imagini (int)
+numarul de coloane al unei imagini (int)
+pentru fiecare imagine din secventa:
+nume imagine (secventa de caractere)
+valorile imaginii (nr_linii * nr_col intregi)
+Date de iesire:
+valorile fiecarei imagini, in ordinea citirii de la tastatura, separate de un spatiu, pe linii si coloane
+histogramele fiecarei imagini (16 valori intregi)
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct imagine {
+    int *matrice;
+    int nume[10];
+    int hist[16];
+};
+
+int * citire_matrice(int dim1, int dim2) {
+    int *M = (int*) malloc(dim1*dim2*sizeof(int)); //change
+    for (int i = 0; i < dim1; i++) {
+        for (int j = 0; j < dim2; j++) {
+            scanf("%d", M+dim2*i+j);
+        }
+    }
+    return M;
+}
+
+void afisare_matrice(int *M, int dim1, int dim2) {
+    for (int i = 0; i < dim1; i++) {
+        for (int j = 0; j < dim2; j++) {
+            printf("%d ", *(M+dim2*i+j));
+        }
+        printf("\n");
+    }
+}
+
+void calcul_histograme(struct imagine *secventa_video, int nr_imagini, int dim1, int dim2) {
+    int *matrice;
+    
+    for (int k = 0; k < nr_imagini; k++) {
+        matrice = (secventa_video+k)->matrice;
+    	
+        for (int j = 0; j < 16; j++) {
+            (secventa_video+k)->hist[j] = 0;
+        }
+        
+        for (int i = 0; i < dim1; i++) {
+            for (int j = 0; j < dim2; j++) {
+                (secventa_video+k)->hist[*(matrice+i*dim2+j)]++;
+            }
+        }
+    }
+}
+
+void eliberare_structura(struct imagine *secventa_video)
+{
+    if (secventa_video!=NULL) {
+        free(secventa_video);
+    }
+}
+
+int main()
+{
+    int nr_imagini, dim1, dim2;
+    struct imagine *secventa_video=NULL;
+    
+    scanf("%d", &nr_imagini);
+
+    secventa_video = (struct imagine*) malloc(nr_imagini*sizeof(struct imagine)); //change
+
+    scanf("%d", &dim1);
+    scanf("%d", &dim2);
+    
+    for (int k = 0; k < nr_imagini; k++) {
+        scanf("%s", (secventa_video+k)->nume);
+        (secventa_video+k)->matrice = citire_matrice(dim1, dim2);
+    }
+    
+    for (int k = 0; k < nr_imagini; k++) {
+        afisare_matrice((secventa_video+k)->matrice, dim1, dim2);
+    }
+    
+    calcul_histograme(secventa_video, nr_imagini, dim1, dim2);
+    
+    for (int k = 0; k < nr_imagini; k++) {
+        afisare_matrice((secventa_video+k)->hist, 1, 16);
+    }
+    
+    eliberare_structura(secventa_video);
+    return 0;
+}

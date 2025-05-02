@@ -1,0 +1,86 @@
+Să se realizeze un program ce permite citirea de la tastatură a două şiruri de caractere şi afişează pe ecran şirul concatenat. Operaţiile se vor realiza folosind pointeri.
+
+Pentru evaluarea automată a problemei:
+
+INPUT:
+două șiruri de caractere, citite de pe rânduri diferite;
+OUTPUT:
+șirul de caractere obținut prin concatenarea celui de-al doilea șir în continuarea primului șir.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+char* citire_sir() {
+    char* sir = NULL;
+    int lung = sizeof(char);
+    sir = (char*) malloc(lung);
+    
+    if(!sir) {
+        printf("\neroare memorie\n");
+    }
+    
+    char c;
+    while((c = getc(stdin)) != '\n') {
+        *(sir+lung-1) = c;
+        ++lung;
+        sir = (char*) realloc(sir, lung);
+    }
+    *(sir+lung-1) = '\0';
+    return sir;
+}
+
+void afisare_sir(char* sir) {
+    printf("%s\n", sir);
+}
+
+int string_length (char *str) {
+    int len = 0;
+    while (*str != '\0') {
+        str++;
+        len++;
+    }
+    return len;
+}
+
+char* concatenare(char* sir1, char* sir2) {
+    char *rez = NULL;
+    int lung1 = string_length(sir1);
+    int lung2 = string_length(sir2);
+    
+    rez = (char*) malloc((lung1+lung2+1)*sizeof(char));
+    
+    if(!rez) {
+        printf("\neroare memorie\n");
+    }
+    for(int i = 0; i < lung1; i++) {
+        *(rez+i) = *(sir1+i);
+    }
+    for(int i = 0; i < lung2; i++) {
+        *(rez + lung1 + i) = *(sir2+i);
+    }
+    *(rez + lung1 + lung2) = '\0';
+    return rez;
+}
+
+void eliberare_sir (char *sir) {
+    if (sir != NULL) {
+        free(sir);
+    }
+}
+
+int main()
+{
+    // char *sir1 = NULL;
+    // char *sir2 = NULL;
+    char *sir1 = citire_sir();
+    char *sir2 = citire_sir();
+    
+    char* rez = concatenare(sir1, sir2);
+    afisare_sir(rez);
+    
+    eliberare_sir(sir1);
+    eliberare_sir(sir2);
+    eliberare_sir(rez);
+
+    return 0;
+}

@@ -1,0 +1,74 @@
+Să se realizeze un program ce permite citirea de la tastatură şi afişarea a două matrice de numere întregi, de dimensiuni introduse de la tastatură. Programul va calcula şi afişa matricea diferenţă a celor două matrice. Alocarea memoriei pentru matrice se va realiza dinamic. Pentru soluționarea problemei se vor folosi pointeri.
+
+
+Pentru evaluarea automată a problemei:
+
+INPUT:
+un întreg, m, reprezentând numărul de linii al matricelor;
+un întreg, n, reprezentând numărul de coloane al matricelor;
+m*n întregi, reprezentând elementele primei matrice;
+m*n întregi, reprezentând elementele celei de-a doua matrice;
+OUTPUT:
+valorile primei matrice;
+valorile celei de-a doua matrice;
+valorile matricei diferență.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int * citire_matrice(int dim1, int dim2) {
+    int *M;
+    M = (int*) malloc(dim1 * dim2 * sizeof(int));
+
+    for (int i = 0; i < dim1; i++)
+        for (int j = 0; j < dim2; j++)
+            scanf("%d", M + dim2 * i + j);
+    return M;
+}
+ 
+void afisare_matrice(int *M, int dim1, int dim2) {
+    int i, j;
+    for (int i = 0; i < dim1; i++) {
+        for (int j = 0; j < dim2; j++)
+            printf("%d ", *(M + dim2 * i + j)); //continutul de la adresa M+dim2*i+j <-> M[i][j]
+        printf("\n");
+    }
+}
+int * calcul_diferenta(int *M1, int *M2, int dim1, int dim2) {
+
+    int *M = (int*) malloc(dim1 * dim2 * sizeof(int));
+
+    for (int i = 0; i < dim1; i++)
+        for (int j = 0; j < dim2; j++)
+            *(M + dim2 * i + j) = * (M1 + dim2 * i + j) - * (M2 + dim2 * i + j);
+            
+    return M;
+}
+
+void eliberare_matrice(int *M) {
+    if (M != NULL)
+        free(M);
+}
+
+int main()
+{
+    int * A, * B, * C;
+    int dim1, dim2;
+    
+    scanf("%d", &dim1);
+    scanf("%d", &dim2);
+    
+    A = citire_matrice(dim1, dim2);
+    B = citire_matrice(dim1, dim2);
+
+    afisare_matrice(A, dim1, dim2);
+    afisare_matrice(B, dim1, dim2);
+    
+    C = calcul_diferenta(A, B, dim1, dim2);
+    afisare_matrice(C, dim1, dim2);
+    
+    eliberare_matrice(A);
+    eliberare_matrice(B);
+    eliberare_matrice(C);
+    return 0;
+}

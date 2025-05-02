@@ -1,0 +1,83 @@
+Joc loto
+Să se realizeze un program care să permită stocarea datelor în mod dinamic pentru un joc de loto. Jucătorul poate juca mai multe variante. Fiecare variantă este reprezentată de o serie de maxim 49 de numere întregi în intervalul [1, 49] pe care le-a jucat și de un preț care depinde de câte numere au fost jucate astfel: pentru 6 numere jucate, biletul va costa un preț fix (de ex. 10 RON). Fiecare număr în plus peste cele 6 numere mărește prețul biletului de 1.3 ori (ex: pentru 7 numere se va achita suma de 10 * 1.3 = 13 RON; pentru 8 numere se va achita suma de (10 * 1.3) * 1.3 = 16.9 RON etc).
+
+Să se realizeze în limbajul C următoarele:
+
+o funcție ce permite citirea de la tastatură a unui număr de variante;
+o funcție ce permite citirea de la tastatură a unui număr de numere jucate pentru fiecare variantă, în parte, respectiv numerele care reprezintă varianta respectivă;
+o funcție care calculează prețul fiecărei variante;
+o funcție care calculează suma totală plătită de jucător;
+o funcţie care afişează preţul total plătit de jucător şi, pe câte o linie separată, fiecare variantă jucată;
+un program ce integrează funcțiile realizate anterior pentru a rezolva problema enunțată.
+
+#include<stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+struct varianta{
+    int numere[49];
+    int nr_numere;
+    float pret;
+};
+
+void citire_date(struct varianta *p){
+    for(int i=0; i< p->nr_numere; i++){
+        scanf("%d", (p->numere+i));
+    }    
+}
+
+float calc_pret(struct varianta *p){
+    if(p->nr_numere == 6){
+        return 10;
+    }
+    else{
+        return 10 * pow(1.3, (p->nr_numere - 6));
+    }
+}
+
+void print_varianta(struct varianta *p){
+    for(int i=0; i<p->nr_numere; i++){
+        printf("%d ", *(p->numere+i));
+    }
+    printf("\n");
+}
+
+int main(){
+    int n;
+    scanf("%d", &n);
+    
+    struct varianta variante[n];
+    for(int i=0; i<n; i++){
+        int nr_numere;
+        scanf("%d", &((variante+i)->nr_numere));
+        citire_date(variante+i);
+        
+        
+    }
+    int comanda;
+    scanf("%d", &comanda);
+    if(comanda == 3){
+        for(int i=0; i<n; i++)
+            printf("%.2f\n", calc_pret(variante+i));
+        }
+        if(comanda == 4){
+            float sum=0.0f;
+            for(int i=0; i<n; i++){
+            sum += calc_pret(variante+i);
+        }
+        printf("%.2f\n", sum);
+        }
+        if(comanda == 5){
+            float sum=0.0f;
+            for(int i=0; i<n; i++){
+            sum += calc_pret(variante+i);
+        }
+        printf("%.2f\n", sum);
+        for(int i=0; i<n; i++){
+            print_varianta(variante+i);
+        }
+        }
+    
+    return 0;
+}

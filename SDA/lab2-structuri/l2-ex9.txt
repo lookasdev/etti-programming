@@ -1,0 +1,491 @@
+Problema - Aeroport
+Sa se realizeze in limbajul C o interfață pentru managementul de conținut menită să înregistreze liniile aeriene regulate pentru un aeroport . În acest context, interfața trebuie să permită întregistrarea liniilor aeriene atât pentru terminalul de plecări, cât și pentru terminalul de sosiri. Astfel, un terminal este asociat unui aeroport și este definit de numărul total de linii aeriene precum și de liniile aeriene respective. O linie aeriană este definită de numele companiei de care aparține, identificatorul unic, punctul de plecare, punctul de sosire, data de plecare, ora de plecare, data de sosire, ora de sosire, numărul de coloane de scaune, numărul de linii de scaune, sablonul liniei aeriene, si prețul biletului pentru linia respectivă.
+
+Studiați soluția atașată, modificați și extindeți capabilitatea programului să permită unui potențial călător să interacționeze cu datele înregistrare prin obținerea programului zborurilor ordonate după: punctul de plecare, dată, oră, prețul biletului, sau căutate după punctul de plecare, dată, și oră.
+
+Exemplu intrare: 
+Introduceti numele aeroportului: OTOPENI 
+Meniu: 
+1: Terminal plecari 
+2: Terminal sosiri 
+0: Iesire 
+1 
+Meniu terminal plecari: 
+1: Adaugare avion. 
+2: Afiseaza avioane inregistrate. 
+0: Iesire! 
+1 
+Introduceti numele companiei (alfanumeric): TAROM 
+Introduceti identificatorul avionului (alfanumeric): TA541 
+Numar randuri scaune (int): 30
+Numar coloane scaune (int): 6 
+Pleaca de la aeroportul OTOPENI 
+Soseste la aeroportul (format alfanumeric): GENEVA 
+Pleaca la data ((int) format AAAALLZZ) : 20200320 
+Pleaca la ora ((int) format hhmm): 1730 
+Soseste la data ((int) format AAAALLZZ): 20200320 
+Soseste la ora ((int) format hhmm): 2300 
+Pret bilet (float): 985.65 
+Meniu terminal plecari: 
+1: Adaugare avion. 
+2: Afiseaza avioane inregistrate. 
+0: Iesire!
+
+aeroport.c:
+
+#include "aeroport.h"
+#include <stdio.h>
+#include<stdlib.h>
+
+void meniu_terminal(struct terminal* t, int optiune_meniu_principal) {
+    /*
+    Intrare
+        t                       - variabila pointer de tip struct terminal;
+        optiune_meniu_principal - variabila de tip intreg.
+    
+    Iesire
+        void
+
+     Functia meniu_terminal primeste la intrare un pointer t de tip struct terminal
+     si o variabila optiune_meniu_principal de tip intreg. 
+    */
+
+
+    //Variabila optiune_meniu_principal este o variabila de control pentru afisarea meniului principal.
+    int optiune_meniu_secundar;
+    do
+    {
+        if (optiune_meniu_principal == 1)
+            printf("Meniu terminal plecari:\n");
+        else if (optiune_meniu_principal == 2)
+            printf("Meniu terminal sosiri:\n");
+        printf("1: Adaugare avion.\n");
+        printf("2: Afiseaza avioane inregistrate.\n");
+        printf("0: Iesire!\n");
+
+        scanf("%d%*c", &optiune_meniu_secundar);
+        // Variabila t reprezinta un pointer catre terminal, si este folosita pentru 
+        // a initializa membrii terminalului.
+        switch (optiune_meniu_secundar)
+        {
+        case 1:
+            t->avioane = generare_avion(t->nume_aeroport, t->avioane, &t->nr_avioane, optiune_meniu_principal);
+            break;
+        case 2:
+            afiseaza_terminal(t->avioane, t->nr_avioane);
+            break;
+        default:
+            break;
+        }
+    } while (optiune_meniu_secundar);
+}
+
+char* citeste_sir(void)
+{
+    /*
+    Intrare
+        void
+
+    Iesire
+        char*    - pointer de tip caracter.
+
+     Functia citeste_sir nu primeste la intrare nici un argument, si returneaza
+     un pointer de tip caracter. Functia declara un pointer sir de tip caracter, ii 
+     aloca memorie dinamica, il initializeaza cu un caracter citit de la tastatura.
+     Procesul se repeta iterativ, pana cand este intalnit caracterul linie noua.
+     Variabila pointer sir_tmp de tip caracter este folosita pentru a realoca memorie
+     atunci cand este introdus un nou caracter in memorie.
+     */
+    char* sir = NULL, * sir_tmp = NULL;
+    int dimensiune = 0, index = 0;
+    int caracter = EOF;
+
+    while (caracter) {
+        /* Functia getc() citeste un caracter dintr-un fisier. Cand a ajuns la sfarsitul
+           fisierului, functia returneaza EOF (End of File).
+           De fiecare data cand un program C isi incepe executia, automat se deschid
+           trei stream-uri standard stdin (intrare standard), stdout (iesire standard)
+           si stderr (eroare standard), reprezentand dispozitive de intrare/iesire 
+           (tastatura, consola). Limbajul C trateaza aceste dispozitive ca fiind 
+           pointeri de fisiere. De regula, stdin este folosit pentru a citi de la
+           consola, iar stdout si stderr pentru a scrie in consola.  Acesti pointeri 
+           sunt eliberati automat la iesirea programului.
+        */
+        caracter = getc(stdin);
+        if (caracter == EOF || caracter == '\n')
+            caracter = 0;
+
+        if (dimensiune <= index) {
+            dimensiune += sizeof(char);
+            sir_tmp = (char*)realloc(sir, dimensiune);
+            if (!sir_tmp) {
+                free(sir);
+                sir = NULL;
+                break;
+            }
+            sir = sir_tmp;
+        }
+
+        *(sir + index++) = caracter;
+    }
+    return sir;
+}
+
+void afiseaza_sir(char* sir) {
+    /*
+    Intrare
+        char* sir    - variabila pointer de tip caracter.
+
+    Iesire
+        void
+
+    Functia afiseaza_sir() primeste la intrare un pointer sir de tip caracter,
+    si returneaza void. Functia afiseaza pe rand, fiecare caracter din variabila
+    sir, pana cand este intalnit caracterul nul ('\0').
+    */
+
+
+    while (!*sir)
+        printf("%c", *sir++);
+}
+
+int* generare_sablon_avion(int randuri, int coloane)
+{
+    /*
+    Intrare
+        int randuri    - variabila de tip intreg;
+        int coloane    - variabila de tip intreg.
+    Iesire
+        int*           - pointer de tip intreg.
+
+    Functia generare_sablon_avion(), primeste la intrare doua variabile de tip intreg,
+    randuri si respectiv coloane, si returneaza un pointer de tip intreg. Functia
+    foloseste variabilele randuri si coloane pentru a creea o matrice bidimensionala
+    de randuri x coloane, prin intermediul pointerului sablon. Odata alocata memoria
+    necesara, functia retunraza adresa de inceput a zonei de memorie alocate.
+    */
+
+    int* sablon;
+    sablon = (int*)calloc(randuri * coloane, sizeof(int));
+    if (!sablon)
+    {
+        printf("Eroare de alocare de memorie!\n");
+        return NULL;
+    }
+    else
+        return sablon;
+}
+
+struct avion* citeste_date_avion(char* nume_aeroport, struct avion* av, int optiune) {
+    /*
+    Intrare
+        char* nume_aeroport   - variabila pointer de tip caracter;
+        struct avion* av      - variabila pointer de tip struct avion;
+        int optiune           - variabila de tip intreg.
+    Iesire
+        struct avion*         - variabila pointer de tip struct avion.
+
+    Functia citeste_date_avion() primeste la intrare o variabila pointer
+    nume_aeroport de tip caracter, o variabila pointer av de tip struct avion,
+    o variabila optiune de tip caracter si returneaza o variabila pointer de tip
+    struct avion. Functia permite initializarea campurilor structurii avion,
+    pentru obiectul curent.
+    */
+
+    // Intrari si Iesiri (I/O) de la consola formatate
+    printf("Introduceti numele companiei (alfanumeric): ");
+    av->companie = citeste_sir();
+    printf("Introduceti identificatorul avionului (alfanumeric): ");
+    av->identificator = citeste_sir();
+    printf("Numar randuri scaune (int): ");
+    /* Puteti sa impuneti functiei scanf sa citeasca o data de intrare
+       dar sa nu o atribuie niciunei variabile prin folosirea simbolului
+       '*' de suprimare a intrarilor. De exemplu, pentru instructiunea 
+       scanf("%d*c%d", &x, &y), daca se vor introduce valorile "10,10", 
+       10 va fi atribuit primului cod de formatare %d, virgula va fi citita 
+       si nu va vi atribuita nici unei variabile, iar 10 va fi atribuit 
+       ultimului cod de formatare %d. Folosim suprimarea intrari pentru
+       a elimina din memorie caracterul linie noua, dupa fiecare citire
+       de la tastatura.
+    */
+    scanf("%d%*c", &av->randuri_scaune);
+    printf("Numar coloane scaune (int): ");
+    scanf("%d%*c", &av->coloane_scaune);
+    
+    if (optiune == 1) 
+    {
+        printf("Pleaca de la aeroportul %s\n", nume_aeroport);
+        printf("Soseste la aeroportul (format alfanumeric): ");
+        av->punct_sosire = citeste_sir();
+    }
+    else if (optiune == 2) {
+        printf("Pleaca de la aeroportul (format alfanumeric):");
+        av->punct_plecare = citeste_sir();
+        printf("Soseste la aeroportul %s\n", nume_aeroport);
+    }
+ 
+    // A - an, L - luna, Z - zi
+    printf("Pleaca la data ((int) format AAAALLZZ) : ");
+    scanf("%d%*c", &av->data_plecare);
+    // h - ora, m - minut
+    printf("Pleaca la ora ((int) format hhmm): ");
+    scanf("%d%*c", &av->ora_plecare);
+    printf("Soseste la data ((int) format AAAALLZZ): ");
+    scanf("%d%*c", &av->data_sosire);
+    printf("Soseste la ora ((int) format hhmm): ");
+    scanf("%d%*c", &av->ora_sosire);
+    printf("Pret bilet (float): ");
+    scanf("%f%*c", &av->pret_bilet);
+
+    return av;
+}
+struct avion* generare_avion(char* nume_aeroport, struct avion* av, int* nr, int optiune)
+{
+    /*
+    Intrare
+        char* nume_aeroport   - variabila pointer de tip caracter;
+        struct avion* av      - variabila pointer de tip struct avion;
+        int* nr               - variabila pointer de tip intreg.
+        int optiune           - variabila de tip intreg.
+
+    Iesire
+        struct avion*       - variabila pointer de tip struct avion.
+
+    Functia generare_avion() primeste la intrare o variabila pointer nume_aeroport 
+    de tip caracter, o variabila pointer av de tip struct avion, o variabila pointer nr
+    de tip intreg, si o variabila optiune de tip intreg,  si returneaza o variabila 
+    pointer de tip struct avion. Functia permite alocarea dinamica de memorie pentru o
+    variabila de tip struct avion. Prin intermediul variabilei pointer nr, functia 
+    permite alocarea de memorie a unei noi variabile pointer de tip structura avion
+    adiacenta celorlalte.
+
+    */
+    // Declara si initializeaza o variabila pointer de tip struct avion cu valoarea NULL.
+    struct avion* av_tmp = NULL;
+    /* Testeaza daca variabila pointer av este un pointer NULL. Altfel spus, testeaza
+       daca av indica spre o zona de memorie NULL. Daca testul conditional este adevarat, 
+       se aloca memorie pentru prima variabila de tip struct avion.
+    */
+    if (!av)
+    {
+        av = (struct avion*)malloc((*nr)++ + sizeof(struct avion));
+        if (!av)
+        {
+            printf("Eroare de alocare memorie!");
+            return NULL;
+        }
+        av = citeste_date_avion(nume_aeroport, av, optiune);
+        av->sablon = generare_sablon_avion(av->randuri_scaune, av->coloane_scaune);
+    }
+    else
+    /* Daca exista deja o variabila de tip struct avion alocata in mod dinamic, alocam o noua
+       adresa pentru o noua variabila de tip struct avion in continuarea celei existente, 
+       creand un vector de tip struct avion.
+    */
+    {
+        /* Pentru a nu pierde datele introduse anterior, realocam memorie pentru a permite
+           introducerea unui nou element de tip struct avion intr-o variabila temporara av_tmp.
+        */
+            av_tmp = (struct avion*)realloc(av, ++(*nr) * sizeof(struct avion));
+        // Daca nu s-a putut realoca memorie, se afiseaza un mesaj in consola si se
+        // returneaza variabila de la intrare, intacta.
+        if (!av_tmp)
+        {
+            printf("Eroare de alocare memorie!");
+            return av;
+        }
+        // Atribuie variabilei av noua adresa de memorie catre zona de memorie realocata prin av_tmp
+        av = av_tmp;
+        av_tmp = av_tmp + *nr - 1;
+        av_tmp = citeste_date_avion(nume_aeroport, av_tmp, optiune);
+        av_tmp->sablon = generare_sablon_avion(av_tmp->randuri_scaune, av_tmp->coloane_scaune);
+    }
+
+    return av;
+}
+
+void afisare_sablon_avion(struct avion* av) {
+    /*
+    Intrare
+        struct avion* av    - variabila pointer de tip struct avion;
+
+    Iesire
+        void
+    
+    Functia afisare_sablon_avion() primeste la intrare un pointer de tip struct avion
+    si returneaza void. Functia permite afisarea unei matrice folosind campurile
+    structurii av.
+    */
+    for (int i = 0; i < av->randuri_scaune; i++) {
+        for (int j = 0; j < av->coloane_scaune; j++) {
+            printf("%d ", *(av->sablon + av->coloane_scaune * i + j));
+            if (j == (av->coloane_scaune / 2) - 1) {
+                printf("\t");
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+
+void afiseaza_date_avion(struct avion* av) {
+    /*
+    Intrare
+        struct avion* av    - variabila pointer de tip struct avion;
+
+    Iesire
+        void
+
+    Functia afiseaza_date_avion() primeste la intrare un pointer de tip struct avion
+    si returneaza void. Functia permite afisarea campurilor structurii av.
+    structurii av.
+    */
+    printf("Companie: %s\n", av->companie);
+    printf("identificator avion: %s\n", av->identificator);
+    printf("Sablon avion:\n");
+    afisare_sablon_avion(av);
+}
+void afiseaza_terminal(struct avion* av, int nr_avioane) {
+    /*
+    Intrare
+        struct avion* av    - variabila pointer de tip struct avion;
+        int nr_avioane      - variabila de tip intreg.
+    Iesire
+        void
+
+    Functia afiseaza_terminal(), primeste la intrare un pointer de tip struct avion si
+    o variabila nr_avioane de tip intreg, si returneaza void. Functia permite 
+    afisarii terminalului curent.
+    */
+    int i;
+    for (i = 0; i < nr_avioane; i++)
+        afiseaza_date_avion(av + i);
+}
+
+void eliberare_memorie(struct terminal* t) {
+    /*
+    Intrare
+        struct terminal* t  - variabila pointer de tip struct terminal.
+
+    Iesire
+        void
+
+    Functia eliberare_memorie(), primeste la intrare un pointer de tip struct terminal
+    si returneaza void. Functia permite eliberarea de memorie pentru fiecare obiect
+    alocat in mod dinamic avand ca punct de intrare pointerul t.
+    */
+    int i;
+    for (i = 0; i < t->nr_avioane; i++) {
+        free(((t->avioane)+i)->sablon);
+        free(t->avioane + i);
+    }
+    free(t);
+}
+
+aeroport.h:
+
+#pragma once
+struct avion
+{
+	char* companie;
+	char* identificator;
+	char* punct_plecare;
+	char* punct_sosire;
+	int data_plecare;
+	int ora_plecare;
+	int data_sosire;
+	int ora_sosire;
+	int randuri_scaune;
+	int coloane_scaune;
+	int* sablon;
+	float pret_bilet;
+};
+
+struct terminal
+{
+	char* nume_aeroport;
+	struct avion* avioane;
+	int nr_avioane;
+
+};
+
+
+struct calator
+{
+	char* nume;
+	char* prenume;
+	char* punct_plecare;
+	char* punct_sosire;
+	int data_plecare;
+	int ora_plecare;
+	int data_sosire;
+	int ora_sosire;
+	float pret;
+
+};
+void meniu_terminal(struct terminal*, int);
+char* citeste_sir();
+void afiseaza_sir(char*);
+int* generare_sablon_avion(int, int);
+void afisare_sablon_avion(struct avion*);
+struct avion* generare_avion(char*, struct avion*, int*, int);
+struct avion* citeste_date_avion(char*, struct avion*, int);  
+void afiseaza_date_avion(struct avion*);
+void afiseaza_terminal(struct avion*, int);
+void eliberare_memorie(struct terminal*);
+
+main.c:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "aeroport.h"
+
+int main()
+{
+    int optiune;
+    // Declarare terminale aeroport si alocare memorie
+    struct terminal* plecari = (struct terminal*)malloc(sizeof(struct terminal));
+    struct terminal* sosiri  = (struct terminal*)malloc(sizeof(struct terminal));
+
+    // Initializare terminale aeroport
+    printf("Introduceti numele aeroportului: ");
+    plecari->nume_aeroport = citeste_sir();
+    sosiri->nume_aeroport = plecari->nume_aeroport;
+
+    plecari->avioane = sosiri->avioane = NULL;
+    plecari->nr_avioane = sosiri->nr_avioane = 0;
+
+
+    do {
+        printf("Meniu:\n");
+        printf("1: Terminal plecari\n");
+        printf("2: Terminal sosiri\n");
+        printf("0: Iesire\n");
+
+        scanf("%d%*c", &optiune);
+        switch (optiune)
+        {
+        case 0:
+            eliberare_memorie(plecari);
+            eliberare_memorie(sosiri);
+            free(plecari);
+            free(sosiri);
+            /*
+             Functia exit() determina terminarea executiei programului. 
+             Parametrul functiiei exit() defineste starea programului la momentul
+             apelului. Valoarea zero defineste o terminare normala a executiei
+             programului, iar o valoare diferita de zero semnaleaza prezenta unei erori.
+             */
+            exit(0);
+        case 1:
+            meniu_terminal(plecari, optiune);
+            break;
+        case 2:
+            meniu_terminal(sosiri, optiune);
+            break;
+        }
+    } while (optiune);
+
+    return 0;
+}

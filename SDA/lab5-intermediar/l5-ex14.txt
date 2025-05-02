@@ -1,0 +1,242 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct NOD {
+    int cifra;
+    struct NOD * next;
+};
+
+struct NOD* creare_nod(int cifra) {
+    struct NOD* nod = malloc(sizeof(struct NOD));
+    nod->cifra = cifra;
+    nod->next = NULL;
+    return nod;
+}
+
+struct NOD* adaugare_nod_sfarsit_lista(struct NOD* head, int cifra) {
+    struct NOD* nod_nou = creare_nod(cifra);
+    if (head == NULL) {
+        return nod_nou;
+    }
+    struct NOD* nod_curent = head;
+    while (nod_curent->next != NULL) {
+        nod_curent = nod_curent->next;
+    }
+    nod_curent->next = nod_nou;
+    return head;
+}
+
+struct NOD* citeste_numar() {
+    char numar[1000];
+    scanf("%s", numar);
+    
+    struct NOD* head = NULL;
+    for (int i = 0; numar[i] != '\0'; i++) {
+        head = adaugare_nod_sfarsit_lista(head, numar[i] - '0');
+    }
+    
+    return head;
+}
+
+void afisare_lista(struct NOD * head){
+    int i = 0;
+    struct NOD * nod_curent;
+
+    if (head == NULL) {
+        printf("Atentie, lista este goala!\n");
+        return;
+    }
+
+    nod_curent = head;
+
+    while (nod_curent != NULL) {
+        printf("%d", nod_curent -> cifra);
+        nod_curent = nod_curent -> next;
+    }
+    printf("\n");
+}
+
+struct NOD* inverseaza_lista(struct NOD* cap) {
+    struct NOD* anterior = NULL;
+    struct NOD* curent = cap;
+    struct NOD* urmator = NULL;
+
+    while (curent != NULL) {
+        urmator = curent->next;
+        curent->next = anterior;
+        anterior = curent;
+        curent = urmator;
+    }
+
+    return anterior; // noul cap al listei
+}
+
+struct NOD* aduna_numere(struct NOD* num1, struct NOD* num2) {
+    struct NOD* rezultat = NULL;
+    struct NOD* temp = NULL;
+    int transport = 0;
+    
+    num1 = inverseaza_lista(num1);
+    num2 = inverseaza_lista(num2);
+    
+    while (num1 != NULL || num2 != NULL || transport > 0) {
+        int suma = transport;
+        if (num1 != NULL) {
+            suma += num1->cifra;
+            num1 = num1->next;
+        }
+        if (num2 != NULL) {
+            suma += num2->cifra;
+            num2 = num2->next;
+        }
+
+        transport = suma / 10;
+        suma = suma % 10;
+
+        if (rezultat == NULL) {
+            rezultat = creare_nod(suma);
+            temp = rezultat;
+        } else {
+            temp->next = creare_nod(suma);
+            temp = temp->next;
+        }
+    }
+    
+    rezultat = inverseaza_lista(rezultat);
+    return rezultat;
+}
+
+int numara_cifre(struct NOD* head) { // dintr-o lista
+    int count = 0;
+    struct NOD* nod_curent = head;
+
+    // Parcurgem lista și numărăm nodurile
+    while (nod_curent != NULL) {
+        count++;
+        nod_curent = nod_curent->next;
+    }
+
+    return count;
+}
+
+int compara_numere(struct NOD* num1, struct NOD* num2) {
+    if(numara_cifre(num1) > numara_cifre(num2)) return 1;
+    else if (numara_cifre(num1) < numara_cifre(num2)) return -1;
+    else if (numara_cifre(num1) == numara_cifre(num2)) {
+    
+        // Comparăm numerele
+        while (num1 != NULL && num2 != NULL) {
+            if (num1->cifra > num2->cifra) {
+                return 1;  // num1 este mai mare
+            } else if (num1->cifra < num2->cifra) {
+                return -1; // num2 este mai mare
+            }
+            num1 = num1->next;
+            num2 = num2->next;
+        }
+        
+        return 0; // numerele sunt egale
+    }
+}
+
+struct NOD * stergere_nod_inceput_lista(struct NOD * head){
+    
+    if(head == NULL){
+        printf("Atentie: lista este goala.");
+        return NULL;
+    }
+    if(head->next == NULL) {
+        free(head);
+        return NULL;
+    }
+    struct NOD * ptr_prim_nod = head;
+    head = head->next;
+    free(ptr_prim_nod);
+    return head;
+
+}
+
+void scade_numere(struct NOD* num1, struct NOD* num2) {
+    struct NOD* rezultat = NULL;
+    struct NOD* temp = NULL;
+    int imprumut = 0;
+    
+    int negative_number = 0;
+    
+    if(compara_numere(num1, num2) == -1) { // reverse numbers so the first one is always bigger than the 2nd
+        struct NOD * aux = num1;
+        num1 = num2;
+        num2 = aux;
+        negative_number = 1;
+    }
+    
+    num1 = inverseaza_lista(num1);
+    num2 = inverseaza_lista(num2);
+    
+    while (num1 != NULL) {
+        int diferenta = num1->cifra - imprumut;
+        if (num2 != NULL) {
+            diferenta -= num2->cifra;
+            num2 = num2->next;
+        }
+
+        if (diferenta < 0) {
+            diferenta += 10;
+            imprumut = 1;
+        } else {
+            imprumut = 0;
+        }
+
+        if (rezultat == NULL) {
+            rezultat = creare_nod(diferenta);
+            temp = rezultat;
+        } else {
+            temp->next = creare_nod(diferenta);
+            temp = temp->next;
+        }
+        num1 = num1->next;
+    }
+    
+    rezultat = inverseaza_lista(rezultat);
+    if(rezultat->cifra == 0) rezultat = stergere_nod_inceput_lista(rezultat);
+    if (negative_number == 1) printf("-");
+    afisare_lista(rezultat);
+}
+
+int este_palindrom(struct NOD* head) {
+    struct NOD* lista_inversata = inverseaza_lista(head);
+    struct NOD* original = head;
+
+    while (original != NULL && lista_inversata != NULL) {
+        if (original->cifra != lista_inversata->cifra) {
+            return 0; // nu este palindrom
+        }
+        original = original->next;
+        lista_inversata = lista_inversata->next;
+    }
+
+    return 1; // este palindrom
+}
+
+int main() {
+    struct NOD* numar1 = citeste_numar();
+    struct NOD* numar2 = citeste_numar();
+    
+    int comanda;
+    scanf("%d", &comanda);
+
+    if (comanda == 1) {
+        afisare_lista(numar1);
+        afisare_lista(numar2);
+    } else if (comanda == 2) {
+        struct NOD* suma = aduna_numere(numar1, numar2);
+        afisare_lista(suma);
+    } else if (comanda == 3) {
+        scade_numere(numar1, numar2); // + afisarea diferentei
+    } else if (comanda == 4) {
+        struct NOD* suma = aduna_numere(numar1, numar2);
+        if (este_palindrom(suma)) printf("da\n");
+        else printf("nu\n");
+    }
+    return 0;
+}

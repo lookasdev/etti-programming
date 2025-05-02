@@ -1,0 +1,42 @@
+Să se realizeze un program ce permite citirea de la tastatură a două numere întregi şi calculează suma, diferenţa şi media aritmetică a lor. Operațiile se vor realiza indirect, prin intermediul unor variabile pointer. Să se afişeze pe ecran valorile, adresele de memorie și valorile indicate de pointeri cât şi valorile şi adresele de memorie pentru rezultate.
+
+Pentru evaluarea automată a problemei:
+
+INPUT:
+doi întregi;
+OUTPUT (fiecare valoare pe un rând nou):
+valoarea primului număr;
+valoarea celui de-al doilea număr;
+valoarea sumei;
+valoarea diferenței;
+valoarea mediei, cu 2 zecimale.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int x, y, suma, diferenta;
+    float medie;
+    
+    int *a, *b;
+    
+    a = &x;
+    b = &y;
+    
+    scanf("%d", a);
+    scanf("%d", b);
+    
+    printf("%d\n", *a);
+    printf("%d\n", *b);
+    
+    suma = *a+*b;
+    diferenta = *a-*b;
+    medie = (float)(*a+*b)/2;
+    
+    printf("%d\n", suma);
+    printf("%d\n", diferenta);
+    printf("%.2f\n", medie);
+
+    return 0;
+}

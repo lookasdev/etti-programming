@@ -1,0 +1,127 @@
+Descriere
+Ați fost angajați de conducerea unui spital de urgență să scrieți un program care să decidă ordinea preluării pacienților în UPU (Unitatea Primiri Urgențe). Fiecărui pacient i se atribuie o prioritate la venire, în funcție de cât de severă este starea sa. Medicii de gardă vor prelua apoi pacienții întâi în ordinea priorității și apoi în ordinea venirii. Altfel spus, dacă în coadă sunt doar pacienți cu aceeași prioritate, primul pacient sosit este și cel servit. Dacă în coadă sunt pacienți cu priorități diferite, este consultat pacientul cu prioritatea maximă, indiferent de când a fost adăugat în coadă. Dacă există mai mulți pacienți cu aceeași prioritate maximă, se va consulta acela dintre ei care a venit primul. Prioritatea este reprezentată de o valoare numerică întreagă fără semn, unde 0 este prioritatea maximă și pe măsură ce valoarea crește, prioritatea scade. 
+
+Formatul liniilor citite de la tastatură este:
++ NUME PRENUME VÂRSTĂ SEX PRIORITATE
+sau
+-
+sau
+*
+Dacă linia citită de la tastatură începe cu +, atunci se va introduce pacientul respectiv în coada cu priorități. Exemple:
++ Ion Popescu 36 M 3
++ Maria Ghitescu 23 F 2
++ Ghita Ion 12 M 0
+Dacă linia începe cu -, ea nu va mai conține nimic după și acest lucru comandă extragerea și afișarea pe ecran a informațiilor a primului pacientul sosit cu prioritatea maximă, dar fără valoarea priorității. Dacă linia începe cu *, ea nu va mai conține nimic după și acest lucru comandă dezalocarea memoriei utilizate și oprirea aplicației. 
+Exemplu:
+Input
++ Ion Popescu 36 M 3
++ Maria Ghitescu 23 F 2
++ Ghita Ion 12 M 0
++ Andrei Ionescu 73 M 0
+-
++ Anita Gheorghe 45 F 1
+-
++ Florina Mitescu 3 F 0
+-
+-
+-
++ Gigi Florescu 29 M 1
+-
+-
+*
+Output:
+Ghita Ion 12 M
+Andrei Ionescu 73 M
+Florina Mitescu 3 F
+Anita Gheorghe 45 F
+Maria Ghitescu 23 F
+Gigi Florescu 29 M
+Ion Popescu 36 M
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+struct NOD {
+    char name[51];
+    char surname[51];
+    int age;
+    char sex;
+    int priority; // parametru in plus pt coada cu prioritati
+    struct NOD *next;
+};
+
+struct NOD * createNode(char *name, char *surname, int age, char sex, int priority) {
+    struct NOD *new_node = malloc(sizeof(struct NOD));
+
+    strcpy(new_node->name, name);
+    strcpy(new_node->surname, surname);
+    new_node->age = age;
+    new_node->sex = sex;
+    new_node->priority = priority;
+    new_node->next = NULL;
+
+    return new_node;
+}
+
+struct NOD * enqueue(struct NOD *head, char *name, char *surname, int age, char sex, int priority) {
+    struct NOD * new_node = createNode(name, surname, age, sex, priority);
+
+    if (head == NULL || head->priority > priority) { // baga la inceput
+        new_node->next = head;
+        return new_node;
+    } else { // cauta pozitia de insertie
+        struct NOD *current = head;
+        while (current->next != NULL && current->next->priority <= priority) {
+            current = current->next;
+        }
+        new_node->next = current->next;
+        current->next = new_node;
+    }
+
+    return head;
+}
+
+struct NOD *dequeue(struct NOD *head) { // dequeue la primul elem din coada adica pacientul cu cea mai mare prioritate(cea mai mica valoare numerica), datorita modului in care au fost bagati in lista, acesta va fi mereu primul nod din lista
+    if (head == NULL) {
+        printf("Queue is empty!\n");
+        return NULL;
+    }
+
+    struct NOD *temp = head;
+    printf("%s %s %d %c\n", temp->name, temp->surname, temp->age, temp->sex);
+    head = head->next;
+    free(temp);
+    return head;
+}
+
+void freeQueue(struct NOD *head) {
+    while (head != NULL) {
+        struct NOD *temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    struct NOD *queue = NULL;
+
+    char input[101];
+    while (1) {
+        scanf("%s", input);
+        if (strcmp(input,"+") == 0) {
+            char name[51], surname[51], sex;
+            int age, priority;
+            scanf("%s %s %d %c %d", name, surname, &age, &sex, &priority);
+            queue = enqueue(queue, name, surname, age, sex, priority);
+        } else if (strcmp(input,"-") == 0) {
+            queue = dequeue(queue);
+        } else if (strcmp(input,"*") == 0) {
+            freeQueue(queue);
+            break;
+        }
+    } 
+
+    return 0;
+}

@@ -1,0 +1,142 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_VERS 101
+
+typedef struct {
+    char versuri[4][MAX_VERS];
+} Strofa;
+
+typedef struct {
+    Strofa *strofe;
+    int nr_strofe;
+} Poezie;
+
+void afisare_poezie(Poezie *poezie) {
+    for (int i = 0; i < poezie->nr_strofe; i++) {
+        for (int j = 0; j < 4; j++) {
+            printf("%s\n", poezie->strofe[i].versuri[j]);
+        }
+        printf("\n");
+    }
+}
+
+// Verif rima imbratisata in prima strofa
+void verifica_rima(Poezie *poezie) {
+    Strofa prima_strofa = poezie->strofe[0];
+    char r1[3], r2[3], r3[3], r4[3];
+    
+    // extragem ultimele doua caractere din fiecare vers
+    strncpy(r1, prima_strofa.versuri[0] + strlen(prima_strofa.versuri[0]) - 2, 2);
+    strncpy(r2, prima_strofa.versuri[1] + strlen(prima_strofa.versuri[1]) - 2, 2);
+    strncpy(r3, prima_strofa.versuri[2] + strlen(prima_strofa.versuri[2]) - 2, 2);
+    strncpy(r4, prima_strofa.versuri[3] + strlen(prima_strofa.versuri[3]) - 2, 2);
+
+    // add terminatorul de string
+    r1[2] = r2[2] = r3[2] = r4[2] = '\0';
+
+    // rima imbratisata : A-B-B-A
+    if (strcmp(r1, r4) == 0 && strcmp(r2, r3) == 0) {
+        printf("%s-%s-%s-%s\n", r1, r2, r3, r4);
+    } else {
+        printf("nu\n");
+    }
+}
+
+void inversare_strofe(Poezie *poezie) { // afisare inversa
+    for (int i = poezie->nr_strofe - 1; i >= 0; i--) {
+        for (int j = 0; j < 4; j++) {
+            printf("%s\n", poezie->strofe[i].versuri[j]);
+        }
+        printf("\n");
+    }
+}
+
+typedef struct {
+    char rima[3];
+    int frecventa;
+} Rima;
+
+void cea_mai_frecventa_rima(Poezie *poezie) {
+    Rima rime[100]; // rime unice
+    int nr_rime = 0; // nr de rime unice
+
+    // parcurgem fiecare strofa si extragem ultimele doua caractere ale fiecarui vers
+    for (int i = 0; i < poezie->nr_strofe; i++) {
+        Strofa s = poezie->strofe[i];
+        char rime_versuri[4][3];
+
+        // extragem ultimele doua caractere pentru fiecare vers
+        for (int j = 0; j < 4; j++) {
+            int len = strlen(s.versuri[j]);
+            strncpy(rime_versuri[j], s.versuri[j] + len - 2, 2);
+            rime_versuri[j][2] = '\0';
+        }
+
+        // adaugam fiecare rima la lista de rime si actualizam frecventele
+        for (int j = 0; j < 4; j++) {
+            int gasit = 0;
+
+            // cautam rima in lista de rime unice
+            for (int k = 0; k < nr_rime; k++) {
+                if (strcmp(rime[k].rima, rime_versuri[j]) == 0) {
+                    rime[k].frecventa++;
+                    gasit = 1;
+                    break;
+                }
+            }
+
+            // daca rima nu a fost gasita o adaugam la lista de rime unice
+            if (!gasit) {
+                strcpy(rime[nr_rime].rima, rime_versuri[j]);
+                rime[nr_rime].frecventa = 1;
+                nr_rime++;
+            }
+        }
+    }
+
+    // gasim rima cu frecventa maxima
+    int max_frecventa = 0;
+    char* rima_max = NULL;
+    for (int i = 0; i < nr_rime; i++) {
+        if (rime[i].frecventa > max_frecventa) {
+            max_frecventa = rime[i].frecventa;
+            rima_max = rime[i].rima;
+        }
+    }
+
+    // afisam rima cu cea mai mare frecventa
+    if (rima_max) {
+        printf("%s\n", rima_max);
+    }
+}
+
+int main() {
+    Poezie* poezie = malloc(sizeof(Poezie));
+    scanf("%d", &poezie->nr_strofe);
+    poezie->strofe = malloc(poezie->nr_strofe * sizeof(Strofa));
+
+    for (int i = 0; i < poezie->nr_strofe; i++) {
+        for (int j = 0; j < 4; j++) {
+            scanf(" %[^\n]", poezie->strofe[i].versuri[j]); // citim pana la intalnirea caracterului '\n'
+        }
+    }
+
+    int comanda;
+    scanf("%d", &comanda);
+    if (comanda == 1) {
+        afisare_poezie(poezie);
+    } else if (comanda == 2) {
+        verifica_rima(poezie);
+    } else if (comanda == 3) {
+        inversare_strofe(poezie);
+    } else if (comanda == 4) {
+        cea_mai_frecventa_rima(poezie);
+    }
+
+    free(poezie->strofe);
+    free(poezie);
+    
+    return 0;
+}

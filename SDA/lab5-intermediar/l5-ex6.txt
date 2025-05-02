@@ -1,0 +1,135 @@
+Joc loto (v2)
+Pornind de la structura și codul de mai jos, să se realizeze un program care să listeze participanții la o extragere a loteriei și sumele câștigate de aceștia. Se introduce de la tastatură o secvență de 2 numere câștigătoare și se stabilește premiul acordat fiecărui jucător. Un jucător poate juca maxim 10 numere întregi, din intervalul [1, 49]. Se premiază ghicirea a 1 (categoria 2), respectiv 2 (categoria 1) numere. Fondul total de câștiguri se împarte după cum urmează:
+
+70% se alocă categoriei 1;
+30% se alocă categoriei a 2-a;
+În cazul în care există mai mulţi câştigători în cadrul unei categorii, indiferent de numărul acestora, contravaloarea premiul se împarte în mod egal între toţi câştigătorii categoriei respective.
+
+Să se realizeze în limbajul C următoarele:
+
+o funcție ce permite extragerea (citirea de la tastatură) și stocarea unei secvențe de 2 numere câștigătoare și citirea de la tastatură a fondului total de câștiguri;
+o funcție ce determină câte numere câștigătoare au fost ghicite de către fiecare jucător;
+o funcție care calculează suma alocată pentru fiecare categorie, în parte;
+o funcție care calculează suma câștigată de fiecare jucător, în parte;
+o funcţie care afişează numele şi suma câştigată pentru fiecare jucător;
+un program ce integrează funcțiile realizate anterior pentru a rezolva problema enunțată.
+
+
+#include<stdlib.h>
+#include<stdio.h>
+
+struct jucator {
+    char nume[100];
+    int nr_nr;
+    int *varianta;
+    int procent;
+};
+
+void creare_jucator(struct jucator *p) {
+    int i;
+    //printf("Nume jucator: ");
+    scanf("%s", p->nume);
+    //printf("Numar de numere jucate: ");
+    scanf("%d", &p->nr_nr);
+    p->varianta = (int *) malloc(p->nr_nr * sizeof(int));
+//    printf("Numerele pe care doriti sa le jucati: ");
+    for (i = 0; i < p->nr_nr; i++) {
+        scanf("%d", (p->varianta + i));
+    }
+}
+
+int verif_nr(struct jucator *p, int nr_castigatoare[2]){
+    int nr_ghicite=0;
+    for(int i=0; i<p->nr_nr; i++){
+        for(int j=0; j<2; j++){
+            if(*(p->varianta+i) == *(nr_castigatoare+j)){
+                nr_ghicite++;
+            }
+        }
+    }
+    return nr_ghicite;
+}
+
+int calc_suma_categorii(int fond_total){
+    
+}
+
+int main() {
+    int i, j, nr_jucatori;
+    struct jucator *jucatori = NULL;
+
+    int nr_castigatoare[2];
+    int fond_total;
+    for(int i=0; i<2; i++){
+        scanf("%d", (nr_castigatoare+i));
+    }
+    scanf("%d", &fond_total);
+  //  printf("Introduceti numar jucatori: ");
+    scanf("%d", &nr_jucatori);
+    jucatori = (struct jucator *) malloc(nr_jucatori * sizeof(struct jucator));
+
+    for (i = 0; i < nr_jucatori; i++) {
+        creare_jucator(jucatori + i);
+    }
+    int comanda;
+    scanf("%d", &comanda);
+    
+    if(comanda == 2){
+        for(int i=0; i<nr_jucatori; i++){
+            printf("%d \n", verif_nr(jucatori+i, nr_castigatoare));
+        }
+    }
+    
+    if(comanda == 3){
+        printf("%d\n", (70 * fond_total)/100);
+        printf("%d\n", (30 * fond_total)/100);
+    }
+    
+    if(comanda == 4){
+        int nr_castigatori_2 = 0;
+        int nr_castigatori_1 = 0;
+        for(int i=0; i<nr_jucatori; i++){
+            if(verif_nr(jucatori+i, nr_castigatoare) == 1){
+                nr_castigatori_2++;
+            }
+            if(verif_nr(jucatori+i, nr_castigatoare) == 2){
+                nr_castigatori_1++;
+            }
+        }
+        
+        for(int i=0; i<nr_jucatori; i++){
+            if(verif_nr(jucatori+i, nr_castigatoare) == 2){
+                printf("%d\n", (70 * fond_total)/100/nr_castigatori_1);
+            }
+            if(verif_nr(jucatori+i, nr_castigatoare) == 1){
+                printf("%d\n", (30 * fond_total)/100/nr_castigatori_2);
+            }
+        }
+    }
+    
+    if(comanda == 5){
+        int nr_castigatori_2 = 0;
+        int nr_castigatori_1 = 0;
+        for(int i=0; i<nr_jucatori; i++){
+            if(verif_nr(jucatori+i, nr_castigatoare) == 1){
+                nr_castigatori_2++;
+            }
+            if(verif_nr(jucatori+i, nr_castigatoare) == 2){
+                nr_castigatori_1++;
+            }
+        }
+        
+        for(int i=0; i<nr_jucatori; i++){
+            if(verif_nr(jucatori+i, nr_castigatoare) == 2){
+                printf("%s ", (jucatori+i)->nume);
+                printf("%d\n", (70 * fond_total)/100/nr_castigatori_1);
+            }
+            if(verif_nr(jucatori+i, nr_castigatoare) == 1){
+                printf("%s ", (jucatori+i)->nume);
+                printf("%d\n", (30 * fond_total)/100/nr_castigatori_2);
+            }
+        }
+    }
+
+    return 0;
+}

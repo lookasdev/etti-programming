@@ -1,0 +1,53 @@
+Mergând cu maşina pe o autostradă cu 2 benzi pe sens ajungeţi într-un punct în care, datorită lucrărilor la infrastructură, circulaţia este îngreunată, cele 2 benzi contopindu-se într-una singură. Considerând că toţi şoferii urmează această regulă, din cele 2 benzi se va intra alternativ în unica bandă disponibilă. Scrieţi un program care să intercaleze şi să afişeze ordinea maşinilor, după contopirea celor 2 benzi, începând cu maşinile de pe cea de-a doua bandă.
+
+Date de intrare
+Se vor citi de la tastatură (fluxul stdin) următoarele date:
+
+Două numere întregi m şi n reprezentând numărul inițial de maşini pe benzile 1, respectiv 2;
+
+De pe următoarele m linii, cele m maşini, fiecare pe un rând nou, reprezentate de numărul de înmatriculare;
+
+De pe următoarea n linii cele n maşini, fiecare pe un rând nou, reprezentate de numărul de înmatriculare;
+
+Date de ieșire
+Programul va afişa pe ecran (stream-ul standard de ieşire), în ordine, numerele de înmatriculare ale maşinilor după contopirea celor 2 benzi de circulaţie. Pentru ușurința afișării, fiecare număr de înmatriculare va fi urmat de caracterul newline.
+
+
+Intrare
+
+Ieșire
+
+/*Inserare numere de maşini pe cele 2 benzi*/
+
+4
+
+2
+
+/*Inserare maşini prima bandă*/
+
+OT53PSA
+
+B333TTT
+
+MS51BST
+
+NT30DOI
+
+/*Inserare maşini a doua bandă*/
+
+BN81CRT
+
+B100OOO
+
+BN81CRT
+
+OT53PSA
+
+B100OOO
+
+B333TTT
+
+MS51BST
+
+NT30DOI
+
