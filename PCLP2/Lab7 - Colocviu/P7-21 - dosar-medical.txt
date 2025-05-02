@@ -1,0 +1,208 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+class EvenimentMedical
+{
+protected:
+    int luna;
+    int an;
+    std::string sectie;
+    std::string tipEveniment;
+
+public:
+    EvenimentMedical(int l, int a, std::string s, std::string t)
+        : luna(l), an(a), sectie(s), tipEveniment(t) {}
+
+    virtual void afiseaza() = 0;
+    virtual std::string getDiagnostic() = 0;
+    virtual int getZileInternare() = 0;
+    
+    std::string getSectie() { return sectie; }
+    std::string getTipEveniment() { return tipEveniment; }
+    int getAn() { return an; }
+    int getLuna() { return luna; }
+};
+
+class Consultatie : public EvenimentMedical
+{
+private:
+    std::string diagnostic;
+
+public:
+    Consultatie(int l, int a, std::string s, std::string d)
+        : EvenimentMedical(l, a, s, "Consultatie"), diagnostic(d) {}
+
+    void afiseaza() override
+    {
+        std::cout << tipEveniment << std::endl;
+        std::cout << luna << "." << an << "," << sectie << ":" << diagnostic << std::endl;
+    }
+
+    std::string getDiagnostic() override { return diagnostic; }
+    int getZileInternare() override { return 0; }
+};
+
+class Internare : public EvenimentMedical
+{
+private:
+    int zileInternare;
+
+public:
+    Internare(int l, int a, std::string s, int z)
+        : EvenimentMedical(l, a, s, "Internare"), zileInternare(z) {}
+
+    void afiseaza() override
+    {
+        std::cout << tipEveniment << std::endl;
+        std::cout << luna << "." << an << "," << sectie << ":" << zileInternare << "" << std::endl;
+    }
+
+    int getZileInternare() override { return zileInternare; }
+    std::string getDiagnostic() override { return ""; }
+};
+
+// bool regula_ordonare_internari (Internare* a, Internare* b) // sau o punem aici ca functie libera declarata inainte de apelarea acesteia
+// {
+//     return a->getZileInternare() > b->getZileInternare();
+// }
+
+class DosarMedical
+{
+private:
+    std::string nume;
+    int comorbiditati;
+    std::vector<EvenimentMedical*> evenimente;
+
+public:
+    DosarMedical(std::string n, int c)
+        : nume(n), comorbiditati(c) {}
+
+    ~DosarMedical()
+    {
+        for (auto e : evenimente)
+            delete e;
+    }
+
+    void adaugaEveniment(EvenimentMedical* e)
+    {
+        evenimente.push_back(e);
+        if (e->getTipEveniment() == "Consultatie" && e->getDiagnostic() == "Bolnav") comorbiditati++;
+    }
+
+    void afiseazaDosar()
+    {
+        std::cout << nume << std::endl;
+        for (auto e : evenimente)
+            e->afiseaza();
+    }
+
+    void calculeazaEvenimenteAnuale(int anRequested)
+    {
+        int consultatii = 0, zileInternare = 0;
+        for (auto e : evenimente)
+        {
+            if (e->getAn() == anRequested)
+            {
+                if (e->getTipEveniment() == "Consultatie") consultatii++;
+                else if (e->getTipEveniment() == "Internare") zileInternare += e->getZileInternare();
+            }
+        }
+        std::cout << anRequested << ": zile internare=" << zileInternare << ", consultatii=" << consultatii << std::endl;
+    }
+
+    void calculeazaScorLACE()
+    {
+        int internari = 0, zileUltimaInternare = 0;
+        for (auto e : evenimente)
+        {
+            if (e->getTipEveniment() == "Internare")
+            {
+                if ((e->getAn() == 2023 && e->getLuna() <= 5) || (e->getAn() == 2022 && e->getLuna() >= 12)) internari++;
+                zileUltimaInternare = e->getZileInternare(); // astfel in zileUltimaInternare ramane nr de zile petrecute la internat de la ultima internare
+            }
+        }
+        int LACE = internari + zileUltimaInternare + comorbiditati;
+        std::cout << "LACE=" << LACE << std::endl;
+    }
+    
+    static bool regula_ordonare_internari (Internare* a, Internare* b) // cu static ca functia aceasta sa nu depinda de o instanta a clasei (functia std::sort necesita acest aspect)
+    {
+        return a->getZileInternare() > b->getZileInternare();
+    }
+    
+    void ordoneazaInternari()
+    {
+        std::vector<Internare*> internari;
+        
+        for (auto e : evenimente)
+            if (e->getTipEveniment() == "Internare")
+                internari.push_back(dynamic_cast<Internare*>(e));
+        
+        sort(internari.begin(), internari.end(), regula_ordonare_internari);
+
+        for (auto i : internari)
+            std::cout << i->getLuna() << "." << i->getAn() << ":" << i->getSectie() << ":" << i->getZileInternare() << "" << std::endl;
+    }
+};
+
+int main()
+{
+    std::string nume;
+    int comorbiditati, nrEvenimente;
+    std::cin >> nrEvenimente;
+    
+    std::cin.ignore();
+    std::getline(std::cin, nume);
+    
+    std::cin >> comorbiditati;
+
+    DosarMedical dosar(nume, comorbiditati);
+
+    for (int i = 0; i < nrEvenimente; ++i)
+    {
+        int an, luna;
+        std::cin >> an >> luna;
+        
+        std::string sectie, tipEveniment;
+        std::cin.ignore();
+        std::getline(std::cin, sectie);
+        std::getline(std::cin, tipEveniment);
+
+        if (tipEveniment == "Consultatie")
+        {
+            std::string diagnostic;
+            std::getline(std::cin, diagnostic);
+            dosar.adaugaEveniment(new Consultatie(luna, an, sectie, diagnostic));
+        } else if (tipEveniment == "Internare")
+        {
+            int zileInternare;
+            std::cin >> zileInternare;
+            dosar.adaugaEveniment(new Internare(luna, an, sectie, zileInternare));
+        }
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    
+    if (comanda == 1)
+    {
+        dosar.afiseazaDosar();
+    }
+    else if (comanda == 2)
+    {
+        dosar.calculeazaEvenimenteAnuale(2022);
+        dosar.calculeazaEvenimenteAnuale(2023);
+    }
+    else if (comanda == 3)
+    {
+        dosar.calculeazaScorLACE();
+    }
+    else if (comanda == 4)
+    {
+        dosar.ordoneazaInternari();
+    }
+
+    return 0;
+}

@@ -1,0 +1,158 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <iomanip>
+
+class Camera
+{
+private:
+    int nrCamera;
+    std::string tip;
+    int nrPersCazate;
+    float pret;
+    int maxCapacitate;
+    
+public:
+    Camera(int nrCamera, std::string tip, int nrPersCazate, float pret, int maxCapacitate) :
+        nrCamera(nrCamera), tip(tip), nrPersCazate(nrPersCazate), pret(pret), maxCapacitate(maxCapacitate) {}
+    
+    void afisare()
+    {
+        std::cout << nrCamera << " " << tip << " " << nrPersCazate << " " << pret << std::endl;
+    }
+    
+    int getCapacitate()
+    {
+        if (tip == "single") return 1;
+        if (tip == "twin") return 2;
+        if (tip == "double") return 2;
+        if (tip == "triple") return 3;
+        return 0;
+    }
+    
+    int getNrPersCazate() { return nrPersCazate; }
+    int getMaxCapacitate() { return maxCapacitate; }
+    int getPret() { return pret; }
+};
+
+bool regulaSortareCamere(Camera& a, Camera &b)
+{
+    if (a.getMaxCapacitate() != b.getMaxCapacitate()) return a.getMaxCapacitate() < b.getMaxCapacitate();
+    else return a.getPret() < b.getPret();
+}
+
+class Hotel
+{
+private:
+    std::vector<Camera> camere;
+    int maxCamere;
+    
+public:
+    Hotel() : maxCamere(30) {}
+    
+    void adaugaCamera(Camera& c)
+    {
+        if (camere.size() < maxCamere) camere.push_back(c);
+        else std::cout << "Prea multe camere!" << std::endl;
+    }
+    
+    void afisareCamere()
+    {
+        for(Camera& camera : camere)
+            camera.afisare();
+    }
+    
+    float gradOcupare()
+    {
+        int nr_total_camere_ocupate = 0;
+        int nr_total_camere = camere.size(); // camere nu neaparat ocupate
+        
+        for (Camera& camera: camere)
+            if (camera.getNrPersCazate() != 0)
+                nr_total_camere_ocupate++;
+                
+        return (1.0 * nr_total_camere_ocupate / nr_total_camere) * 100;
+    }
+    
+    int capacitateRamasa()
+    {
+        int rez = 0;
+        for(Camera& camera : camere)
+            if (camera.getNrPersCazate() == 0)
+                rez += camera.getCapacitate();
+        return rez;
+    }
+    
+    void sorteazaCamere()
+    {
+        std::sort(camere.begin(), camere.end(), regulaSortareCamere);
+    }
+};
+
+int main()
+{
+    Hotel hotel;
+    
+    int comanda;
+    
+    while(std::cin >> comanda && comanda != -1)
+    {
+        switch (comanda)
+        {
+            case 1:
+            {
+                int nrCamera;
+                std::string tip;
+                int nrPersCazate;
+                float pret;
+                
+                std::cin >> nrCamera >> tip >> nrPersCazate >> pret;
+                
+                if (tip == "single")
+                {
+                    Camera c(nrCamera, tip, nrPersCazate, pret, 1);
+                    hotel.adaugaCamera(c);
+                }
+                else if (tip == "twin")
+                {
+                    Camera c(nrCamera, tip, nrPersCazate, pret, 2);
+                    hotel.adaugaCamera(c);
+                }
+                else if (tip == "double")
+                {
+                    Camera c(nrCamera, tip, nrPersCazate, pret, 2);
+                    hotel.adaugaCamera(c);
+                }
+                else if (tip == "triple")
+                {
+                    Camera c(nrCamera, tip, nrPersCazate, pret, 3);
+                    hotel.adaugaCamera(c);
+                }
+                break;
+            }
+            case 2:
+            {
+                hotel.afisareCamere();
+                break;
+            }
+            case 3:
+            {
+                std::cout << std::fixed << std::setprecision(2) << hotel.gradOcupare();
+                break;
+            }
+            case 4:
+            {
+                std::cout << hotel.capacitateRamasa();
+                break;
+            }
+            case 5:
+            {
+                hotel.sorteazaCamere();
+                hotel.afisareCamere();
+                break;
+            }
+        }
+    }
+    return 0;
+}

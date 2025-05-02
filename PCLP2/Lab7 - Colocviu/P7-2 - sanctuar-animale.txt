@@ -1,0 +1,208 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <cmath>
+
+class Animal {
+protected:
+    std::string specie;
+    int varsta;
+    float greutate;
+
+public:
+    Animal(std::string specie, int varsta, float greutate)
+        : specie(specie), varsta(varsta), greutate(greutate) {}
+
+    virtual void display() = 0;
+    virtual void display2() = 0;
+    virtual void necesar_hrana() = 0;
+    virtual float get_necesar_hrana() = 0;
+    virtual void suprafata_necesara() = 0;
+    virtual void suprafata_necesara_zbor(float efort) = 0;
+};
+
+class Mamifer : public Animal {
+private:
+    float factor_alimentatie;
+    float temperatura_corp;
+
+public:
+    Mamifer(std::string specie, int varsta, float greutate, float factor_alimentatie, float temperatura_corp)
+        : Animal(specie, varsta, greutate), factor_alimentatie(factor_alimentatie), temperatura_corp(temperatura_corp) {}
+
+    void display() override {
+        std::cout << "mamifer: " << specie << " " << greutate << " " << temperatura_corp << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "mamifer: " << specie << " " << greutate << " " << temperatura_corp << std::endl;
+    }
+    
+    void necesar_hrana() override {
+        std::cout << specie << " - " << std::fixed << std::setprecision(2) << greutate * factor_alimentatie * (1 + varsta / 100.0) << std::endl;
+    }
+    
+    float get_necesar_hrana() {
+        return greutate * factor_alimentatie * (1 + varsta / 100.0);
+    }
+    
+    void suprafata_necesara() override {
+        std::cout << specie << ": " << std::fixed << std::setprecision(2) << (greutate / 10) + (varsta * temperatura_corp / 100) << std::endl;
+    }
+    
+    void suprafata_necesara_zbor(float efort) override {
+        std::cout << specie << ": " << std::fixed << std::setprecision(2) << (greutate / 10) + (varsta * temperatura_corp / 100) << std::endl;
+    }
+};
+
+class Pasare : public Animal {
+protected:
+    float lungime_aripi;
+
+public:
+    Pasare(std::string specie, int varsta, float greutate, float lungime_aripi)
+        : Animal(specie, varsta, greutate), lungime_aripi(lungime_aripi) {}
+
+    void display() override {
+        std::cout << "pasare: " << specie << " " << greutate << " " << lungime_aripi << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "pasare: " << specie << " " << greutate << " " << lungime_aripi << std::endl;
+    }
+    
+    void necesar_hrana() override {
+        float hrana = greutate * 0.3;
+        hrana = std::round(hrana * 100) / 100.0;
+        //std::cout << specie << " - " << std::fixed << std::setprecision(2) << greutate * 0.3 << std::endl;
+        std::cout << specie << " - " << hrana << std::endl;
+    }
+    
+    float get_necesar_hrana() {
+        return greutate * 0.3;
+    }
+
+    void suprafata_necesara() override {
+        std::cout << specie << ": " << std::fixed << std::setprecision(2) << (greutate * 0.5) + (varsta * 0.3) + (lungime_aripi * 0.2) << std::endl;
+    }
+
+    void suprafata_necesara_zbor(float efort) override {
+        std::cout << specie << " " << std::fixed << std::setprecision(2) << lungime_aripi / greutate * varsta / 10.0 * efort << std::endl;
+    }
+};
+
+class PasarePradatoare : public Pasare {
+private:
+    int nr_pradatori;
+
+public:
+    PasarePradatoare(std::string specie, int varsta, float greutate, float lungime_aripi, int nr_pradatori)
+        : Pasare(specie, varsta, greutate, lungime_aripi), nr_pradatori(nr_pradatori) {}
+
+    void display() override {
+        std::cout << "pasare pradatoare: " << specie << " " << greutate << " " << lungime_aripi << " " << nr_pradatori << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "pasare prădătoare: " << specie << " " << greutate << " " << lungime_aripi << " " << nr_pradatori << std::endl;
+    }
+
+    void necesar_hrana() override {
+        std::cout << specie << " - " << std::fixed << std::setprecision(2) << greutate * 0.6 << std::endl;
+    }
+    
+    float get_necesar_hrana() {
+        return greutate * 0.6;
+    }
+    
+    void suprafata_necesara() override {
+        std::cout << specie << ": " << std::fixed << std::setprecision(2) << (greutate * 0.5) + (varsta * 0.3) + (lungime_aripi * 0.2) + nr_pradatori << std::endl;
+    }
+
+    void suprafata_necesara_zbor(float efort) override {
+        std::cout << specie << " " << std::fixed << std::setprecision(2) << lungime_aripi / greutate * varsta / 10.0 * efort * 1.5 << std::endl;
+    }
+};
+
+bool regulaSortare(Animal* a, Animal* b) {
+    return a->get_necesar_hrana() < b->get_necesar_hrana();
+}
+
+int main() {
+    int nrAnimale;
+    std::cin >> nrAnimale;
+    std::vector<Animal*> animale;
+
+    for (int i = 0; i < nrAnimale; ++i) {
+        std::string specie;
+        std::string tip;
+        int varsta;
+        float greutate;
+
+        std::cin.ignore();
+        std::getline(std::cin, specie);
+        std::cin >> varsta >> greutate;
+        std::cin.ignore();
+        std::getline(std::cin, tip);
+
+        if (tip == "mamifer") {
+            float factor_alimentatie, temperatura_corp;
+            std::cin >> factor_alimentatie >> temperatura_corp;
+            animale.push_back(new Mamifer(specie, varsta, greutate, factor_alimentatie, temperatura_corp));
+        } else if (tip == "pasare") {
+            float lungime_aripi;
+            std::cin >> lungime_aripi;
+            animale.push_back(new Pasare(specie, varsta, greutate, lungime_aripi));
+        } else if (tip == "pradator") {
+            float lungime_aripi;
+            int nr_pradatori;
+            std::cin >> lungime_aripi >> nr_pradatori;
+            animale.push_back(new PasarePradatoare(specie, varsta, greutate, lungime_aripi, nr_pradatori));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda) {
+        case 1:
+            for (auto animal : animale) {
+                animal->display();
+            }
+            break;
+
+        case 2:
+            for (auto animal : animale) {
+                animal->necesar_hrana();
+            }
+            break;
+
+        case 3:
+            sort(animale.begin(), animale.end(), regulaSortare);
+            for (auto animal : animale) {
+                animal->display2();
+            }
+            break;
+
+        case 4:
+            for (auto animal : animale) {
+                animal->suprafata_necesara();
+            }
+            break;
+
+        case 5: {
+            int index;
+            float efort;
+            std::cin >> index >> efort;
+            animale[index]->suprafata_necesara_zbor(efort);
+            break;
+        }
+    }
+
+    for (auto animal : animale) {
+        delete animal;
+    }
+
+    return 0;
+}

@@ -1,0 +1,84 @@
+Să se scrie un program care ordonează o secvență de maxim 20 de numere complexe în funcție de valoarea modulului.
+
+Se va citi de la tastatură un număr întreg reprezentând numărul de numere complexe ce urmează a fi citit. Ulterior, de pe fiecare linie se citesc 2 valori reale, reprezentând partea reală, respectiv partea imaginară, separate de un spațiu.
+
+Să se afișeze pe ecran numerele complexe ordonate, câte unul pe linie. Afișarea unui număr complex se face sub forma "<partea_reala> <partea_imaginara>".
+
+
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+
+class ComplexNumber
+{
+private:
+    double real;
+    double imaginary;
+
+public:
+    ComplexNumber(double realPart = 0.0f, double imaginaryPart = 0.0f) : real(realPart), imaginary(imaginaryPart) {}
+
+    double modulus() const
+    {
+        return sqrt(real * real + imaginary * imaginary);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const ComplexNumber& c);
+    friend std::istream& operator>>(std::istream& is, ComplexNumber& c);
+    
+    friend bool operator<(const ComplexNumber& lhs, const ComplexNumber& rhs);
+
+};
+
+std::ostream& operator<<(std::ostream& os, const ComplexNumber& c)
+{
+    os << c.real << " " << c.imaginary;
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, ComplexNumber& c)
+{
+    is >> c.real >> c.imaginary;
+    return is;
+}
+
+bool operator<(const ComplexNumber& lhs, const ComplexNumber& rhs)
+{
+    return lhs.modulus() < rhs.modulus();
+}
+
+int main()
+{
+    int numComplexNumbers;
+    std::cin >> numComplexNumbers;
+
+    std::vector<ComplexNumber> complexNumbers(numComplexNumbers);
+    for (int i = 0; i < numComplexNumbers; ++i)
+        std::cin >> complexNumbers[i];
+        
+    // std::vector<ComplexNumber> complexNumbers(numComplexNumbers);
+    // for (int i = 0; i < numComplexNumbers; ++i)
+    // {
+    //     ComplexNumber c;
+    //     std::cin >> c;
+    //     complexNumbers[i] = c;
+    // }
+    
+    // SAU
+    
+    // std::vector<ComplexNumber> complexNumbers;
+    // for (int i = 0; i < numComplexNumbers; ++i)
+    // {
+    //     ComplexNumber c;
+    //     std::cin >> c;
+    //     complexNumbers.push_back(c);
+    // }
+
+    std::sort(complexNumbers.begin(), complexNumbers.end()); // utilizarea operatiei "<" este implicita, iar operatorul a fost suprascris
+
+    for (auto& c : complexNumbers)
+        std::cout << c << std::endl;
+
+    return 0;
+}

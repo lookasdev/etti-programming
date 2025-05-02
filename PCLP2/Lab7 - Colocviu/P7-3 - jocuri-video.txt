@@ -1,0 +1,208 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <iomanip>
+
+class JocVideo {
+protected:
+    std::string nume;
+    int zi;
+    int luna;
+    int an;
+    std::string tip;
+    int nrNote;
+    std::vector<int> note;
+
+public:
+    JocVideo(std::string nume, int zi, int luna, int an, std::string tip, int nrNote, std::vector<int> note)
+        : nume(nume), zi(zi), luna(luna), an(an), tip(tip), nrNote(nrNote), note(note) {}
+
+    virtual void display() = 0;
+    virtual void get_playtime(int a, float b) = 0;
+
+    int getZi() { return zi; }
+    int getLuna() { return luna; }
+    int getAn() { return an; }
+    
+    std::string getNume() { return nume; }
+    std::string getTip() { return tip; }
+    
+    float getNotaMedie() {
+        int suma = 0;
+        for (auto n : note) suma += n;
+        return 1.0 * suma / nrNote;
+    }
+};
+
+class JocSinglePlayer : public JocVideo {
+private:
+    int nrNivele;
+
+public:
+    JocSinglePlayer(std::string nume, int zi, int luna, int an, std::string tip, int nrNote, std::vector<int> note, int nrNivele)
+        : JocVideo(nume, zi, luna, an, tip, nrNote, note), nrNivele(nrNivele) {}
+
+    void display() override {
+        std::cout << "singleplayer: " << nume << " - " << zi << " " << luna << " " << an << " - " << nrNivele << std::endl;
+    }
+
+    void get_playtime(int a, float b) override {
+        double playtime = a * b * nrNivele;
+        std::cout << nume << ": " << std::fixed << std::setprecision(2) << playtime << std::endl;
+    }
+};
+
+class JocMultiPlayer : public JocVideo {
+private:
+    int nrMeciuri;
+
+public:
+    JocMultiPlayer(std::string nume, int zi, int luna, int an, std::string tip, int nrNote, std::vector<int> note, int nrMeciuri)
+        : JocVideo(nume, zi, luna, an, tip, nrNote, note), nrMeciuri(nrMeciuri) {}
+
+    void display() override {
+        std::cout << "multiplayer: " << nume << " - " << zi << " " << luna << " " << an << " - " << nrMeciuri << std::endl;
+    }
+
+    void get_playtime(int a, float b) override {
+        double playtime = ((1.0 * nrMeciuri) / a) * b;
+        std::cout << nume << ": " << std::fixed << std::setprecision(2) << playtime << std::endl;
+    }
+};
+
+class JocVideoHandler {
+private:
+    std::vector<JocVideo*> jocuri;
+
+public:
+    ~JocVideoHandler() {
+        for (auto joc : jocuri)
+            delete joc;
+    }
+
+    void adaugaJoc(JocVideo* joc) {
+        jocuri.push_back(joc);
+    }
+
+    void afisareJocuri() {
+        for (auto joc : jocuri)
+            joc->display();
+    }
+
+    void afisareJocNotaMaxima() {
+        JocVideo* jocMax = nullptr;
+        float notaMax = 0.0;
+        for (auto joc : jocuri) {
+            float notaCurenta = joc->getNotaMedie();
+            if (notaCurenta > notaMax) {
+                notaMax = notaCurenta;
+                jocMax = joc;
+            }
+        }
+        if (jocMax) {
+            std::cout << jocMax->getNume() << ": " << std::fixed << std::setprecision(2) << notaMax << std::endl;
+        }
+    }
+
+    void filtrareJocuri(int zi, int luna, int an) {
+        for (auto joc : jocuri) {
+            bool afisare = false;
+            if (joc->getAn() > an) afisare = true;
+            else if (joc->getAn() == an) {
+                if (joc->getLuna() > luna) afisare = true;
+                else if (joc->getLuna() == luna) {
+                    if (joc->getZi() > zi) afisare = true;
+                    else if (joc->getZi() == zi) afisare = false;
+                }
+            }
+            if (afisare)
+                std::cout << joc->getNume() << ": " << joc->getTip() << std::endl;
+        }
+    }
+
+    void afisareCelMaiNouSiVechiJoc() {
+        JocVideo* celMaiNou = jocuri[0];
+        JocVideo* celMaiVechi = jocuri[0];
+
+        for (auto joc : jocuri) {
+            if (joc->getAn() > celMaiNou->getAn() ||
+                (joc->getAn() == celMaiNou->getAn() && joc->getLuna() > celMaiNou->getLuna()) ||
+                (joc->getAn() == celMaiNou->getAn() && joc->getLuna() == celMaiNou->getLuna() && joc->getZi() > celMaiNou->getZi())) {
+                celMaiNou = joc;
+            }
+
+            if (joc->getAn() < celMaiVechi->getAn() ||
+                (joc->getAn() == celMaiVechi->getAn() && joc->getLuna() < celMaiVechi->getLuna()) ||
+                (joc->getAn() == celMaiVechi->getAn() && joc->getLuna() == celMaiVechi->getLuna() && joc->getZi() < celMaiVechi->getZi())) {
+                celMaiVechi = joc;
+            }
+        }
+
+        celMaiNou->display();
+        celMaiVechi->display();
+    }
+
+    void calculTimpTotalJocuri(int a, float b) {
+        for (auto joc : jocuri)
+            joc->get_playtime(a, b);
+    }
+};
+
+int main() {
+    int nrJocuri;
+    std::cin >> nrJocuri;
+
+    JocVideoHandler handler;
+
+    for (int i = 0; i < nrJocuri; ++i) {
+        std::string nume;
+        int zi, luna, an, nrNote;
+        std::string tip;
+        std::vector<int> note;
+
+        std::cin.ignore();
+        std::getline(std::cin, nume);
+        std::cin >> zi >> luna >> an >> nrNote;
+
+        for (int j = 0; j < nrNote; ++j) {
+            int nota;
+            std::cin >> nota;
+            note.push_back(nota);
+        }
+
+        std::cin >> tip;
+
+        if (tip == "singleplayer") {
+            int nrNivele;
+            std::cin >> nrNivele;
+            handler.adaugaJoc(new JocSinglePlayer(nume, zi, luna, an, tip, nrNote, note, nrNivele));
+        } else if (tip == "multiplayer") {
+            int nrMeciuri;
+            std::cin >> nrMeciuri;
+            handler.adaugaJoc(new JocMultiPlayer(nume, zi, luna, an, tip, nrNote, note, nrMeciuri));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    if (comanda == 1) {
+        handler.afisareJocuri();
+    } else if (comanda == 2) {
+        handler.afisareJocNotaMaxima();
+    } else if (comanda == 3) {
+        int zi, luna, an;
+        std::cin >> zi >> luna >> an;
+        handler.filtrareJocuri(zi, luna, an);
+    } else if (comanda == 4) {
+        handler.afisareCelMaiNouSiVechiJoc();
+    } else if (comanda == 5) {
+        int a;
+        float b;
+        std::cin >> a >> b;
+        handler.calculTimpTotalJocuri(a, b);
+    }
+
+    return 0;
+}

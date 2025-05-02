@@ -1,0 +1,120 @@
+Să se scrie un program care execută operațiile de adunare, scădere și înmulțire între două matrice. Operația se va alege în funcție de o valoare de test citită de la tastatură.
+
+Se citesc de la tastatură:
+
+doi întregi, m și n, reprezentând dimensiunile primei matrice
+m x n întregi, reprezentând elementele primei matrice
+doi întregi, q și p, reprezentând dimensiunile celei de-a doua matrice
+q x p întregi, reprezentând elementele celei de-a doua matrice
+un întreg, test, reprezentând valoarea în funcție de care se execută diverse funcții:
+adunare matrice - se afișează pe ecran elementele matricei obținută prin adunarea celor două matrice de intrare.
+scădere matrice -  se afișează pe ecran elementele matricei obținută prin scăderea celei de-a doua matrice din prima matrice.
+înmulțire matrice - se afișează pe ecran elementele matricei obținută prin înmulțirea primei matrice cu cea de-a doua matrice.
+
+
+#include <iostream>
+#include <vector>
+//#include <algorithm>
+
+class Matrice
+{
+private:
+    std::vector<std::vector<int>> data;
+
+public:
+    Matrice(int m, int n) : data(m, std::vector<int>(n)) {}
+
+    Matrice operator+(const Matrice& other)
+    {
+        Matrice rezultat(data.size(), data[0].size());
+        for (int i = 0; i < data.size(); ++i)
+            for (int j = 0; j < data[0].size(); ++j)
+                rezultat.data[i][j] = data[i][j] + other.data[i][j];
+        return rezultat;
+    }
+
+    Matrice operator-(const Matrice& other)
+    {
+        Matrice rezultat(data.size(), data[0].size());
+        for (int i = 0; i < data.size(); ++i)
+            for (int j = 0; j < data[0].size(); ++j)
+                rezultat.data[i][j] = data[i][j] - other.data[i][j];
+        return rezultat;
+    }
+
+    Matrice operator*(const Matrice& other)
+    {
+        Matrice rezultat(data.size(), other.data[0].size());
+        for (int i = 0; i < data.size(); ++i)
+            for (int j = 0; j < other.data[0].size(); ++j)
+                for (int k = 0; k < data[0].size(); ++k)
+                    rezultat.data[i][j] += data[i][k] * other.data[k][j];
+        return rezultat;
+    }
+
+    friend std::istream& operator>>(std::istream& in, Matrice& matrice);
+    friend std::ostream& operator<<(std::ostream& out, const Matrice& matrice);
+};
+
+std::istream& operator>>(std::istream& in, Matrice& matrice)
+{
+    for (int i = 0; i < matrice.data.size(); ++i)
+        for (int j = 0; j < matrice.data[0].size(); ++j)
+            in >> matrice.data[i][j];
+    return in;
+}
+
+std::ostream& operator<<(std::ostream& out, const Matrice& matrice)
+{
+    for (int i = 0; i < matrice.data.size(); ++i)
+    {
+        for (int j = 0; j < matrice.data[0].size(); ++j)
+            out << matrice.data[i][j] << " ";
+        out << std::endl;
+    }
+    return out;
+}
+
+int main()
+{
+    int m, n;
+    std::cin >> m >> n;
+    Matrice matrice1(m, n);
+    std::cin >> matrice1;
+
+    int q, p;
+    std::cin >> q >> p;
+    Matrice matrice2(q, p);
+    std::cin >> matrice2;
+
+    int test;
+    std::cin >> test;
+
+    Matrice rezultat(m,p);
+    switch (test)
+    {
+        case 1:
+        {
+            //if (m == q && n == p)
+            rezultat = matrice1 + matrice2;
+            std::cout << rezultat;
+            break;
+        }
+        case 2:
+        {
+            //if (m == q && n == p)
+            rezultat = matrice1 - matrice2;
+            std::cout << rezultat;
+            break;
+        }
+        case 3:
+        {
+            //if (n == q)
+            rezultat = matrice1 * matrice2;
+            std::cout << rezultat;
+            break;
+        }
+    }
+
+    return 0;
+}

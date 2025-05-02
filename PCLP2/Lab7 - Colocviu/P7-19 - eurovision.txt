@@ -1,0 +1,174 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <iomanip>
+
+class Participant // participantul e o tara
+{
+private:
+    std::string numeTara;
+    std::string numePiesa;
+    int punctaj;
+    std::vector<std::string> tariVotate;
+    
+    int nrVoturi; // pt determinarea celei mai populare tari
+    int nrVoturiDeSapte; // sapte e punctajul maxim, pt diferentiere la sortarea clasamentului
+    
+public:
+    Participant(std::string numeTara = "", std::string numePiesa = "") :
+        numeTara(numeTara), numePiesa(numePiesa), punctaj(0), nrVoturi(0), nrVoturiDeSapte(0) {}
+    
+    void afisare()
+    {
+        std::cout << numeTara << " " << numePiesa << " " << punctaj << std::endl;
+    }
+    
+    void adaugaTaraVotata(std::string& taraVotata)
+    {
+        tariVotate.push_back(taraVotata);
+    }
+    
+    std::vector<std::string> getTariVotate() { return tariVotate; }
+    std::string getNume() { return numeTara; }
+    
+    int getPunctaj() { return punctaj; }
+    void setPunctaj(int punctaj) { this->punctaj = punctaj; }
+    
+    int getNrVoturi() { return nrVoturi; }
+    void setNrVoturi(int nrVoturi) { this->nrVoturi = nrVoturi; }
+    
+    int getNrVoturiDeSapte() { return nrVoturiDeSapte; }
+    void setNrVoturiDeSapte(int nrVoturiDeSapte) { this->nrVoturiDeSapte = nrVoturiDeSapte; }
+};
+
+bool regulaSortare(Participant& a, Participant& b)
+{
+    if (a.getPunctaj() != b.getPunctaj()) return a.getPunctaj() > b.getPunctaj(); // sortare descrescatoare
+    else return a.getNrVoturiDeSapte() > b.getNrVoturiDeSapte(); // sortare descrescatoare
+}
+
+class Eurovision
+{
+private:
+    std::vector<Participant> participanti;
+    
+public:
+    Eurovision() {} // constructorul implicit
+    
+    void adaugaParticipant(Participant& p)
+    {
+        participanti.push_back(p);
+    }
+    
+    void afiseazaParticipanti()
+    {
+        for (Participant& participant : participanti)
+            participant.afisare();
+    }
+    
+    void prelucreazaVoturile()
+    {
+        for (Participant& participant : participanti)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                std::string taraVotata;
+                std::cin >> taraVotata;
+                participant.adaugaTaraVotata(taraVotata);
+            }
+        }
+        
+        for (Participant& participant1 : participanti) // selecteaza tara a carui lista de voturi vrem sa o vizualizam
+        {
+            std::vector<std::string> tariVotate2 = participant1.getTariVotate();
+            for (int i = 0; i < 4; i++) // itereaza prin optiunile de vot ale tarii alese la primul for
+            {
+                for (Participant& participant2 : participanti) // cauta in lista de participanti ai concursului corespondenta intre tara votata de tara din primul for si tara pe bune
+                {
+                    if (participant2.getNume() == tariVotate2[i]) // gasim corespondenta
+                    {
+                        participant2.setNrVoturi(participant2.getNrVoturi() + 1);
+                        if (i == 0)
+                        {
+                            participant2.setPunctaj(participant2.getPunctaj() + 7);
+                            participant2.setNrVoturiDeSapte(participant2.getNrVoturiDeSapte() + 1);
+                        }
+                        else if (i == 1) participant2.setPunctaj(participant2.getPunctaj() + 5);
+                        else if (i == 2) participant2.setPunctaj(participant2.getPunctaj() + 3);
+                        else if (i == 3) participant2.setPunctaj(participant2.getPunctaj() + 1);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    void afiseazaCeaMaiPopulara()
+    {
+        int max = 0;
+        Participant rez;
+        for (Participant& participant : participanti)
+        {
+            if (participant.getNrVoturi() > max)
+            {
+                rez = participant;
+                max = participant.getNrVoturi();
+            }
+        }
+        rez.afisare();
+    }
+    
+    void afiseazaClasament()
+    {
+        std::sort(participanti.begin(), participanti.end(), regulaSortare);
+        afiseazaParticipanti();
+    }
+};
+
+int main()
+{
+    Eurovision concurs;
+    
+    int comanda;
+    
+    while(std::cin >> comanda && comanda != 6)
+    {
+        switch (comanda)
+        {
+            case 1:
+            {
+                std::string numeTara;
+                std::string numePiesa;
+                
+                std::cin >> numeTara >> numePiesa;
+                
+                Participant p(numeTara, numePiesa);
+                concurs.adaugaParticipant(p);
+                
+                break;
+            }
+            case 2:
+            {
+                concurs.afiseazaParticipanti();
+                break;
+            }
+            case 3:
+            {
+                concurs.prelucreazaVoturile();
+                break;
+            }
+            case 4:
+            {
+                concurs.afiseazaCeaMaiPopulara();
+                break;
+            }
+            case 5:
+            {
+                concurs.afiseazaClasament();
+                break;
+            }
+        }
+    }
+    return 0;
+}

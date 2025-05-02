@@ -1,0 +1,177 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <string>
+
+class Proprietate
+{
+protected:
+    char tip;
+    int pret;
+    std::string locatie;
+    int suprafataConstruita;
+
+public:
+    Proprietate(char tip, int pret, const std::string& locatie, int suprafataConstruita)
+        : tip(tip), pret(pret), locatie(locatie), suprafataConstruita(suprafataConstruita) {}
+
+    virtual ~Proprietate() {}
+
+    virtual void afisare() = 0;
+    virtual int calculSuprafataTotala() = 0;
+    virtual double calculPretPeMp() = 0;
+    virtual int getValoare() = 0;
+    
+    char getTip() { return tip; }
+    int getPret() { return pret; }
+    std::string getLocatie() { return locatie; }
+    int getSuprafataConstruita() { return suprafataConstruita; }
+};
+
+class Casa : public Proprietate
+{
+private:
+    int numarEtaje;
+
+public:
+    Casa(char tip, int pret, const std::string& locatie, int suprafataConstruita, int numarEtaje)
+        : Proprietate(tip, pret, locatie, suprafataConstruita), numarEtaje(numarEtaje) {}
+
+    void afisare() override
+    {
+        std::cout << "Casa " << pret << " " << locatie << " " << suprafataConstruita << " " << numarEtaje << std::endl;
+    }
+
+    int calculSuprafataTotala() override
+    {
+        return suprafataConstruita * numarEtaje;
+    }
+
+    double calculPretPeMp() override
+    {
+        return 1.0 * pret / calculSuprafataTotala();
+    }
+    
+    int getValoare() { return numarEtaje; }
+};
+
+class Apartament : public Proprietate
+{
+private:
+    int dimensiuneTerasa;
+
+public:
+    Apartament(char tip, int pret, const std::string& locatie, int suprafataConstruita, int dimensiuneTerasa)
+        : Proprietate(tip, pret, locatie, suprafataConstruita), dimensiuneTerasa(dimensiuneTerasa) {}
+
+    void afisare() override
+    {
+        std::cout << "Apartament " << pret << " " << locatie << " " << suprafataConstruita << " " << dimensiuneTerasa << std::endl;
+    }
+
+    int calculSuprafataTotala() override
+    {
+        return suprafataConstruita + dimensiuneTerasa;
+    }
+
+    double calculPretPeMp() override
+    {
+        return 1.0 * pret / calculSuprafataTotala();
+    }
+    
+    int getValoare() { return dimensiuneTerasa; }
+};
+
+bool comparaPretPeMp(Proprietate* a, Proprietate* b)
+{
+    if (a->calculPretPeMp() == b->calculPretPeMp()) return a->getPret() < b->getPret();
+    return a->calculPretPeMp() < b->calculPretPeMp();
+}
+
+int main()
+{
+    std::vector<Proprietate*> proprietati;
+    
+    int numarProprietati;
+    std::cin >> numarProprietati;
+
+    for (int i = 0; i < numarProprietati; ++i)
+    {
+        char tip;
+        int pret, suprafataConstruita;
+        std::string locatie;
+
+        std::cin >> tip >> pret >> locatie >> suprafataConstruita;
+
+        if (tip == 'c')
+        {
+            int numarEtaje;
+            std::cin >> numarEtaje;
+            proprietati.push_back(new Casa('c', pret, locatie, suprafataConstruita, numarEtaje));
+        } else if (tip == 'a')
+        {
+            int dimensiuneTerasa;
+            std::cin >> dimensiuneTerasa;
+            proprietati.push_back(new Apartament('a', pret, locatie, suprafataConstruita, dimensiuneTerasa));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+            for (const auto& prop : proprietati)
+                prop->afisare();
+            break;
+    
+        case 2:
+            for (const auto& prop : proprietati)
+                std::cout << prop->calculSuprafataTotala() << std::endl;
+            break;
+    
+        case 3:
+            for (const auto& prop : proprietati)
+                std::cout << std::fixed << std::setprecision(2) << prop->calculPretPeMp() << std::endl;
+            break;
+    
+        case 4:
+        {
+            std::sort(proprietati.begin(), proprietati.end(), comparaPretPeMp);
+            for (const auto& prop : proprietati)
+            {
+                prop->afisare();
+                std::cout << std::fixed << std::setprecision(2) << prop->calculPretPeMp() << std::endl;
+            }
+            break;
+        }
+        case 5:
+        {
+            char tipFiltru;
+            int pretMin, suprafataConstruitaMin, valoareFiltruMin;
+            std::string locatieFiltru;
+            std::cin >> tipFiltru >> pretMin >> locatieFiltru >> suprafataConstruitaMin >> valoareFiltruMin;
+    
+            for (const auto& prop : proprietati)
+            {
+                if ((tipFiltru == '0' || prop->getTip() == tipFiltru) &&
+                    (pretMin == 0 || prop->getPret() >= pretMin) &&
+                    (locatieFiltru == "0" || prop->getLocatie() == locatieFiltru) &&
+                    (suprafataConstruitaMin == 0 || prop->getSuprafataConstruita() >= suprafataConstruitaMin))
+                {
+                    if (valoareFiltruMin == 0 || prop->getTip() == 'c' && prop->getValoare() >= valoareFiltruMin) prop->afisare();
+                    else if (valoareFiltruMin == 0 || prop->getTip() == 'a' && prop->getValoare() >= valoareFiltruMin) prop->afisare();
+                    
+                }
+            }
+            break;
+        }
+    }
+
+    for (auto& prop : proprietati)
+        delete prop;
+
+    return 0;
+}

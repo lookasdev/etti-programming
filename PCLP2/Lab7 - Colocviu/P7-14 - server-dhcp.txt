@@ -1,0 +1,168 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class Device
+{
+private:
+    int id;
+    int ip;
+
+public:
+    Device(int id) : id(id), ip(0) {}
+    int getId() { return id; }
+    int getIp() { return ip; }
+    void setIp(int ip) { this->ip = ip; }
+    void print() { std::cout << id << " " << ip << std::endl; }
+};
+
+class DHCP
+{
+private:
+    std::vector<Device> devices;
+    std::vector<int> ipPool;
+    int maxDevices;
+
+    int findNextAvailableIp()
+    {
+        for (int i = 1; i <= 16; ++i)
+            if (std::find(ipPool.begin(), ipPool.end(), i) == ipPool.end()) { return i; } // returneaza iterator la pozitia unde il gaseste pe i in vector
+        return -1;
+    }
+
+public:
+    DHCP(int maxDevices) : maxDevices(maxDevices) {}
+
+    void addDevice(Device& d)
+    {
+        if (devices.size() >= maxDevices) std::cout << "Maximum number of devices reached." << std::endl;
+        else devices.push_back(d);
+    }
+
+    void displayDevices()
+    {
+        for (auto& device : devices)
+            device.print();
+    }
+
+    void generateIpPool(int n, const std::vector<int>& ips)
+    {
+        ipPool = ips;
+        int newIp = findNextAvailableIp();
+        if (newIp != -1 && ipPool.size() < 16)
+            ipPool.push_back(newIp);
+        std::sort(ipPool.begin(), ipPool.end());
+        for (auto ip: ipPool) std::cout << ip << " ";
+        std::cout << std::endl;
+    }
+
+    void connectDevice(Device& deviceParametru)
+    {
+        for (Device& d: devices)
+        {
+            if (d.getId() == deviceParametru.getId())
+            {
+                int newIp = findNextAvailableIp();
+                if (newIp != -1 && ipPool.size() < 16)
+                {
+                    d.setIp(newIp);
+                    ipPool.push_back(newIp);
+                    std::sort(ipPool.begin(), ipPool.end());
+                }
+            }
+        }
+    }
+
+    void removeIpFromPool(int n, const std::vector<int>& ips, int ipToRemove)
+    {
+        ipPool = ips;
+        
+        auto it = std::remove(ipPool.begin(), ipPool.end(), ipToRemove); // muta ip-ul de eliminat la finalul vectorului si returneaza un iterator la acesta
+        ipPool.erase(it, ipPool.end()); // sterge tot de la iteratorul de mai sus la finalul vectorului (adica doar ultimul element)
+        std::sort(ipPool.begin(), ipPool.end());
+        
+        for (auto ip: ipPool) std::cout << ip << " ";
+        std::cout << std::endl;
+    }
+
+    void disconnectDevice(Device& deviceParametru)
+    {
+        for (Device& d: devices)
+        {
+            if (d.getId() == deviceParametru.getId())
+            {
+                int ipToRelease = d.getIp();
+                d.setIp(0);
+                
+                auto it = std::remove(ipPool.begin(), ipPool.end(), ipToRelease);
+                ipPool.erase(it, ipPool.end());
+                std::sort(ipPool.begin(), ipPool.end());
+            }
+        }
+    }
+};
+
+int main()
+{
+    DHCP dhcpServer(16);
+
+    int command;
+    while (std::cin >> command && command != -1)
+    {
+        switch (command)
+        {
+            case 1:
+            {
+                int id;
+                std::cin >> id;
+                Device d(id);
+                dhcpServer.addDevice(d);
+                break;
+            }
+            case 2:
+            {
+                dhcpServer.displayDevices();
+                break;
+            }
+            case 3:
+            {
+                int n;
+                std::cin >> n;
+                std::vector<int> ips(n);
+                for (int i = 0; i < n; ++i)
+                    std::cin >> ips[i];
+                dhcpServer.generateIpPool(n, ips);
+                break;
+            }
+            case 4:
+            {
+                int id;
+                std::cin >> id;
+                Device d(id);
+                dhcpServer.connectDevice(d);
+                break;
+            }
+            case 5:
+            {
+                int n, ipToRemove;
+                std::cin >> n;
+                std::vector<int> ips(n);
+                for (int i = 0; i < n; ++i)
+                    std::cin >> ips[i];
+                std::cin >> ipToRemove;
+                dhcpServer.removeIpFromPool(n, ips, ipToRemove);
+                break;
+            }
+            case 6:
+            {
+                int id;
+                std::cin >> id;
+                Device d(id);
+                dhcpServer.disconnectDevice(d);
+                break;
+            }
+        }
+    }
+
+    return 0;
+}

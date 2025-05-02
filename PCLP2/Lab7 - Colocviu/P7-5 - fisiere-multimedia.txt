@@ -1,0 +1,297 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+
+class Fisier
+{
+protected:
+    std::string nume;
+    int zi;
+    int luna;
+    int an;
+    std::string indicator; // tip
+    int dimensiune; // data membra in plus
+    
+public:
+    Fisier(std::string nume, int zi, int luna, int an, std::string indicator) :
+        nume(nume), zi(zi), luna(luna), an(an), indicator(indicator), dimensiune(0) {}
+        
+    virtual void get_size() = 0;
+    virtual void set_size() = 0;
+    virtual void display() = 0;
+    
+    int getZi() { return zi; }
+    int getLuna() { return luna; }
+    int getAn() { return an; }
+    
+    int getDimensiune() { return dimensiune; }
+};
+
+class FisierText : public Fisier
+{
+private:
+    std::string corp;
+    
+public:
+    FisierText(std::string nume, int zi, int luna, int an, std::string indicator, std::string corp) :
+        Fisier(nume, zi, luna, an, indicator), corp(corp) {}
+    
+    void get_size() override
+    {
+        // std::cout << "text: ";
+        std::cout << corp.length() * 8 << std::endl;
+    }
+    
+    void set_size()
+    {
+        dimensiune = corp.length() * 8;
+    }
+    
+    void display() override
+    {
+        std::cout << indicator << " " << nume << " " << zi << " " << luna << " " << an << " " << corp << std::endl;
+    }
+};
+
+class FisierAudio : public Fisier
+{
+private:
+    int nrEsantioane;
+    std::vector<int> esantioane;
+    
+public:
+    FisierAudio(std::string nume, int zi, int luna, int an, std::string indicator, int nrEsantioane, std::vector<int> esantioane) :
+        Fisier(nume, zi, luna, an, indicator), nrEsantioane(nrEsantioane), esantioane(esantioane) {}
+    
+    void get_size() override
+    {
+        int suma = 0;
+        for (auto esantion : esantioane)
+            suma += esantion;
+        // std::cout << "audio: ";
+        std::cout << suma * 2 << std::endl;
+    }
+    
+    void set_size()
+    {
+        int suma = 0;
+        for (auto esantion : esantioane)
+            suma += esantion;
+        dimensiune = suma * 2;
+    }
+    
+    void display() override
+    {
+        std::cout << indicator << " " << nume << " " << zi << " " << luna << " " << an;
+        for (int i = 0; i < esantioane.size(); i++) // nrEsantioane este egal cu esantioane.size()
+            std::cout << " " << esantioane[i];
+        std::cout << std::endl;
+    }
+};
+
+bool regulaSortare (Fisier* a, Fisier* b)
+{
+    return a->getDimensiune() > b->getDimensiune(); // ordine descrescatoare a dimensiunii fisierelor
+}
+
+class FileHandler
+{
+private:
+    std::vector<Fisier*> fisiere;
+    
+public:
+    FileHandler() {}
+    
+    ~FileHandler()
+    {
+        for (auto fisier : fisiere)
+            delete fisier;
+    }
+    
+    void adaugaFisier(Fisier* fisier)
+    {
+        fisiere.push_back(fisier);
+    }
+    
+    void afisareFisiere()
+    {
+        for (auto fisier : fisiere)
+            fisier->display();
+    }
+    
+    void filtrareFisiere(int zi, int luna, int an)
+    {
+        for (auto fisier : fisiere)
+        {
+            bool afisare = false;
+            if (fisier->getAn() > an) afisare = true;
+            else if (fisier->getAn() == an)
+            {
+                if (fisier->getLuna() > luna) afisare = true;
+                else if (fisier->getLuna() == luna)
+                {
+                    if (fisier->getZi() > zi) afisare = true;
+                    else if (fisier->getZi() == zi) afisare = false;
+                }
+            }
+            if (afisare) fisier->display();
+        }
+    }
+    
+    void celMaiRecentSiCelMaiVechiFisier()
+    {
+        Fisier* ultimul = nullptr;
+        int maxZi = 0, maxLuna = 0, maxAn = 0;
+        
+        for (auto fisier : fisiere)
+        {
+            if (fisier->getAn() > maxAn)
+            {
+                ultimul = fisier;
+                maxAn = fisier->getAn();
+            }
+            else if (fisier->getAn() == maxAn)
+            {
+                if (fisier->getLuna() > maxLuna)
+                {
+                    ultimul = fisier;
+                    maxLuna = fisier->getLuna();
+                }
+                else if (fisier->getLuna() == maxLuna)
+                {
+                    if (fisier->getZi() > maxZi)
+                    {
+                        ultimul = fisier;
+                        maxZi = fisier->getZi();
+                    }
+                    else if (fisier->getZi() == maxZi)
+                    {
+                        ultimul = fisier;
+                        maxZi = fisier->getZi();
+                    }
+                }
+            }
+        }
+        ultimul->display();
+        
+        Fisier* primul = nullptr;
+        int minZi = 100, minLuna = 100, minAn = 10000;
+        
+        for (auto fisier : fisiere)
+        {
+            if (fisier->getAn() < minAn)
+            {
+                primul = fisier;
+                minAn = fisier->getAn();
+            }
+            else if (fisier->getAn() == minAn)
+            {
+                if (fisier->getLuna() > minLuna)
+                {
+                    primul = fisier;
+                    minLuna = fisier->getLuna();
+                }
+                else if (fisier->getLuna() == minLuna)
+                {
+                    if (fisier->getZi() > minZi)
+                    {
+                        primul = fisier;
+                        minZi = fisier->getZi();
+                    }
+                    else if (fisier->getZi() == minZi)
+                    {
+                        primul = fisier;
+                        minZi = fisier->getZi();
+                    }
+                }
+            }
+        }
+        primul->display();
+    }
+    
+    void calculDimensiuneFisiere()
+    {
+        for (auto fisier : fisiere)
+            fisier->get_size();
+    }
+    
+    void setDimensiuneFisiere()
+    {
+        for (auto fisier : fisiere)
+            fisier->set_size();
+    }
+    
+    void sortareFisiereDupaDimensiune()
+    {
+        std::sort(fisiere.begin(), fisiere.end(), regulaSortare);
+    }
+};
+
+int main()
+{
+    int nrFisiere;
+    std::cin >> nrFisiere;
+    
+    FileHandler handler;
+    
+    for (int i = 0; i < nrFisiere; ++i)
+    {
+        std::string nume;
+        int zi, luna, an;
+        std::string indicator;
+        
+        std::cin >> nume >> zi >> luna >> an >> indicator;
+        
+        if (indicator == "text")
+        {
+            std::string corp;
+            std::cin.ignore();
+            std::getline(std::cin, corp);
+            handler.adaugaFisier(new FisierText(nume, zi, luna, an, indicator, corp));
+        }
+        else if (indicator == "audio")
+        {
+            int nrEsantioane;
+            std::cin >> nrEsantioane;
+            std::vector<int> esantioane;
+            for (int i = 0; i < nrEsantioane; ++i)
+            {
+                int esantion;
+                std::cin >> esantion;
+                esantioane.push_back(esantion);
+            }
+            handler.adaugaFisier(new FisierAudio(nume, zi, luna, an, indicator, nrEsantioane, esantioane));
+        }
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    
+    if (comanda == 1)
+    {
+        handler.afisareFisiere();
+    }
+    if (comanda == 2)
+    {
+        int zi, luna, an;
+        std::cin >> zi >> luna >> an;
+        handler.filtrareFisiere(zi, luna, an);
+    }
+    if (comanda == 3)
+    {
+        handler.celMaiRecentSiCelMaiVechiFisier();
+    }
+    if (comanda == 4)
+    {
+        handler.calculDimensiuneFisiere();
+    }
+    if (comanda == 5)
+    {
+        handler.setDimensiuneFisiere();
+        handler.sortareFisiereDupaDimensiune();
+        handler.afisareFisiere();
+    }
+    
+    return 0;
+}

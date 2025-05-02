@@ -1,0 +1,206 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
+class Carte {
+protected:
+    std::string titlu;
+    int zi;
+    int luna;
+    int an;
+    std::string gen;
+    int nrRecenzii;
+    std::vector<int> noteRecenzii;
+
+public:
+    Carte(std::string titlu, int zi, int luna, int an, std::string gen, int nrRecenzii, std::vector<int> noteRecenzii)
+        : titlu(titlu), zi(zi), luna(luna), an(an), gen(gen), nrRecenzii(nrRecenzii), noteRecenzii(noteRecenzii) {}
+
+    virtual void display() = 0;
+    virtual void nr_pagini(int a, int b) = 0;
+
+    int getZi() { return zi; }
+    int getLuna() { return luna; }
+    int getAn() { return an; }
+    std::string getTitlu() { return titlu; }
+    std::string getGen() { return gen; }
+    
+    float getNotaMedie() {
+        int suma = 0;
+        for (auto nota : noteRecenzii) suma += nota;
+        return 1.0 * suma / nrRecenzii;
+    }
+};
+
+class CarteFictiune : public Carte {
+private:
+    int nrCapitole;
+
+public:
+    CarteFictiune(std::string titlu, int zi, int luna, int an, std::string gen, int nrRecenzii, std::vector<int> noteRecenzii, int nrCapitole)
+        : Carte(titlu, zi, luna, an, gen, nrRecenzii, noteRecenzii), nrCapitole(nrCapitole) {}
+
+    void display() override {
+        std::cout << "fictiune: " << titlu << " - " << zi << " " << luna << " " << an << " - " << nrCapitole << std::endl;
+    }
+
+    void nr_pagini(int a, int b) override {
+        int pagini = nrCapitole * a + b;
+        std::cout << titlu << ": " << pagini << std::endl;
+    }
+};
+
+class CarteNonFictiune : public Carte {
+private:
+    int nrPagini;
+
+public:
+    CarteNonFictiune(std::string titlu, int zi, int luna, int an, std::string gen, int nrRecenzii, std::vector<int> noteRecenzii, int nrPagini)
+        : Carte(titlu, zi, luna, an, gen, nrRecenzii, noteRecenzii), nrPagini(nrPagini) {}
+
+    void display() override {
+        std::cout << "nonfictiune: " << titlu << " - " << zi << " " << luna << " " << an << " - " << nrPagini << std::endl;
+    }
+
+    void nr_pagini(int a, int b) override {
+        int pagini = (nrPagini - b) * a + b;
+        std::cout << titlu << ": " << pagini << std::endl;
+    }
+};
+
+class Biblioteca {
+private:
+    std::vector<Carte*> carti;
+
+public:
+    ~Biblioteca() {
+        for (auto carte : carti)
+            delete carte;
+    }
+
+    void adaugaCarte(Carte* carte) {
+        carti.push_back(carte);
+    }
+
+    void afisareCarti() {
+        for (auto carte : carti)
+            carte->display();
+    }
+
+    void afisareCarteNotaMaxima() {
+        Carte* carteMax = nullptr;
+        float notaMax = 0.0f;
+        for (auto carte : carti) {
+            float notaCurenta = carte->getNotaMedie();
+            if (notaCurenta > notaMax) {
+                notaMax = notaCurenta;
+                carteMax = carte;
+            }
+        }
+        if (carteMax) {
+            std::cout << carteMax->getTitlu() << ": " << std::fixed << std::setprecision(2) << notaMax << std::endl;
+        }
+    }
+
+    void filtrareCarti(int zi, int luna, int an) {
+        for (auto carte : carti) {
+            bool afisare = false;
+            if (carte->getAn() > an) afisare = true;
+            else if (carte->getAn() == an) {
+                if (carte->getLuna() > luna) afisare = true;
+                else if (carte->getLuna() == luna) {
+                    if (carte->getZi() > zi) afisare = true;
+                    else if (carte->getZi() == zi) afisare = false;
+                }
+            }
+            if (afisare)
+                std::cout << carte->getTitlu() << ": " << carte->getGen() << std::endl;
+        }
+    }
+
+    void afisareCeaMaiNouaSiVecheCarte() {
+        Carte* ceaMaiNoua = carti[0];
+        Carte* ceaMaiVeche = carti[0];
+
+        for (auto carte : carti) {
+            if (carte->getAn() > ceaMaiNoua->getAn() ||
+                (carte->getAn() == ceaMaiNoua->getAn() && carte->getLuna() > ceaMaiNoua->getLuna()) ||
+                (carte->getAn() == ceaMaiNoua->getAn() && carte->getLuna() == ceaMaiNoua->getLuna() && carte->getZi() > ceaMaiNoua->getZi())) {
+                ceaMaiNoua = carte;
+            }
+
+            if (carte->getAn() < ceaMaiVeche->getAn() ||
+                (carte->getAn() == ceaMaiVeche->getAn() && carte->getLuna() < ceaMaiVeche->getLuna()) ||
+                (carte->getAn() == ceaMaiVeche->getAn() && carte->getLuna() == ceaMaiVeche->getLuna() && carte->getZi() < ceaMaiVeche->getZi())) {
+                ceaMaiVeche = carte;
+            }
+        }
+
+        ceaMaiNoua->display();
+        ceaMaiVeche->display();
+    }
+
+    void calculPaginiTotalCarti(int a, int b) {
+        for (auto carte : carti)
+            carte->nr_pagini(a, b);
+    }
+};
+
+int main() {
+    int nrCarti;
+    std::cin >> nrCarti;
+
+    Biblioteca biblioteca;
+
+    for (int i = 0; i < nrCarti; ++i) {
+        std::string titlu;
+        int zi, luna, an, nrRecenzii;
+        std::string gen;
+        std::vector<int> noteRecenzii;
+
+        std::cin.ignore();
+        std::getline(std::cin, titlu);
+        std::cin >> zi >> luna >> an >> nrRecenzii;
+
+        for (int j = 0; j < nrRecenzii; ++j) {
+            int nota;
+            std::cin >> nota;
+            noteRecenzii.push_back(nota);
+        }
+
+        std::cin >> gen;
+
+        if (gen == "fictiune") {
+            int nrCapitole;
+            std::cin >> nrCapitole;
+            biblioteca.adaugaCarte(new CarteFictiune(titlu, zi, luna, an, gen, nrRecenzii, noteRecenzii, nrCapitole));
+        } else if (gen == "nonfictiune") {
+            int nrPagini;
+            std::cin >> nrPagini;
+            biblioteca.adaugaCarte(new CarteNonFictiune(titlu, zi, luna, an, gen, nrRecenzii, noteRecenzii, nrPagini));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    if (comanda == 1) {
+        biblioteca.afisareCarti();
+    } else if (comanda == 2) {
+        biblioteca.afisareCarteNotaMaxima();
+    } else if (comanda == 3) {
+        int zi, luna, an;
+        std::cin >> zi >> luna >> an;
+        biblioteca.filtrareCarti(zi, luna, an);
+    } else if (comanda == 4) {
+        biblioteca.afisareCeaMaiNouaSiVecheCarte();
+    } else if (comanda == 5) {
+        int a, b;
+        std::cin >> a >> b;
+        biblioteca.calculPaginiTotalCarti(a, b);
+    }
+
+    return 0;
+}

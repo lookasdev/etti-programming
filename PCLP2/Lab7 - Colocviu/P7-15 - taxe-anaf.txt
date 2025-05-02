@@ -1,0 +1,209 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+
+class PlatitorTaxe
+{
+protected:
+    std::string tip;
+    std::string nume;
+    double sumaIncasata;
+    double sumaNetaxabila;
+
+public:
+    PlatitorTaxe(const std::string& tip, const std::string& nume, double sumaIncasata, double sumaNetaxabila)
+        : tip(tip), nume(nume), sumaIncasata(sumaIncasata), sumaNetaxabila(sumaNetaxabila) {}
+
+    virtual void afiseaza() const
+    {
+        std::cout << nume << std::endl << sumaIncasata << std::endl;
+    }
+
+    virtual double calculeazaTaxe(double procentTaxe) const = 0;
+    
+    virtual bool potentialaFrauda() const
+    {
+        return (sumaNetaxabila / sumaIncasata) > 0.20;
+    }
+
+    virtual void afiseazaFrauda() const
+    {
+        if (potentialaFrauda())
+            std::cout << nume << std::endl << std::fixed << std::setprecision(2) << (sumaNetaxabila / sumaIncasata) * 100 << std::endl;
+    }
+
+    virtual double calculeazaTaxeTotale(double procentTaxe) const = 0;
+    
+    std::string getTip() { return tip; }
+    std::string getNume() { return nume; }
+};
+
+class PersoanaFizica : public PlatitorTaxe
+{
+public:
+    PersoanaFizica(const std::string& nume, double sumaIncasata, double sumaNetaxabila)
+        : PlatitorTaxe("Persoana Fizica", nume, sumaIncasata, sumaNetaxabila) {}
+
+    double calculeazaTaxe(double procentTaxe) const override
+    {
+        return (sumaIncasata - sumaNetaxabila) * (1 - (100 - procentTaxe) / 100);
+    }
+    
+    double calculeazaTaxeTotale(double procentTaxe) const override
+    {
+        double venitTaxabil = sumaIncasata - sumaNetaxabila;
+        double taxe = venitTaxabil * (procentTaxe / 100);
+
+        if (venitTaxabil > 300000)
+        {
+            double excedent = venitTaxabil - 300000;
+            taxe += excedent * (procentTaxe / 100);  // impozitare dublă pentru excedent
+        }
+
+        return taxe;
+    }
+
+};
+
+class Firma : public PlatitorTaxe
+{
+public:
+    Firma(const std::string& nume, double sumaIncasata, double sumaNetaxabila)
+        : PlatitorTaxe("Firma", nume, sumaIncasata, sumaNetaxabila) {}
+
+    double calculeazaTaxe(double procentTaxe) const override
+    {
+        return (sumaIncasata - sumaNetaxabila) * (1 - (100 - procentTaxe) / 100);
+    }
+    
+    double calculeazaTaxeTotale(double procentTaxe) const override
+    {
+        double venitTaxabil = sumaIncasata - sumaNetaxabila;
+        double taxe = venitTaxabil * (procentTaxe / 100);
+
+        if (venitTaxabil > 300000)
+            taxe += venitTaxabil * 0.19;  // TVA
+
+        return taxe;
+    }
+};
+
+class AgentieAdministrareFiscala
+{
+private:
+    std::vector<PlatitorTaxe*> platitori;
+
+public:
+    ~AgentieAdministrareFiscala()
+    {
+        for (auto platitor : platitori)
+            delete platitor;
+    }
+
+    void adaugaPlatitor(PlatitorTaxe* platitor)
+    {
+        platitori.push_back(platitor);
+    }
+
+    void afiseazaPlatitori() const
+    {
+        for (auto platitor : platitori)
+            platitor->afiseaza();
+    }
+
+    void afiseazaTaxeDeBaza(double procentPF, double procentFirma) const
+    {
+        for (const auto platitor : platitori)
+        {
+            double taxe;
+            
+            if (platitor->getTip() == "Persoana Fizica") taxe = platitor->calculeazaTaxe(procentPF);
+            else if (platitor->getTip() == "Firma") taxe = platitor->calculeazaTaxe(procentFirma);
+
+            std::cout << platitor->getNume() << std::endl << taxe << std::endl;
+        }
+    }
+    
+    void verificaFrauda() const
+    {
+        bool fraudaDetectata = false;
+        for (auto platitor : platitori)
+        {
+            if (platitor->potentialaFrauda())
+            {
+                platitor->afiseazaFrauda();
+                fraudaDetectata = true;
+            }
+        }
+        if (!fraudaDetectata) std::cout << "Nicio potentiala frauda detectata" << std::endl;
+    }
+
+    void afiseazaTaxeTotale(double procentPF, double procentFirma) const
+    {
+        double totalTaxe = 0.0;
+        for (auto platitor : platitori)
+        {
+            double taxe;
+            
+            if (platitor->getTip() == "Persoana Fizica") taxe = platitor->calculeazaTaxeTotale(procentPF);
+            else if (platitor->getTip() == "Firma") taxe = platitor->calculeazaTaxeTotale(procentFirma);
+            
+            totalTaxe += taxe;
+            std::cout << platitor->getNume() << std::endl << std::fixed << std::setprecision(2) << taxe << std::endl;
+        }
+        std::cout << std::fixed << std::setprecision(2) << totalTaxe << std::endl;
+    }
+};
+
+int main()
+{
+    int comanda;
+    std::cin >> comanda;
+
+    int numarEntitati;
+    std::cin >> numarEntitati;
+    
+    AgentieAdministrareFiscala agentie;
+
+    for (int i = 0; i < numarEntitati; ++i)
+    {
+        std::string tipEntitate, nume;
+        double sumaIncasata, sumaNetaxabila;
+        
+        std::cin.ignore();
+        std::getline(std::cin, tipEntitate);
+        std::getline(std::cin, nume);
+        
+        std::cin >> sumaIncasata >> sumaNetaxabila;
+
+        if (tipEntitate == "Persoana Fizica") agentie.adaugaPlatitor(new PersoanaFizica(nume, sumaIncasata, sumaNetaxabila));
+        else if (tipEntitate == "Firma") agentie.adaugaPlatitor(new Firma(nume, sumaIncasata, sumaNetaxabila));
+    }
+
+    switch (comanda)
+    {
+        case 1:
+            agentie.afiseazaPlatitori();
+            break;
+        case 2:
+        {
+            double procentPF, procentFirma;
+            std::cin >> procentPF >> procentFirma;
+            agentie.afiseazaTaxeDeBaza(procentPF, procentFirma);
+            break;
+        }
+        case 3:
+            agentie.verificaFrauda();
+            break;
+        case 4:
+        {
+            double procentPF, procentFirma;
+            std::cin >> procentPF >> procentFirma;
+            agentie.afiseazaTaxeTotale(procentPF, procentFirma);
+            break;
+        }
+    }
+    
+    return 0;
+}

@@ -1,0 +1,93 @@
+Să se scrie un program care afișează pe ecran numele studenților citiți de la tastatură, ordonați după un anumit criteriu definit mai jos.
+
+Se citesc de la tastatură până la apariția cuvântului STOP:
+
+un std::string, reprezentând numele studentului;
+un întreg, n, reprezentând numărul de note ce urmează a fi citit de la tastatură;
+n întregi reprezentând notele studentului;
+După cuvântul STOP se mai citește o valoare întreagă de test, în funcție de a cărei valoare se execută:
+
+Ordonarea studenților după nume. Se afișează pe ecran numele studenților în ordine lexicografică, câte unul pe un rând diferit. Fiecare nume este urmat de caracterul '\n'.
+Ordonarea studenților după media notelor. Se afișează pe ecran numele studenților în ordinea mediilor notelor, câte unul pe un rând. Fiecare nume este urmat de caracterul '\n'.
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class Student
+{
+private:
+    std::string name;
+    int numGrades;
+    std::vector<int> grades;
+
+public:
+    Student(std::string n, int num, std::vector<int>& g) : name(n), numGrades(num), grades(g) {}
+
+    double calculateAverage()
+    {
+        if (grades.empty()) return 0.0;
+        double sum = 0;
+        for (int grade : grades)
+            sum += grade;
+        return sum / numGrades;
+    }
+
+    std::string getName() { return name; }
+};
+
+bool compareNames(Student& s1, Student& s2)
+{
+    return s1.getName() < s2.getName();
+}
+
+bool compareAverages(Student& s1, Student& s2)
+{
+    return s1.calculateAverage() < s2.calculateAverage();
+}
+
+int main()
+{
+    std::vector<Student> students;
+    
+    while (true)
+    {
+        std::string name;
+        int numGrades;
+        
+        std::cin >> name;
+        if (name == "STOP") break;
+
+        std::cin >> numGrades;
+        
+        std::vector<int> grades(numGrades);
+        
+        for (int i = 0; i < numGrades; ++i)
+        {
+            std::cin >> grades[i];
+            // int grade;
+            // std::cin >> grade;
+            // grades.push_back(grade);
+        }
+        students.push_back(Student(name, numGrades, grades));
+    }
+
+    int test;
+    std::cin >> test;
+    //std::cout << test;
+
+    if (test == 1)
+    {
+        std::sort(students.begin(), students.end(), compareNames);
+        for (auto& student : students)
+            std::cout << student.getName() << std::endl;
+    }
+    else if (test == 2)
+    {
+        std::sort(students.begin(), students.end(), compareAverages);
+        for (auto& student : students)
+            std::cout << student.getName() << std::endl;
+    }
+
+    return 0;
+}

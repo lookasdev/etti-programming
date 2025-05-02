@@ -1,0 +1,60 @@
+#include <algorithm>
+#include <vector>
+#include <iostream>
+
+class Student{
+private:
+    std::string nume;
+    std::vector<int> note;
+public:
+    Student(std::string nume, std::vector<int> var_note):nume(nume), note(std::move(var_note)){}
+    // variabila var_note este doar o copie (apel prin valoare) a argumentului pe care constructorul il primeste in momentul apelarii
+    // modificarile la variabila var_note nu actioneaza asupra zonei de memorie unde se gasea argumentul constructorului atunci cand a fost apelat
+    // algoritmul std::move(note) muta referinta variabilei var_note in locul unde este apelat
+    // variabila note devine acum "proprietara" pe zona de memorie unde exista variabila var_note
+
+
+    void afisare_1(){ // functie de afisare (citire) a elementelor care utilizeaza iteratori pentru a parcurge containerul
+        for (std::vector<int>::iterator it = note.begin(); it != note.end(); ++it) {
+            std::cout << *it << " ";
+        }
+        std::cout << "\n";
+    }
+
+    void afisare_2(){ // functie de afisare (citire) a elementelor care utilizeaza o bucla ranged-for pentru a parcurge containerul
+        for (auto s : note){
+            std::cout << s << " ";
+        }
+        std::cout << "\n";
+    }
+
+    void increment_1(){ // functie de incrementare (scriere) a elementelor care utilizeaza iteratori pentru a parcurge containerul
+        for (std::vector<int>::iterator it = note.begin(); it != note.end(); ++it) {
+            (*it)++;
+        }
+    }
+
+    void increment_2(){ // functie de incrementare (scriere) a elementelor care utilizeaza o bucla ranged-for pentru a parcurge containerul
+        for (auto &s : note){
+            s++;
+        }
+    }
+};
+int main()
+{
+    std::vector<int> vec;
+    vec.push_back(15);
+    vec.push_back(20);
+    vec.push_back(7);
+    vec.push_back(13);
+
+    Student s("John", vec); // initializarea unui obiect de tipul Student transmitand std::vector ca argument
+    s.afisare_1();          // afiseaza notele studentului
+    s.increment_1();        // incrementeaza notele studentului
+    s.afisare_2();          // afiseaza notele studentului
+
+    Student b("Jack", vec); // initializarea unui obiect de tipul Student transmitand acelasi std::vector ca argument
+    b.afisare_1();          // afiseaza notele studentului -> vectorul vec nu a fost modificat de catre studentul s
+
+    return 0;
+}

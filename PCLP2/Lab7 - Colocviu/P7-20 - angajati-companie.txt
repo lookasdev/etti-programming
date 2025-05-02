@@ -1,0 +1,192 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+
+class Angajat
+{
+protected:
+    std::string tip;
+    std::string nume;
+    float salariuBrut;
+    int zileConcediu; // data membra nefolosita in restul programului
+
+public:
+    Angajat(std::string tip, std::string nume, float salariuBrut, int zileConcediu) 
+        : tip(tip), nume(nume), salariuBrut(salariuBrut), zileConcediu(zileConcediu) {}
+
+    virtual ~Angajat() {}
+
+    virtual void afisare() const = 0;
+    virtual int calculPlataOra() const = 0; // functie int deoarece vrem sa rotunjim in jos valoarea obtinuta
+    virtual float calculSalariuNet() const = 0;
+    
+    std::string getTip() { return tip; }
+    
+    std::string getNume() const { return nume; }
+    
+    float getSalariuBrut() const { return salariuBrut; }
+};
+
+class PersoanaFizica : public Angajat
+{
+private:
+    int oreSaptamana;
+    
+public:
+    PersoanaFizica(std::string nume, float salariuBrut, int zileConcediu, int oreSaptamana) 
+        : Angajat("Persoana fizica", nume, salariuBrut, zileConcediu), oreSaptamana(oreSaptamana) {}
+
+    void afisare() const override
+    {
+        std::cout << "Persoana fizica" << std::endl;
+        std::cout << nume << ":" << salariuBrut << std::endl;
+    }
+
+    int calculPlataOra() const override
+    {
+        return salariuBrut / (oreSaptamana * 4.0);
+    }
+
+    float calculSalariuNet() const override
+    {
+        return salariuBrut * (1.00 - 0.42); // 42% taxe
+    }
+};
+
+class PersoanaJuridica : public Angajat
+{
+private:
+    int zileSaptamana;
+    
+public:
+    PersoanaJuridica(std::string nume, float salariuBrut, int zileConcediu, int zileSaptamana) 
+        : Angajat("Persoana juridica", nume, salariuBrut, zileConcediu), zileSaptamana(zileSaptamana) {}
+
+    void afisare() const override
+    {
+        std::cout << "Persoana juridica" << std::endl;
+        std::cout << nume << ":" << salariuBrut << std::endl;
+    }
+
+    int calculPlataOra() const override
+    {
+        return salariuBrut / (zileSaptamana * 8.0 * 4.0);
+    }
+
+    float calculSalariuNet() const override
+    {
+        return salariuBrut * (1.00 - 0.10); // 10% taxe
+    }
+};
+
+bool sortSalariuNet(Angajat* a, Angajat* b)
+{
+    return a->calculSalariuNet() > b->calculSalariuNet(); // sortare descrescatoare
+}
+
+class AdministrareAngajat
+{
+private:
+    std::vector<Angajat*> angajati;
+    
+public:
+    ~AdministrareAngajat()
+    {
+        for(auto angajat : angajati)
+            delete angajat;
+    }
+
+    void adaugaAngajat(Angajat* angajat)
+    {
+        angajati.push_back(angajat);
+    }
+
+    void afisareAngajati() const
+    {
+        for(auto angajat : angajati)
+        {
+            angajat->afisare();
+            std::cout << std::endl;
+        }
+    }
+
+    void calculPlataOra() const
+    {
+        for(auto angajat : angajati)
+            std::cout << angajat->getNume() << ":" << angajat->calculPlataOra() << " lei/h" << std::endl;
+    }
+
+    void calculSalariuNet() const
+    {
+        for(auto angajat : angajati)
+            std::cout << angajat->getNume() << ":" << angajat->getSalariuBrut() << "-" << angajat->calculSalariuNet() << std::endl;
+    }
+
+    void ordonareSalariuNet()
+    {
+        sort(angajati.begin(), angajati.end(), sortSalariuNet);
+
+        for(auto angajat : angajati)
+            if(angajat->getTip() == "Persoana fizica")
+                std::cout << angajat->getNume() << ":" << angajat->getSalariuBrut() << std::endl;
+
+        for(auto angajat : angajati)
+            if(angajat->getTip() == "Persoana juridica")
+                std::cout << angajat->getNume() << ":" << angajat->getSalariuBrut() << std::endl;
+    }
+};
+
+int main()
+{
+    AdministrareAngajat admin;
+    
+    int comanda;
+    std::cin >> comanda;
+    
+    int numarAngajati;
+    std::cin >> numarAngajati;
+
+    for(int i = 0; i < numarAngajati; ++i)
+    {
+        std::string tip, nume;
+        float salariu;
+        int zileConcediu, oreZile;
+
+        std::cin.ignore();
+        std::getline(std::cin, tip);
+        std::getline(std::cin, nume);
+        
+        std::cin >> salariu >> zileConcediu;
+
+        if (tip == "Persoana fizica")
+        {
+            int oreSaptamana;
+            std::cin >> oreSaptamana;
+            admin.adaugaAngajat(new PersoanaFizica(nume, salariu, zileConcediu, oreSaptamana));
+        } else if (tip == "Persoana juridica")
+        {
+            int zileSaptamana;
+            std::cin >> zileSaptamana;
+            admin.adaugaAngajat(new PersoanaJuridica(nume, salariu, zileConcediu, zileSaptamana));
+        }
+    }
+
+    switch(comanda)
+    {
+        case 1:
+            admin.afisareAngajati();
+            break;
+        case 2:
+            admin.calculPlataOra();
+            break;
+        case 3:
+            admin.calculSalariuNet();
+            break;
+        case 4:
+            admin.ordonareSalariuNet();
+            break;
+    }
+
+    return 0;
+}

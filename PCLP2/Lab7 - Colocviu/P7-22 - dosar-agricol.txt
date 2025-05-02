@@ -1,0 +1,249 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <iomanip>
+
+class ActivitateAgricola
+{
+protected:
+    std::string numePlanta;
+    int numarHectare;
+    int luna;
+    int an;
+    //std::string tipTeren; // nu a mai aparut in fluxul de intrare tipul de teren
+    
+public:
+    ActivitateAgricola(std::string numePlanta, int numarHectare, int luna, int an)
+        : numePlanta(numePlanta), numarHectare(numarHectare), luna(luna), an(an) {}
+
+    virtual void afisare() = 0;
+    virtual bool check_insamantare() = 0;
+    virtual int return_valoare() = 0; // returneaza cantitatea de seminte pt o insamantare si cantitatea recoltata pt o recolta
+    
+    int get_luna() { return luna; }
+    int get_an() { return an; }
+    int get_nr_hectare() { return numarHectare; }
+};
+
+class Insamantare : public ActivitateAgricola
+{
+private:
+    int cantitateSeminte;
+    
+public:
+    Insamantare(std::string numePlanta, int numarHectare, int luna, int an, int cantitateSeminte)
+        : ActivitateAgricola(numePlanta, numarHectare, luna, an), cantitateSeminte(cantitateSeminte) {}
+    
+    void afisare() override
+    {
+        std::cout << "Insamantare" << std::endl;
+        std::cout << luna << "." << an << ":" << numePlanta << ", Cantitate seminte:" << cantitateSeminte << "\n";
+    }
+    
+    bool check_insamantare() override
+    {
+        return true;
+    }
+    
+    int return_valoare() override
+    {
+        return cantitateSeminte;
+    }
+    
+    int get_cantitate_seminte() { return cantitateSeminte; }
+};
+
+class Recolta : public ActivitateAgricola
+{
+private:
+    int cantitateRecoltata;
+    
+public:
+    Recolta(std::string numePlanta, int numarHectare, int luna, int an, int cantitateRecoltata)
+        : ActivitateAgricola(numePlanta, numarHectare, luna, an), cantitateRecoltata(cantitateRecoltata) {}
+    
+    void afisare() override
+    {
+        std::cout << "Recolta" << std::endl;
+        std::cout << luna << "." << an << ":" << numePlanta << ", Cantitate recoltata:" << cantitateRecoltata << "\n";
+    }
+    
+    bool check_insamantare() override
+    {
+        return false;
+    }
+    
+    int return_valoare() override
+    {
+        return cantitateRecoltata;
+    }
+    
+    int get_cantitate_recoltata() { return cantitateRecoltata; }
+};
+
+class DosarAgricol
+{
+private:
+    std::string numeFermier;
+    std::vector<ActivitateAgricola*> evenimente;
+    
+public:
+    DosarAgricol(const std::string& numeFermier) : numeFermier(numeFermier) {}
+
+    void adaugaActivitate(ActivitateAgricola* activitate)
+    {
+        evenimente.push_back(activitate);
+    }
+
+    void afisareDosar()
+    {
+        std::cout << numeFermier << "\n";
+        for (const auto& e : evenimente)
+            e->afisare();
+    }
+
+    void calculeazaActivitatiPerAn()
+    {
+        int insamantari2022 = 0, recolta2022 = 0;
+        int insamantari2023 = 0, recolta2023 = 0;
+
+        for (const auto& e : evenimente)
+        {
+            if (e->get_an() == 2022)
+            {
+                if (e->check_insamantare()) insamantari2022++;
+                else recolta2022 += e->return_valoare();
+            }
+            else if (e->get_an() == 2023)
+            {
+                if (e->check_insamantare()) insamantari2023++;
+                else recolta2023 += e->return_valoare();
+            }
+        }
+
+        std::cout << "2022: nr insamantari=" << insamantari2022 << ", kg recoltate=" << recolta2022 << "\n";
+        std::cout << "2023: nr insamantari=" << insamantari2023 << ", kg recoltate=" << recolta2023 << "\n";
+    }
+
+    void evalueazaActivitati()
+    {
+        int totalInsamantari = 0, totalRecolte = 0, totalHectareInsamantate = 0;
+        int cantitateRecoltata = 0, cantitateSeminte = 0;
+
+        for (const auto& e : evenimente)
+        {
+            if (e->check_insamantare()) // pt insamantare
+            {
+                totalInsamantari++;
+                totalHectareInsamantate += e->get_nr_hectare();
+                cantitateSeminte += e->return_valoare();
+            }
+            else // pt recolta
+            {
+                totalRecolte++;
+                cantitateRecoltata += e->return_valoare();
+            }
+        }
+
+        double performanta = totalRecolte - totalInsamantari + totalHectareInsamantate;
+        double eficienta = (1.0 * cantitateRecoltata) / (cantitateSeminte * 1.0);
+
+        std::cout << "Performanta:" << performanta << "\n";
+        std::cout << "Eficienta:" << std::fixed << std::setprecision(2) << eficienta << "\n";
+    }
+
+    static bool regula_ordonare_insamantari(Insamantare* a, Insamantare* b)
+    {
+        return a->get_cantitate_seminte() < b->get_cantitate_seminte();
+    }
+    
+    static bool regula_ordonare_recolte(Recolta* a, Recolta* b)
+    {
+        return a->get_cantitate_recoltata() < b->get_cantitate_recoltata();
+    }
+    
+    void ordonareActivitati()
+    {
+        std::vector<Insamantare*> insamantari;
+        std::vector<Recolta*> recolte;
+
+        for (const auto& e : evenimente)
+        {
+            if (auto ins = dynamic_cast<Insamantare*>(e)) insamantari.push_back(ins);
+            else if (auto rec = dynamic_cast<Recolta*>(e)) recolte.push_back(rec);
+        }
+
+        std::sort(insamantari.begin(), insamantari.end(), regula_ordonare_insamantari);
+        std::sort(recolte.begin(), recolte.end(), regula_ordonare_recolte);
+
+        std::cout << "Insamantari:\n";
+        for (const auto& ins : insamantari)
+            std::cout << ins->get_luna() << "." << ins->get_an() << ":" << ins->get_cantitate_seminte() << "\n";
+            
+        std::cout << std::endl;
+        
+        std::cout << "Recolte:\n";
+        for (const auto& rec : recolte)
+            std::cout << rec->get_luna() << "." << rec->get_an() << ":" << rec->get_cantitate_recoltata() << "\n";
+    }
+
+    ~DosarAgricol()
+    {
+        for (auto e : evenimente)
+            delete e;
+    }
+};
+
+int main()
+{
+    int operatie;
+    std::cin >> operatie;
+
+    std::string numeFermier;
+    std::cin.ignore();
+    std::getline(std::cin, numeFermier);
+
+    int numarEvenimente;
+    std::cin >> numarEvenimente;
+
+    DosarAgricol dosar(numeFermier);
+
+    for (int i = 0; i < numarEvenimente; ++i)
+    {
+        std::string numePlanta, tipEveniment;
+        int numarHectare, luna, an;
+        std::cin >> numePlanta >> numarHectare >> luna >> an >> tipEveniment;
+
+        if (tipEveniment == "Insamantare")
+        {
+            int cantitateSeminte;
+            std::cin >> cantitateSeminte;
+            dosar.adaugaActivitate(new Insamantare(numePlanta, numarHectare, luna, an, cantitateSeminte));
+        }
+        else if (tipEveniment == "Recolta")
+        {
+            int cantitateRecoltata;
+            std::cin >> cantitateRecoltata;
+            dosar.adaugaActivitate(new Recolta(numePlanta, numarHectare, luna, an, cantitateRecoltata));
+        }
+    }
+
+    switch (operatie)
+    {
+        case 1:
+            dosar.afisareDosar();
+            break;
+        case 2:
+            dosar.calculeazaActivitatiPerAn();
+            break;
+        case 3:
+            dosar.evalueazaActivitati();
+            break;
+        case 4:
+            dosar.ordonareActivitati();
+            break;
+    }
+
+    return 0;
+}

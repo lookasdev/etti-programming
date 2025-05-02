@@ -1,0 +1,85 @@
+Se dă codul din funcția main. De asemenea, se dă și clasa abstractă Poligon. Să se implementeze toate clasele necesare, conform diagramei UML de mai jos.
+
+Rularea programului principal trebuie să afișeze următoarele rezultate:
+2.90474 9
+9 12
+24 22
+
+
+#include <iostream>
+#include <cmath>
+
+class Poligon
+{
+public:
+    virtual float aria()=0;
+    virtual float perimetru()=0;
+    virtual ~Poligon(){}
+};
+
+class Triunghi : public Poligon
+{
+    private:
+        int lat1, lat2, lat3;
+    public:
+        float aria()
+        {
+            float p = (float) (lat1 + lat2 + lat3) / 2;
+            return sqrt(p*(p-lat1)*(p-lat2)*(p-lat3)); 
+        }
+        float perimetru()
+        {
+            return lat1 + lat2 + lat3;
+        }
+        Triunghi(int lat1, int lat2, int lat3) : lat1(lat1), lat2(lat2), lat3(lat3) {}
+        ~Triunghi() {}
+};
+
+class Patrulater : public Poligon
+{
+    protected:
+        int lat1, lat2, lat3, lat4;
+    public:
+        Patrulater(int lat1, int lat2, int lat3, int lat4) : lat1(lat1), lat2(lat2), lat3(lat3), lat4(lat4) {}
+        ~Patrulater() {}
+};
+
+class Dreptunghi : public Patrulater
+{
+    public:
+        float aria()
+        {
+            return lat1 * lat2;
+        }
+        float perimetru()
+        {
+            return lat1 + lat2 + lat3 + lat4;
+        }
+        Dreptunghi(int lat1, int lat2) : Patrulater(lat1, lat2, lat1, lat2) {}
+        ~Dreptunghi() {}
+};
+
+class Patrat : public Dreptunghi
+{
+    public:
+        float aria()
+        {
+            return lat1 * lat1;
+        }
+        float perimetru()
+        {
+            return lat1 * 4;
+        }
+        Patrat(int lat1) : Dreptunghi(lat1, lat1) {}
+        ~Patrat() {}
+};
+
+int main()
+{
+    Poligon *p[3] = {new Triunghi(2, 3, 4), new Patrat(3), new Dreptunghi(3, 8)};
+    for (int i=0; i<3; i++){
+        std::cout << p[i]->aria() << " " << p[i]->perimetru() << std::endl;
+        delete p[i];
+    }
+    return 0;
+}

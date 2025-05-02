@@ -1,0 +1,234 @@
+#include <iostream>
+#include <vector>
+
+class Angajat
+{
+protected:
+    std::string nume;
+    float salariu_baza;
+    std::string functie;
+    float procent_taxe_salariu;
+    bool show_destructor_message = false; // initial nu vrem sa afisam niciun mesaj de la destructori
+    
+public:
+    Angajat(std::string nume, float salariu_baza, std::string functie, float procent_taxe_salariu)
+        : nume(nume), salariu_baza(salariu_baza), functie(functie), procent_taxe_salariu(procent_taxe_salariu) {}
+
+    virtual ~Angajat() { if (show_destructor_message) std::cout << "Destructor Angajat" << std::endl; }
+    
+    virtual float get_salariu_brut() { return salariu_baza; }
+    virtual float get_salariu_net() = 0;
+    
+    float get_salariu_baza() { return salariu_baza; }
+    std::string get_nume() { return nume; }
+    std::string get_functie() { return functie; }
+    
+    void set_functie(std::string functie) { this->functie = functie; }
+    
+    void marire_salariu(float procent_marire)
+    {
+        salariu_baza *= (100 + procent_marire) / 100;
+    }
+    
+    void toggle_destructor_message () { show_destructor_message = !show_destructor_message; }
+};
+
+class Analist : public Angajat
+{
+public:
+    Analist(std::string nume, float salariu_baza, std::string functie, float procent_taxe_salariu)
+        : Angajat(nume, salariu_baza, functie, procent_taxe_salariu) {}
+
+    float get_salariu_net() override { return salariu_baza * (100 - procent_taxe_salariu) / 100; }
+
+    float get_salariu_brut() override { return salariu_baza; }
+    
+    ~Analist() override { if (show_destructor_message) std::cout << "Destructor Analist" << std::endl; }
+};
+
+class Programator : public Analist
+{
+protected:
+    float procent_deducere_taxe_it;
+
+public:
+    Programator(std::string nume, float salariu_baza, std::string functie, float procent_taxe_salariu, float procent_deducere_taxe_it)
+        : Analist(nume, salariu_baza, functie, procent_taxe_salariu), procent_deducere_taxe_it(procent_deducere_taxe_it) {}
+
+    float get_salariu_net() override { return salariu_baza * (100 - procent_taxe_salariu + procent_deducere_taxe_it) / 100; }
+
+    float get_salariu_brut() override { return salariu_baza; }
+    
+    ~Programator() override { if (show_destructor_message) std::cout << "Destructor Programator" << std::endl; }
+};
+
+class LiderEchipaProgramare : public Programator
+{
+protected:
+    float bonus_vechime_functie;
+    int vechime_functie;
+
+public:
+    LiderEchipaProgramare(std::string nume, float salariu_baza, std::string functie, float procent_taxe_salariu,
+                          float procent_deducere_taxe_it, int vechime_functie)
+        : Programator(nume, salariu_baza, functie, procent_taxe_salariu, procent_deducere_taxe_it),
+          vechime_functie(vechime_functie), bonus_vechime_functie(500) {}
+
+    float get_salariu_net() override { return (salariu_baza + bonus_vechime_functie * vechime_functie) * (100 - procent_taxe_salariu + procent_deducere_taxe_it) / 100; }
+
+    float get_salariu_brut() override { return salariu_baza + bonus_vechime_functie * vechime_functie; }
+    
+    ~LiderEchipaProgramare() override { if (show_destructor_message) std::cout << "Destructor LiderEchipaProgramare" << std::endl; }
+};
+
+class FirmaProgramare
+{
+private:
+    std::vector<Angajat*> angajati;
+
+public:
+    ~FirmaProgramare()
+    {
+        for (auto angajat : angajati)
+            delete angajat;
+        //std::cout << "Destructor FirmaProgramare\n";
+    }
+
+    void adauga_angajat(Angajat* angajat)
+    {
+        angajati.push_back(angajat);
+    }
+
+    void afiseaza_angajati()
+    {
+        //std::cout << "afisare";
+        for (const auto& angajat : angajati)
+            std::cout << angajat->get_nume() << std::endl << angajat->get_functie() << std::endl;
+    }
+    
+    void calcularea_salariilor()
+    {
+        for (const auto& angajat : angajati)
+        {
+            std::cout << angajat->get_nume() << std::endl;
+            std::cout << "Salariu brut: " << angajat->get_salariu_brut() << std::endl;
+            std::cout << "Salariu Net: " << angajat->get_salariu_net() << std::endl;
+        }
+    }
+
+    void mareste_salarii(float procent_marire_a, float procent_marire_p, float procent_marire_l)
+    {
+        for (auto angajat : angajati)
+        {
+            std::cout << angajat->get_nume() << std::endl;
+            std::cout << "Salariu de baza vechi: "<< angajat->get_salariu_baza() << std::endl;
+            
+            if (angajat->get_functie() == "Analist") angajat->marire_salariu(procent_marire_a);
+            else if (angajat->get_functie() == "Programator") angajat->marire_salariu(procent_marire_p);
+            else if (angajat->get_functie() == "LiderEchipaProgramare") angajat->marire_salariu(procent_marire_l);
+            
+            std::cout << "Salariu de baza nou: "<< angajat->get_salariu_baza() << std::endl;
+        }
+    }
+    
+    void toggle_all_destructor_messages()
+    {
+        for (const auto& angajat : angajati)
+            angajat->toggle_destructor_message();
+    }
+    
+    void promoveaza(std::string numePromo, std::string functiePromo)
+    {
+        for (const auto& angajat : angajati)
+        {
+            if(angajat->get_nume() == numePromo)
+            {
+                void* memoriaObiectului = angajat;
+                
+                toggle_all_destructor_messages();
+                angajat->~Angajat(); // apelam destructorul explicit pentru obiectul curent
+                toggle_all_destructor_messages();
+                
+                // construim un nou obiect in acelasi loc de memorie folosind "placement new"
+                if (functiePromo == "Analist") new(memoriaObiectului) Analist(numePromo, angajat->get_salariu_baza(), functiePromo, 40);
+                    
+                else if (functiePromo == "Programator") new(memoriaObiectului) Programator(numePromo, angajat->get_salariu_baza(), functiePromo, 40, 10);
+                    
+                else if (functiePromo == "LiderEchipaProgramare") new(memoriaObiectului) LiderEchipaProgramare(numePromo, angajat->get_salariu_baza(), functiePromo, 40, 10, 0);
+                    
+                break;
+            }
+        }
+    }
+};
+
+int main()
+{
+    FirmaProgramare firma;
+    int numar_angajati;
+    std::cin >> numar_angajati;
+    std::cin.ignore();
+
+    int procent_taxe_salariu = 40, procent_deducere_taxe_it = 10;
+    
+    for (int i = 0; i < numar_angajati; ++i)
+    {
+        std::string nume, functie;
+        float salariu_baza;
+        int vechime_functie;
+        
+        std::getline(std::cin, nume);
+        
+        std::cin >> functie >> salariu_baza;
+        std::cin.ignore();
+        
+        if (functie == "LiderEchipaProgramare")
+        {
+            std::cin >> vechime_functie;
+            std::cin.ignore();
+        }
+
+        if (functie == "Analist") firma.adauga_angajat(new Analist(nume, salariu_baza, functie, procent_taxe_salariu));
+        else if (functie == "Programator") firma.adauga_angajat(new Programator(nume, salariu_baza, functie, procent_taxe_salariu, procent_deducere_taxe_it));
+        else if (functie == "LiderEchipaProgramare") firma.adauga_angajat(new LiderEchipaProgramare(nume, salariu_baza, functie, procent_taxe_salariu, procent_deducere_taxe_it, vechime_functie));
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    
+    switch(comanda)
+    {
+        case 1:
+        {
+            firma.afiseaza_angajati();
+            break;
+        }
+        case 2:
+        {
+            firma.calcularea_salariilor();
+            break;
+        }
+        case 3:
+        {
+            std::string temp;
+            float procent_marire_a, procent_marire_p, procent_marire_l;
+            std::cin >> temp; if (temp == "Analist") std::cin >> procent_marire_a;
+            std::cin >> temp; if (temp == "Programator") std::cin >> procent_marire_p;
+            std::cin >> temp; if (temp == "LiderEchipaProgramare") std::cin >> procent_marire_l;
+            firma.mareste_salarii(procent_marire_a, procent_marire_p, procent_marire_l);
+            break;
+        }
+        case 4:
+        {
+            std::string numePromo, functiePromo;
+            std::cin.ignore();
+            
+            std::getline(std::cin, numePromo);
+            std::getline(std::cin, functiePromo);
+
+            firma.promoveaza(numePromo, functiePromo);
+            firma.afiseaza_angajati();
+        }
+    }
+    return 0;
+}

@@ -1,0 +1,175 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+
+class Vehicul {
+protected:
+    int masa;
+    std::string marca;
+
+public:
+    Vehicul(int masa, std::string marca) : masa(masa), marca(marca) {}
+
+    virtual void display() = 0;
+    virtual int calculMasaAditionala() = 0;
+    virtual float calculVitezaMaxima() = 0;
+    virtual void adaugaBagaj(int masaBagaj) = 0;
+};
+
+class Motocicleta : public Vehicul {
+private:
+    std::string tip;
+
+public:
+    Motocicleta(int masa, std::string marca, std::string tip) : Vehicul(masa, marca), tip(tip) {}
+
+    void display() override {
+        std::cout << "motocicleta " << masa << " " << marca << " " << tip << std::endl;
+    }
+
+    int calculMasaAditionala() override {
+        return 70;  // masa este doar a conducatorul motocicletei
+    }
+
+    float calculVitezaMaxima() override {
+        return 1.0 * 300000 / (1.0 * masa + 1.0 * calculMasaAditionala());
+    }
+
+    void adaugaBagaj(int masaBagaj) override {
+        std::cout << masa + calculMasaAditionala() << std::endl;
+    }
+};
+
+class Masina : public Vehicul {
+protected:
+    int nr_pasageri;
+    int capacitate_portbagaj;
+
+public:
+    Masina(int masa, std::string marca, int nr_pasageri, int capacitate_portbagaj) : Vehicul(masa, marca), nr_pasageri(nr_pasageri), capacitate_portbagaj(capacitate_portbagaj) {}
+
+    void display() override {
+        std::cout << "masina " << masa << " " << marca << " " << nr_pasageri << " " << capacitate_portbagaj << std::endl;
+    }
+
+    int calculMasaAditionala() override {
+        return 70 + nr_pasageri * 70;
+    }
+
+    float calculVitezaMaxima() override {
+        return 1.0 * 300000 / (1.0 * masa + 1.0 * calculMasaAditionala());
+    }
+
+    void adaugaBagaj(int masaBagaj) override {
+        if (masaBagaj > capacitate_portbagaj) {
+            masaBagaj = capacitate_portbagaj;
+        }
+        std::cout << masa + calculMasaAditionala() + masaBagaj << std::endl;
+    }
+};
+
+class MasinaElectrica : public Masina {
+private:
+    int masa_baterie;
+
+public:
+    MasinaElectrica(int masa, std::string marca, int nr_pasageri, int capacitate_portbagaj, int masa_baterie) : Masina(masa, marca, nr_pasageri, capacitate_portbagaj), masa_baterie(masa_baterie) {}
+
+    void display() override {
+        std::cout << "masina electrica " << masa << " " << marca << " " << nr_pasageri << " " << capacitate_portbagaj << " " << masa_baterie << std::endl;
+    }
+
+    int calculMasaAditionala() override {
+        return 70 + nr_pasageri * 70 + masa_baterie;
+    }
+
+    float calculVitezaMaxima() override {
+        return 1.0 * 300000 / (1.0 * masa + 1.0 * calculMasaAditionala());
+    }
+
+    void adaugaBagaj(int masaBagaj) override {
+        if (masaBagaj > capacitate_portbagaj) {
+            masaBagaj = capacitate_portbagaj;
+        }
+        std::cout << masa + calculMasaAditionala() + masaBagaj << std::endl;
+    }
+};
+
+bool sortareDupaVitezaMaxima(Vehicul* a, Vehicul* b) {
+    return a->calculVitezaMaxima() > b->calculVitezaMaxima();
+}
+
+int main() {
+    int nrVehicule;
+    std::cin >> nrVehicule;
+    std::vector<Vehicul*> vehicule;
+
+    for (int i = 0; i < nrVehicule; ++i) {
+        int masa;
+        std::string marca;
+        std::string tip;
+
+        std::cin >> masa >> marca >> tip;
+
+        if (tip == "moto") {
+            std::string tip_motocicleta;
+            std::cin >> tip_motocicleta;
+            vehicule.push_back(new Motocicleta(masa, marca, tip_motocicleta));
+        } else if (tip == "auto") {
+            int nr_pasageri;
+            int capacitate_portbagaj;
+            std::cin >> nr_pasageri >> capacitate_portbagaj;
+            vehicule.push_back(new Masina(masa, marca, nr_pasageri, capacitate_portbagaj));
+        } else if (tip == "electric") {
+            int nr_pasageri;
+            int capacitate_portbagaj, masa_baterie;
+            std::cin >> nr_pasageri >> capacitate_portbagaj >> masa_baterie;
+            vehicule.push_back(new MasinaElectrica(masa, marca, nr_pasageri, capacitate_portbagaj, masa_baterie));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda) {
+        case 1:
+            for (auto vehicul : vehicule) {
+                vehicul->display();
+            }
+            break;
+
+        case 2:
+            for (auto vehicul : vehicule) {
+                std::cout << vehicul->calculMasaAditionala() << std::endl;
+            }
+            break;
+
+        case 3:
+            for (auto vehicul : vehicule) {
+                std::cout << std::fixed << std::setprecision(2) << vehicul->calculVitezaMaxima() << std::endl;
+            }
+            break;
+
+        case 4: {
+            int index;
+            int masaBagaj;
+            std::cin >> index >> masaBagaj;
+            vehicule[index]->adaugaBagaj(masaBagaj);
+            break;
+        }
+
+        case 5:
+            std::sort(vehicule.begin(), vehicule.end(), sortareDupaVitezaMaxima);
+            for (auto vehicul : vehicule) {
+                vehicul->display();
+            }
+            break;
+    }
+
+    for (auto vehicul : vehicule) {
+        delete vehicul;
+    }
+
+    return 0;
+}

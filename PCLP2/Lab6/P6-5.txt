@@ -1,0 +1,100 @@
+Pornind de la o clasă de bază Poligon, se vor crea două derivate: Triunghi și Dreptunghi. De asemenea, se cunoaște că există funcția virtual float Poligon::aria()=0;
+Se citește de la tastatură o valoare întreagă reprezentând numărul de Triunghiuri și numărul de Dreptunghiuri ale căror laturi (latură + înălțimea corespunzătoare pentru Triunghi, lungime + lățime pentru Dreptunghi) urmează a fi citite. Să se afișeze pe ecran Poligoanele, în ordinea ariei lor, câte un Poligon pe rând. Afișarea unui Poligon coincide cu afișarea valorilor laturilor sale, în aceeași ordine în care au fost citite, separate de un spațiu liber.
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class Poligon
+{
+public:
+    virtual float aria() = 0;
+    virtual void citireLaturi() = 0;
+    virtual void afisareLaturi() = 0;
+};
+
+class Triunghi : public Poligon
+{
+private:
+    float baza, inaltime;
+
+public:
+    Triunghi() : baza(0), inaltime(0) {}
+
+    float aria() override
+    {
+        return (baza * inaltime) / 2;
+    }
+
+    void citireLaturi() override
+    {
+        std::cin >> baza >> inaltime;
+    }
+
+    void afisareLaturi() override
+    {
+        std::cout << baza << " " << inaltime << std::endl;
+    }
+};
+
+class Dreptunghi : public Poligon
+{
+private:
+    float l1, l2;
+
+public:
+    Dreptunghi() : l1(0), l2(0) {}
+
+    float aria() override
+    {
+        return l1 * l2;
+    }
+
+    void citireLaturi() override
+    {
+        std::cin >> l1 >> l2;
+    }
+
+    void afisareLaturi() override
+    {
+        std::cout << l1 << " " << l2 << std::endl;
+    }
+};
+
+bool comparareArie(Poligon* p1, Poligon* p2)
+{
+    return p1->aria() < p2->aria();
+}
+
+int main()
+{
+    int numPoligoane;
+    std::cin >> numPoligoane;
+
+    std::vector<Poligon*> poligoane;
+
+    for (int i = 0; i < numPoligoane; ++i)
+    {
+        Triunghi* triunghi = new Triunghi();
+        triunghi->citireLaturi();
+        poligoane.push_back(triunghi);
+    }
+
+    for (int i = 0; i < numPoligoane; ++i)
+    {
+        Dreptunghi* dreptunghi = new Dreptunghi();
+        dreptunghi->citireLaturi();
+        poligoane.push_back(dreptunghi);
+    }
+
+    std::sort(poligoane.begin(), poligoane.end(), comparareArie);
+    
+    for (auto poligon : poligoane)
+        poligon->afisareLaturi();
+
+    for (auto poligon : poligoane)
+        delete poligon;
+
+    return 0;
+}

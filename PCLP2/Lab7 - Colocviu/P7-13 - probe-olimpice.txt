@@ -1,0 +1,253 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
+class Participant
+{
+private:
+    std::string nume;
+    double rezultat;
+
+public:
+    Participant(const std::string& nume, double rezultat) : nume(nume), rezultat(rezultat) {}
+
+    std::string getNume() const { return nume; }
+    double getRezultat() const { return rezultat; }
+};
+
+class ProbaSportiva
+{
+protected:
+    char tip;
+    std::string numeProba;
+    std::vector<Participant> participanti;
+
+public:
+    ProbaSportiva(char tip, const std::string& numeProba) : tip(tip), numeProba(numeProba) {}
+
+    void adaugaParticipant(const Participant& participant)
+    {
+        participanti.push_back(participant);
+    }
+
+    virtual void afisareProba() const = 0;
+    virtual double calculeazaMediaRezultatelor() const = 0;
+    virtual bool esteRecord(double record) const = 0;
+    virtual void afiseazaClasament() const = 0;
+    virtual double getBestScore() const = 0;
+    
+    char getTip() { return tip; }
+    std::string getNumeProba() { return numeProba; }
+    std::vector<Participant> getParticipanti() { return participanti; }
+};
+
+bool sortProbaScor(Participant& a, Participant& b)
+{
+    return a.getRezultat() > b.getRezultat(); // scorul mai mare este mai bun
+}
+
+bool sortProbaTimp(Participant& a, Participant& b)
+{
+    return a.getRezultat() < b.getRezultat(); // scorul mai mic este mai bun
+}
+
+class ProbaScor : public ProbaSportiva
+{
+public:
+    ProbaScor(char tip, const std::string& numeProba) : ProbaSportiva(tip, numeProba) {}
+
+    void afisareProba() const override
+    {
+        std::cout << numeProba << std::endl;
+        for (const auto& participant : participanti)
+            std::cout << participant.getNume() << " " << participant.getRezultat() << std::endl;
+    }
+
+    double calculeazaMediaRezultatelor() const override
+    {
+        double sum = 0;
+        for (const auto& participant : participanti)
+            sum += participant.getRezultat();
+        return sum / participanti.size();
+    }
+
+    bool esteRecord(double record) const override
+    {
+        for (const auto& participant : participanti)
+            if (participant.getRezultat() > record) return true;
+        return false;
+    }
+
+    void afiseazaClasament() const override
+    {
+        std::vector<Participant> sortedParticipanti = participanti;
+        std::sort(sortedParticipanti.begin(), sortedParticipanti.end(), sortProbaScor);
+
+        for (const auto& participant : sortedParticipanti)
+            std::cout << participant.getNume() << " " << participant.getRezultat() << std::endl;
+    }
+
+    double getBestScore() const override
+    {
+        double bestScore = 0;
+        for (const auto& participant : participanti)
+            if (participant.getRezultat() > bestScore) bestScore = participant.getRezultat();
+        return bestScore;
+    }
+};
+
+class ProbaTimp : public ProbaSportiva
+{
+public:
+    ProbaTimp(char tip, const std::string& numeProba) : ProbaSportiva(tip, numeProba) {}
+
+    void afisareProba() const override
+    {
+        std::cout << numeProba << std::endl;
+        for (const auto& participant : participanti)
+            std::cout << participant.getNume() << " " << participant.getRezultat() << std::endl;
+    }
+
+    double calculeazaMediaRezultatelor() const override
+    {
+        double sum = 0;
+        for (const auto& participant : participanti)
+            sum += participant.getRezultat();
+        return sum / participanti.size();
+    }
+
+    bool esteRecord(double record) const override
+    {
+        for (const auto& participant : participanti)
+            if (participant.getRezultat() < record) return true;
+        return false;
+    }
+
+    void afiseazaClasament() const override
+    {
+        std::vector<Participant> sortedParticipanti = participanti;
+        std::sort(sortedParticipanti.begin(), sortedParticipanti.end(), sortProbaTimp);
+
+        for (const auto& participant : sortedParticipanti)
+            std::cout << participant.getNume() << " " << participant.getRezultat() << std::endl;
+    }
+
+    double getBestScore() const override
+    {
+        double bestScore = participanti.front().getRezultat();
+        for (const auto& participant : participanti)
+            if (participant.getRezultat() < bestScore) bestScore = participant.getRezultat();
+        return bestScore;
+    }
+};
+
+
+int main()
+{
+    std::vector<ProbaSportiva*> probeSportive;
+    int numarProbele;
+    
+    std::cin >> numarProbele;
+
+    for (int i = 0; i < numarProbele; ++i)
+    {
+        char tip;
+        std::string numeProba;
+        int numarParticipanti;
+
+        std::cin >> tip >> numeProba >> numarParticipanti;
+
+        ProbaSportiva* proba = nullptr;
+
+        if (tip == 's') proba = new ProbaScor('s', numeProba);
+        else if (tip == 't') proba = new ProbaTimp('t', numeProba);
+
+        for (int j = 0; j < numarParticipanti; ++j)
+        {
+            std::string numeParticipant;
+            double rezultat;
+            std::cin >> numeParticipant >> rezultat;
+            proba->adaugaParticipant(Participant(numeParticipant, rezultat));
+        }
+
+        probeSportive.push_back(proba);
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+            for (const auto& proba : probeSportive)
+                proba->afisareProba();
+            break;
+    
+        case 2:
+            for (const auto& proba : probeSportive)
+                std::cout << "Rezultat mediu la " << proba->getNumeProba() << ": " << std::fixed << std::setprecision(2) << proba->calculeazaMediaRezultatelor() << std::endl;
+            break;
+    
+        case 3:
+            for (const auto& proba : probeSportive)
+            {
+                double posibilRecord;
+                std::cin >> posibilRecord;
+                if (proba->esteRecord(posibilRecord))
+                    std::cout << "Un nou record mondial la " << proba->getNumeProba() << "!" << std::endl;
+            }
+            break;
+
+        case 4:
+        {
+            std::string numeProba;
+            std::cin >> numeProba;
+            for (const auto& proba : probeSportive)
+            {
+                if (proba->getNumeProba() == numeProba)
+                {
+                    proba->afiseazaClasament();
+                    break;
+                }
+            }
+            break;
+        }
+    
+        case 5:
+        {
+            std::string numeProba, numeParticipant;
+            std::cin >> numeProba;
+            std::cin >> numeParticipant;
+    
+            for (const auto& proba : probeSportive)
+            {
+                if (proba->getNumeProba() == numeProba)
+                {
+                    double bestScore = proba->getBestScore();
+                    double scorParticipant = 0;
+    
+                    for (const auto& participant : proba->getParticipanti())
+                    {
+                        if (participant.getNume() == numeParticipant)
+                        {
+                            scorParticipant = participant.getRezultat();
+                            break;
+                        }
+                    }
+    
+                    double scorPentruAEgala = (2 * bestScore) - scorParticipant;
+                    std::cout << numeParticipant << " " << scorPentruAEgala << std::endl;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    
+    for (auto& proba : probeSportive)
+        delete proba;
+
+    return 0;
+}

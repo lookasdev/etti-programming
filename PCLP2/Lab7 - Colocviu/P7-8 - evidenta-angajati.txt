@@ -1,0 +1,167 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+
+class Angajat
+{
+protected:
+    std::string nume;
+    std::string departament;
+    
+public:
+    Angajat(std::string nume, std::string departament) : nume(nume), departament(departament) {}
+    virtual void afisare() = 0;
+    virtual float calcul_salariu_brut() = 0;
+    virtual float rentabilitate_angajat() = 0;
+    virtual bool check_salariat() = 0;
+    
+    std::string get_nume() { return nume; }
+    std::string get_departament() { return departament; }
+};
+
+class Salariat : public Angajat
+{
+private:
+    int norma;
+    int vechime;
+    float salariu_net;
+
+public:
+    Salariat(std::string nume, std::string departament, int norma, int vechime, float salariu_net) : Angajat(nume, departament), norma(norma), vechime(vechime), salariu_net(salariu_net) {}
+    
+    void afisare() override
+    {
+        std::cout << nume  << " " << norma << " " << vechime << " " << salariu_net << std::endl;
+    }
+    
+    float calcul_salariu_brut() override
+    {
+        int impozit;
+        if (get_departament() == "IT") impozit = 35;
+        else impozit = 45;
+        return (salariu_net * 12) / (1 - 1.0 * impozit / 100);
+    }
+    
+    float rentabilitate_angajat() override
+    {
+        int nr_zile_libere_extra = vechime / 3;
+        return norma * (250 - 20 - nr_zile_libere_extra) / calcul_salariu_brut();
+    }
+    
+    bool check_salariat() override
+    {
+        return true;
+    }
+};
+
+class Colaborator : public Angajat
+{
+private:
+    float onorariu;
+    float nr_prestari_anuale;
+
+public:
+    Colaborator(std::string nume, std::string departament, float onorariu, float nr_prestari_anuale) : Angajat(nume, departament), onorariu(onorariu), nr_prestari_anuale(nr_prestari_anuale) {}
+    
+    void afisare() override
+    {
+        std::cout << nume << " " << onorariu << " " << nr_prestari_anuale << std::endl;
+    }
+    
+    float calcul_salariu_brut() override
+    {
+        int impozit;
+        if (get_departament() == "IT") impozit = 35;
+        else impozit = 45;
+        return (onorariu * nr_prestari_anuale) / (1 - 1.0 * impozit / 100);
+    }
+    
+    float rentabilitate_angajat() override
+    {
+        return 0; // nu se aplica in cazul colaboratorilor
+    }
+    
+    bool check_salariat() override
+    {
+        return false;
+    }
+};
+
+int main()
+{
+    int nr_angajati;
+    std::cin >> nr_angajati;
+
+    std::vector<Angajat*> angajati;
+
+    for (int i = 0; i < nr_angajati; ++i)
+    {
+        std::string tip, nume, departament;
+        std::cin >> tip >> nume >> departament;
+        if (tip == "salariat")
+        {
+            int norma, vechime;
+            float salariu_net;
+            std::cin >> norma >> vechime >> salariu_net;
+            angajati.push_back(new Salariat(nume, departament, norma, vechime, salariu_net));
+        }
+        else if (tip == "colaborator")
+        {
+            float onorariu, nr_prestari_anuale;
+            std::cin >> onorariu >> nr_prestari_anuale;
+            angajati.push_back(new Colaborator(nume, departament, onorariu, nr_prestari_anuale));
+        }
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    if (comanda == 1)
+    {
+        std::string departamentRequested;
+        std::cin >> departamentRequested;
+        for (auto angajat : angajati)
+            if (angajat->get_departament() == departamentRequested)
+                angajat->afisare();
+    }
+    else if (comanda == 2)
+    {
+        std::string numeRequested;
+        std::cin >> numeRequested;
+        for (auto angajat : angajati)
+            if (angajat->get_nume() == numeRequested)
+                std::cout << angajat->calcul_salariu_brut() << std::endl; // salariu brut ANUAL
+    }
+    else if (comanda == 3)
+    {
+        float maxRentabilitate = 0;
+        std::string numeRez;
+        for (auto angajat : angajati)
+            if (angajat->check_salariat())
+                if (angajat->rentabilitate_angajat() > maxRentabilitate)
+                {
+                    numeRez = angajat->get_nume();
+                    maxRentabilitate = angajat->rentabilitate_angajat();
+                }
+        std::cout << numeRez << std::endl;
+    }
+    else if (comanda == 4)
+    {
+        float suma = 0;
+        int nr = 0;
+        std::string departamentRequested;
+        std::cin >> departamentRequested;
+        for (auto angajat : angajati)
+            if (angajat->get_departament() == departamentRequested)
+            {
+                suma += angajat->calcul_salariu_brut();
+                nr++;
+            }
+        std::cout << std::fixed << std::setprecision(2) << suma / nr * 1.0 << std::endl;
+    }
+
+    for (auto angajat : angajati)
+        delete angajat;
+
+    return 0;
+}

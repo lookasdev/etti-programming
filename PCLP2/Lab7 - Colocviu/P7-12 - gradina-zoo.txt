@@ -1,0 +1,148 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+
+class Pasare {
+protected:
+    std::string nume;
+    int dimensiune;
+
+public:
+    Pasare(std::string nume, int dimensiune)
+        : nume(nume), dimensiune(dimensiune) {}
+
+    virtual void afisare() = 0;
+    virtual int suprafata_necesara() = 0;
+    virtual std::string getTip() = 0;
+    
+    int getDimensiune()  { return dimensiune; }
+    std::string getNume() { return nume; }
+};
+
+
+class Zburatoare : public Pasare {
+private:
+    int batai_pe_minut;
+
+public:
+    Zburatoare(std::string nume, int dimensiune, int batai_pe_minut)
+        : Pasare(nume, dimensiune), batai_pe_minut(batai_pe_minut) {}
+
+    void afisare() override {
+        std::cout << nume << " " << dimensiune << " " << batai_pe_minut << std::endl;
+    }
+
+    int suprafata_necesara() override {
+        return dimensiune * 110 * batai_pe_minut / 100.0;
+    }
+
+    std::string getTip() override {
+        return "z";
+    }
+};
+
+class Nezburatoare : public Pasare {
+private:
+    std::string culoare;
+
+public:
+    Nezburatoare(std::string nume, int dimensiune, std::string culoare)
+        : Pasare(nume, dimensiune), culoare(culoare) {}
+
+    void afisare() override {
+        std::cout << nume << " " << dimensiune << " " << culoare << std::endl;
+    }
+
+    int suprafata_necesara() override {
+        return dimensiune * 30;
+    }
+
+    std::string getTip() override {
+        return "n";
+    }
+};
+
+bool regulaSortare(Pasare* a, Pasare* b) {
+    return a->suprafata_necesara() < b->suprafata_necesara();
+}
+
+int main() {
+    int nrPasari;
+    std::cin >> nrPasari;
+    std::vector<Pasare*> pasari;
+
+    for (int i = 0; i < nrPasari; ++i) {
+        char tip;
+        std::string nume;
+        int dimensiune;
+        std::cin >> tip >> nume >> dimensiune;
+
+        if (tip == 'z') {
+            int batai_pe_minut;
+            std::cin >> batai_pe_minut;
+            pasari.push_back(new Zburatoare(nume, dimensiune, batai_pe_minut));
+        } else if (tip == 'n') {
+            std::string culoare_penaj;
+            std::cin >> culoare_penaj;
+            pasari.push_back(new Nezburatoare(nume, dimensiune, culoare_penaj));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda) {
+        case 1: {
+            for (auto pasare : pasari) {
+                pasare->afisare();
+            }
+            break;
+        }
+        case 2: {
+            std::string tip;
+            int dimensiune_minima;
+            std::cin >> tip >> dimensiune_minima;
+
+            for (auto pasare : pasari) {
+                if (pasare->getTip() == tip && pasare->getDimensiune() >= dimensiune_minima) {
+                    pasare->afisare();
+                }
+            }
+            break;
+        }
+        case 3: {
+            for (auto pasare : pasari) {
+                std::cout << pasare->getNume() << " " << pasare->suprafata_necesara() << std::endl;
+            }
+            break;
+        }
+        case 4: {
+            std::sort(pasari.begin(), pasari.end(), regulaSortare);
+            for (auto pasare : pasari) {
+                pasare->afisare();
+            }
+            break;
+        }
+        case 5: {
+            int S_Zburatoare = 0, S_Nezburatoare = 0;
+            for (auto pasare : pasari) {
+                if (pasare->getTip() == "z") {
+                    S_Zburatoare += pasare->suprafata_necesara();
+                } else if (pasare->getTip() == "n"){
+                    S_Nezburatoare += pasare->suprafata_necesara();
+                }
+            }
+
+            int S_min = std::max(S_Zburatoare, S_Nezburatoare);
+            std::cout << S_min << std::endl;
+            break;
+        }
+    }
+
+    for (auto pasare : pasari) {
+        delete pasare;
+    }
+
+    return 0;
+}

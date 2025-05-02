@@ -1,0 +1,195 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
+class Publicatie
+{
+protected:
+    std::string titlu;
+    std::string tip;
+    int numarAutori;
+    int anPublicatie;
+    int numarCitari;
+    
+public:
+    Publicatie(std::string titlu, std::string tip, int numarAutori, int anPublicatie, int numarCitari)
+        : titlu(titlu), tip(tip), numarAutori(numarAutori), anPublicatie(anPublicatie), numarCitari(numarCitari) {}
+
+    virtual void afisare() = 0;
+    virtual float getPunctaj() = 0;
+    
+    int getAnPublicatie() { return anPublicatie; }
+    int getNumarCitari() { return numarCitari; }
+};
+
+class Conferinta : public Publicatie
+{
+private:
+    int indexISI;
+
+public:
+    Conferinta(std::string titlu, int numarAutori, int anPublicatie, int numarCitari, int indexISI)
+        : Publicatie(titlu, "conferinta", numarAutori, anPublicatie, numarCitari), indexISI(indexISI) {}
+
+    void afisare() override
+    {
+        if(indexISI) std::cout << titlu << ", " << numarAutori << ", " << anPublicatie << ", " << numarCitari << ", " << "ISI" << "\n";
+        else std::cout << titlu << ", " << numarAutori << ", " << anPublicatie << ", " << numarCitari << ", " << "non-ISI" << "\n";
+    }
+
+    float getPunctaj() override
+    {
+        if (indexISI) return 0.75;
+        else return 0.25;
+    }
+};
+
+class Revista : public Publicatie
+{
+private:
+    int percentila;
+    
+public:
+    Revista(std::string titlu, int numarAutori, int anPublicatie, int numarCitari, int percentila)
+        : Publicatie(titlu, "revista", numarAutori, anPublicatie, numarCitari), percentila(percentila) {}
+
+    void afisare() override
+    {
+        std::cout << titlu << ", " << numarAutori << ", " << anPublicatie << ", " << numarCitari << ", Q" << percentila << "\n";
+    }
+
+    float getPunctaj() override
+    {
+        int P = 0;
+        switch (percentila)
+        {
+            case 1: P = 20; break;
+            case 2: P = 10; break;
+            case 3: P = 5; break;
+        }
+        return 1.0 * P / numarAutori;
+    }
+};
+
+bool regulaSortare(Publicatie* a, Publicatie* b)
+{
+    return a->getNumarCitari() > b->getNumarCitari(); // sortare descrescatoare
+}
+
+class Profil
+{
+private:
+    std::string numeCercetator;
+    std::vector<Publicatie*> publicatii;
+
+public:
+    Profil(std::string nume) : numeCercetator(nume) {}
+
+    ~Profil()
+    {
+        for (Publicatie* p : publicatii)
+            delete p;
+    }
+
+    void adaugaPublicatie(Publicatie* publicatie)
+    {
+        publicatii.push_back(publicatie);
+    }
+
+    void afisareProfil()
+    {
+        std::cout << numeCercetator << "\n";
+        for (Publicatie* p : publicatii)
+            p->afisare();
+    }
+
+    void afisarePunctajAnual()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            int an = 0;
+            switch (i)
+            {
+                case 0: an = 2023; break;
+                case 1: an = 2022; break;
+                case 2: an = 2021; break;
+            }
+            float rez = 0.0f;
+            for (Publicatie* p : publicatii)
+                if (p->getAnPublicatie() == an)
+                    rez += p->getPunctaj();
+            std::cout << std::fixed << std::setprecision(2) << rez << std::endl;
+        }
+    }
+
+    void afisareI10Index()
+    {
+        int i10 = 0;
+        for (Publicatie* p : publicatii)
+            if (p->getNumarCitari() >= 10)
+                i10++;
+        std::cout << i10 << "\n";
+    }
+
+    void afisareHIndex()
+    {
+        std::sort(publicatii.begin(), publicatii.end(), regulaSortare);
+        int h = 0;
+        for (Publicatie *p : publicatii)
+        {
+            if (p->getNumarCitari() > h) h++;
+            else break;
+        }
+        std::cout << h << "\n";
+    }
+};
+
+int main()
+{
+    std::string numeCercetator;
+    std::getline(std::cin, numeCercetator);
+
+    int numarPublicatii;
+    std::cin >> numarPublicatii;
+
+    Profil profil(numeCercetator);
+
+    for (int i = 0; i < numarPublicatii; i++)
+    {
+        std::string titlu;
+        std::cin.ignore();
+        std::getline(std::cin, titlu);
+
+        int numarAutori, anPublicatie, numarCitari, valoare;
+        std::cin >> numarAutori >> anPublicatie >> numarCitari;
+
+        std::string tipPublicatie;
+        std::cin >> tipPublicatie >> valoare;
+
+        if (tipPublicatie == "conferinta") profil.adaugaPublicatie(new Conferinta(titlu, numarAutori, anPublicatie, numarCitari, valoare));
+        else if (tipPublicatie == "revista") profil.adaugaPublicatie(new Revista(titlu, numarAutori, anPublicatie, numarCitari, valoare));
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+            profil.afisareProfil();
+            break;
+        case 2:
+            profil.afisarePunctajAnual();
+            break;
+        case 3:
+            profil.afisareI10Index();
+            break;
+        case 4:
+            profil.afisareHIndex();
+            break;
+    }
+
+    return 0;
+}

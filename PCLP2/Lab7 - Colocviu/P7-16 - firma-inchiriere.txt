@@ -1,0 +1,197 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+
+class Automobil
+{
+protected:
+    std::string tip;
+    std::string model;
+    int capacitate;
+    double viteza_medie;
+    double coeficientPoluare;
+
+public:
+    Automobil(std::string tip, std::string model, int capacitate, double viteza_medie)
+        : tip(tip), model(model), capacitate(capacitate), viteza_medie(viteza_medie), coeficientPoluare(0.0f) {}
+
+    virtual void afisare() const
+    {
+        std::cout << model << "\n";
+        std::cout << capacitate << "\n";
+        std::cout << viteza_medie << "\n";
+    }
+
+    virtual double calculDurata(double distanta) const
+    {
+        return distanta / viteza_medie;
+    }
+
+    virtual double calculPoluare(int nr_pasageri) const = 0;
+
+    std::string getTip() const { return tip; }
+    
+    std::string getModel() const { return model; }
+    
+    int getCapacitate() const { return capacitate; }
+    
+    double getVitezaMedie() const { return viteza_medie; }
+
+    double getCoeficient() const { return coeficientPoluare; }
+    
+    void setCoeficient(double coeficient) { coeficientPoluare = coeficient; }
+};
+
+class Masina : public Automobil
+{
+public:
+    Masina(std::string model, int capacitate, double viteza_medie)
+        : Automobil("Masina", model, capacitate, viteza_medie) {}
+
+    double calculPoluare(int nr_pasageri) const override
+    {
+        double coeficient = (viteza_medie / 100) + (1.0 * nr_pasageri) / capacitate;
+        return coeficient;
+    }
+};
+
+class Autocar : public Automobil
+{
+public:
+    Autocar(std::string model, int capacitate, double viteza_medie)
+        : Automobil("Autocar", model, capacitate, viteza_medie) {}
+
+    double calculPoluare(int nr_pasageri) const override
+    {
+        double e = 2.71;
+        double coeficient = (viteza_medie / 20) + pow(e, (2.0 * nr_pasageri) / capacitate);
+        return coeficient;
+    }
+};
+
+bool sortPoluare(Automobil* a, Automobil* b)
+{
+    return a->getCoeficient() < b->getCoeficient(); // sortare crescatoare
+}
+
+class FirmaInchirieri
+{
+    std::vector<Automobil*> automobile;
+
+public:
+    ~FirmaInchirieri()
+    {
+        for (auto& automob_ptr : automobile)
+            delete automob_ptr;
+    }
+
+    void adaugaAutomobil(Automobil* automob_ptr)
+    {
+        automobile.push_back(automob_ptr);
+    }
+
+    void afisareAutomobile() const
+    {
+        for (const auto& automob_ptr : automobile)
+            automob_ptr->afisare();
+    }
+
+    void grupPersoane(int nr_persoane) const
+    {
+        for (const auto& automob_ptr : automobile)
+        {
+            int locuriNecesare = ceil((1.0 * nr_persoane) / automob_ptr->getCapacitate());
+            std::cout << automob_ptr->getModel() << "\n";
+            std::cout << locuriNecesare << "\n";
+        }
+    }
+
+    void durataDrumului(double distanta, double timp_maxim) const
+    {
+        for (const auto& automob_ptr : automobile)
+        {
+            double durata = automob_ptr->calculDurata(distanta);
+            if (durata <= timp_maxim)
+            {
+                std::cout << automob_ptr->getModel() << "\n";
+                std::cout << std::fixed << std::setprecision(2) << durata << "\n";
+            }
+        }
+    }
+
+    void ordonarePoluare(int nr_persoane)
+    {
+        for (auto& automob_ptr : automobile)
+        {
+            double coeficient = 0;
+            int capacitate = automob_ptr->getCapacitate();
+            int remaining_persoane = nr_persoane;
+            while (remaining_persoane > capacitate)
+            {
+                coeficient += automob_ptr->calculPoluare(capacitate);
+                remaining_persoane -= capacitate;
+            }
+            coeficient += automob_ptr->calculPoluare(remaining_persoane);
+            automob_ptr->setCoeficient(coeficient);
+        }
+
+        std::sort(automobile.begin(), automobile.end(), sortPoluare);
+
+        for (const auto& automob_ptr : automobile)
+            std::cout << automob_ptr->getModel() << std::endl;
+    }
+};
+
+int main()
+{
+    FirmaInchirieri firma;
+    int comanda;
+
+    std::cin >> comanda;
+
+    int numar_automobile;
+    std::cin >> numar_automobile;
+
+    for (int i = 0; i < numar_automobile; ++i)
+    {
+        std::string tip;
+        std::string model;
+        int capacitate;
+        double viteza_medie;
+
+        std::cin >> tip;
+        std::cin.ignore();
+        std::getline(std::cin, model);
+        std::cin >> capacitate >> viteza_medie;
+
+        if (tip == "Masina") firma.adaugaAutomobil(new Masina(model, capacitate, viteza_medie));
+        else if (tip == "Autocar") firma.adaugaAutomobil(new Autocar(model, capacitate, viteza_medie));
+    }
+
+    if (comanda == 1)
+    {
+        firma.afisareAutomobile();
+    }
+    else if (comanda == 2)
+    {
+        int nr_persoane;
+        std::cin >> nr_persoane;
+        firma.grupPersoane(nr_persoane);
+    }
+    else if (comanda == 3)
+    {
+        double distanta, timp_maxim;
+        std::cin >> distanta >> timp_maxim;
+        firma.durataDrumului(distanta, timp_maxim);
+    }
+    else if (comanda == 4)
+    {
+        int nr_persoane;
+        std::cin >> nr_persoane;
+        firma.ordonarePoluare(nr_persoane);
+    }
+
+    return 0;
+}

@@ -1,0 +1,180 @@
+#include <iostream>
+#include <vector>
+
+class Card_calatorie
+{
+protected:
+    int id;
+    char tip;
+    int moment_ultima_validare;
+
+public:
+    Card_calatorie(int id, char tip) : id(id), tip(tip), moment_ultima_validare(0) {}
+
+    virtual void validare_calatorie(int moment) = 0;
+    virtual void incarcare(int valoare) = 0;
+    virtual void afisare() = 0;
+    virtual void transfer(Card_calatorie* c, int valoare) = 0;
+    
+    int get_id() { return id; }
+    int get_tip() { return tip; }
+};
+
+class Card_autobuz : public Card_calatorie
+{
+private:
+    int sold;
+
+public:
+    Card_autobuz(int id, int sold) : Card_calatorie(id, 'a'), sold(sold) {}
+
+    void validare_calatorie(int moment) override
+    {
+        int cost_calatorie = 3;
+        if (moment - moment_ultima_validare <= 90)
+        {
+            // calatoria este permisa fara a mai debita cardul
+        }
+        else if (sold >= cost_calatorie)
+        {
+            sold -= cost_calatorie;
+            moment_ultima_validare = moment;
+        }
+        else std::cout << "Sold insuficient" << std::endl;
+    }
+
+    void incarcare(int valoare) override { sold += valoare; }
+
+    void afisare() override { std::cout << id << " " << tip << " " << sold << " " << moment_ultima_validare << std::endl; }
+    
+    void transfer(Card_calatorie* c, int valoare) override
+    {
+        if (sold >= valoare)
+        {
+            sold -= valoare;
+            c->incarcare(valoare);
+        }
+        else std::cout << "Transfer nereusit" << std::endl;
+    }
+};
+
+class Card_metrou : public Card_calatorie
+{
+private:
+    int numar_calatorii;
+
+public:
+    Card_metrou(int id, int numar_calatorii) : Card_calatorie(id, 'm'), numar_calatorii(numar_calatorii) {}
+
+    void validare_calatorie(int moment) override
+    {
+        if (moment - moment_ultima_validare <= 90)
+        {
+            // calatoria este permisa fara a mai debita cardul
+        }
+        else if (numar_calatorii > 0)
+        {
+            numar_calatorii--;
+            moment_ultima_validare = moment;
+        }
+        else std::cout << "Numar calatorii insuficient" << std::endl;
+    }
+
+    void incarcare(int valoare) override { numar_calatorii += valoare; }
+
+    void afisare() override { std::cout << id << " " << tip << " " << numar_calatorii << " " << moment_ultima_validare << std::endl; }
+
+    void transfer(Card_calatorie* c, int valoare) override
+    {
+        if (numar_calatorii >= valoare)
+        {
+            numar_calatorii -= valoare;
+            c->incarcare(valoare);
+        }
+        else std::cout << "Transfer nereusit" << std::endl;
+    }
+};
+
+int main()
+{
+    int nr_carduri;
+    std::cin >> nr_carduri;
+
+    std::vector<Card_calatorie*> carduri;
+
+    for (int i = 0; i < nr_carduri; ++i)
+    {
+        char tip;
+        int id, valoare;
+        
+        std::cin >> tip >> id >> valoare;
+
+        if (tip == 'a') carduri.push_back(new Card_autobuz(id, valoare));
+        else if (tip == 'm') carduri.push_back(new Card_metrou(id, valoare));
+    }
+    
+    int tasta;
+    
+    while (true)
+    {
+        std::cin >> tasta;
+        if (tasta == 1)
+        {
+            for (const auto card : carduri)
+                card->afisare();
+        }
+        else if (tasta == 2)
+        {
+            int id_incarcare, valoare_incarcare;
+            std::cin >> id_incarcare;
+            std::cin >> valoare_incarcare;
+    
+            for (auto card : carduri)
+            {
+                if (card->get_id() == id_incarcare)
+                {
+                    card->incarcare(valoare_incarcare);
+                    break;
+                }
+            }
+        }
+        else if (tasta == 3)
+        {
+            int id_validare, moment_validare;
+            std::cin >> id_validare;
+            std::cin >> moment_validare;
+
+            for (auto card : carduri)
+            {
+                if (card->get_id() == id_validare)
+                {
+                    card->validare_calatorie(moment_validare);
+                    break;
+                }
+            }
+        }
+        else if (tasta == 4)
+        {
+            int id_sursa, id_destinatie, valoare_transfer;
+            std::cin >> id_sursa >> id_destinatie >> valoare_transfer;
+            
+            Card_calatorie* sursa = nullptr;
+            Card_calatorie* destinatie = nullptr;
+        
+            for (auto card : carduri)
+            {
+                if (card->get_id() == id_sursa) sursa = card;
+                if (card->get_id() == id_destinatie) destinatie = card;
+            }
+            
+            if (sursa->get_tip() != destinatie->get_tip()) std::cout << "Transfer nereusit" << std::endl;
+            else sursa->transfer(destinatie, valoare_transfer);
+        }
+        else if (tasta == 5) break; // iesim din while, si din program
+    }
+
+    for (auto card : carduri)
+        delete card;
+
+    return 0;
+}

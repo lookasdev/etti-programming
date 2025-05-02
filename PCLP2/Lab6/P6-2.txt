@@ -1,0 +1,67 @@
+Să se scrie un program care afișează pe ecran numele studentului cu cea mai mare medie a notelor.
+
+Se citesc de la tastatură:
+
+un întreg, reprezentând numărul de studenți ce urmează a fi inițializați; pentru fiecare student se citesc:
+un std::string, reprezentând numele studentului;
+un întreg, n, reprezentând numărul de note ce urmează a fi citit de la tastatură;
+n întregi reprezentând notele studentului;
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+class Student
+{
+private:
+    std::string name;
+    int numGrades;
+    std::vector<int> grades;
+
+public:
+    Student(std::string n, int num, std::vector<int>& g) : name(n), numGrades(num), grades(g) {}
+
+    double calculateAverage()
+    {
+        if (grades.empty()) return 0.0;
+        double sum = 0;
+        for (int grade : grades)
+            sum += grade;
+        return sum / numGrades;
+    }
+
+    std::string getName() { return name; }
+};
+
+bool compareStudents(Student& s1, Student& s2)
+{
+    return s1.calculateAverage() > s2.calculateAverage();
+}
+
+int main()
+{
+    int numStudents;
+    std::cin >> numStudents;
+
+    std::vector<Student> students;
+    for (int i = 0; i < numStudents; ++i)
+    {
+        std::string name;
+        int numGrades;
+        
+        std::cin >> name;
+        std::cin >> numGrades;
+        
+        std::vector<int> grades(numGrades);
+        for (int j = 0; j < numGrades; ++j)
+            std::cin >> grades[j];
+
+        students.push_back(Student(name, numGrades, grades));
+    }
+
+    std::sort(students.begin(), students.end(), compareStudents);
+    std::cout << students[0].getName() << std::endl;
+
+    return 0;
+}

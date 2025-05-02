@@ -1,0 +1,294 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
+class MathFunction {
+protected:
+    std::string function_name;
+public:
+    MathFunction(std::string function_name) : function_name(function_name) {}
+    
+    virtual float get_value(int x) = 0;
+    virtual float get_max_value(int lim_jos, int lim_sus) = 0;
+    virtual void display() = 0;
+    virtual void display2() = 0; // pt cerinta 4, fara a afisa numele functiei (tipul)
+    virtual void print_roots() = 0;
+    
+    std::string getType() { return function_name; }
+};
+
+class Polynomial : public MathFunction {
+protected:
+    std::vector<float> coefficients;
+    
+public:
+    Polynomial(std::string function_name, std::vector<float> coefficients) : MathFunction(function_name), coefficients(coefficients) {}
+
+    float get_value(int x) override {
+        float result = 0;
+        for (unsigned int i = 0; i < coefficients.size(); ++i) {
+            result += coefficients[i] * pow(x, i);
+        }
+        return result;
+    }
+    
+    float get_max_value(int lim_jos, int lim_sus) override {
+        float max_val = get_value(lim_jos);
+        for (int i = lim_jos; i <= lim_sus; ++i) {
+            float val = get_value(i);
+            if (val > max_val) {
+                max_val = val;
+            }
+        }
+        return max_val;
+    }
+    
+    void display() override {
+        std::cout << function_name << std::endl << "f(x) = ";
+        for (unsigned int i = 0; i < coefficients.size(); ++i) {
+            if (coefficients[i] == 0) continue;
+            if (i > 0 && coefficients[i] > 0) std::cout << "+ ";
+            if (i > 0 && coefficients[i] < 0) std::cout << "- ";
+            if (abs(coefficients[i]) != 1) std::cout << abs(coefficients[i]);
+            if (i == 1) std::cout << "x";
+            if (i > 1) std::cout << "x^" << i;
+            if (i < coefficients.size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "f(x) = ";
+        for (unsigned int i = 0; i < coefficients.size(); ++i) {
+            if (coefficients[i] == 0) continue;
+            if (i > 0 && coefficients[i] > 0) std::cout << "+ ";
+            if (i > 0 && coefficients[i] < 0) std::cout << "- ";
+            if (abs(coefficients[i]) != 1) std::cout << abs(coefficients[i]);
+            if (i == 1) std::cout << "x";
+            if (i > 1) std::cout << "x^" << i;
+            if (i < coefficients.size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+    
+    void print_roots() override {}
+};
+
+class Quadratic : public Polynomial {
+public:
+    Quadratic(std::string function_name, std::vector<float> coefficients) : Polynomial(function_name, coefficients) {}
+
+    void print_roots() override {
+        if (coefficients.size() != 3) return;
+        float a = coefficients[2], b = coefficients[1], c = coefficients[0];
+        float delta = b * b - 4 * a * c;
+        if (delta < 0) {
+            std::cout << "No real roots." << std::endl;
+        } else if (delta == 0) {
+            float root = -b / (2 * a);
+            std::cout << "X1 = X2 = " << std::fixed << std::setprecision(2) << root << std::endl;
+        } else {
+            float root1 = (-b + sqrt(delta)) / (2 * a);
+            float root2 = (-b - sqrt(delta)) / (2 * a);
+            std::cout << "X1 = " << std::fixed << std::setprecision(2) << root1 << std::endl;
+            std::cout << "X2 = " << std::fixed << std::setprecision(2) << root2 << std::endl;
+        }
+    }
+    
+    void display() override {
+        std::cout << function_name << std::endl << "f(x) = ";
+        for (unsigned int i = 0; i < coefficients.size(); ++i) {
+            if (coefficients[i] == 0) continue;
+            if (i > 0 && coefficients[i] > 0) std::cout << "+ ";
+            if (i > 0 && coefficients[i] < 0) std::cout << "- ";
+            if (abs(coefficients[i]) != 1) std::cout << abs(coefficients[i]);
+            if (i == 1) std::cout << "x";
+            if (i > 1) std::cout << "x^" << i;
+            if (i < coefficients.size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "f(x) = ";
+        for (unsigned int i = 0; i < coefficients.size(); ++i) {
+            if (coefficients[i] == 0) continue;
+            if (i > 0 && coefficients[i] > 0) std::cout << "+ ";
+            if (i > 0 && coefficients[i] < 0) std::cout << "- ";
+            if (abs(coefficients[i]) != 1) std::cout << abs(coefficients[i]);
+            if (i == 1) std::cout << "x";
+            if (i > 1) std::cout << "x^" << i;
+            if (i < coefficients.size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+};
+
+class Exponential : public MathFunction {
+private:
+    const float e = 2.71;
+    float constant;
+    float exp_coeff;
+    
+public:
+    Exponential(std::string function_name, float constant, float exp_coeff) : MathFunction(function_name), constant(constant), exp_coeff(exp_coeff) {}
+
+    float get_value(int x) override {
+        return constant + exp_coeff * pow(e, x);
+    }
+    
+    float get_max_value(int lim_jos, int lim_sus) override {
+        float max_val = get_value(lim_jos);
+        for (int i = lim_jos; i <= lim_sus; ++i) {
+            float val = get_value(i);
+            if (val > max_val) {
+                max_val = val;
+            }
+        }
+        return max_val;
+    }
+    
+    void display() override {
+        std::cout << function_name << std::endl << "f(x) = ";
+        if (constant != 0) std::cout << constant << " + ";
+        if (exp_coeff != 1) std::cout << exp_coeff;
+        std::cout << "e^x" << std::endl;
+    }
+    
+    void display2() override {
+        std::cout << "f(x) = ";
+        if (constant != 0) std::cout << constant << " + ";
+        if (exp_coeff != 1) std::cout << exp_coeff;
+        std::cout << "e^x" << std::endl;
+    }
+    
+    void print_roots() override {}
+};
+
+class DiscreteFunction : public MathFunction {
+private:
+    std::vector<float> x_values;
+    std::vector<float> y_values;
+    
+public:
+    DiscreteFunction(std::string function_name, std::vector<float> x_values, std::vector<float> y_values) : MathFunction(function_name), x_values(x_values), y_values(y_values) {}
+
+    float get_value(int x) override {
+        return 0;
+    }
+    
+    float get_max_value(int lim_jos, int lim_sus) override {
+        return 0;
+    }
+    
+    void display() override {}
+    
+    void display2() override {}
+    
+    void find_best_approximation(std::vector<MathFunction*> functions) {
+        float min_diff = 999;
+        MathFunction* best_function = nullptr;
+        std::string rezultat;
+        for (auto& function : functions) {
+            float diff = 0;
+            for (unsigned int i = 0; i < x_values.size(); ++i) {
+                diff += abs(function->get_value(x_values[i]) - y_values[i]);
+            }
+            if (diff < min_diff) {
+                min_diff = diff;
+                best_function = function;
+            }
+        }
+        best_function->display2();
+        std::cout << min_diff << std::endl;
+    }
+    
+    void print_roots() override {}
+};
+
+int main() {
+    int nrFunctions;
+    std::cin >> nrFunctions;
+
+    std::vector<MathFunction*> functions;
+
+    for (int i = 0; i < nrFunctions; ++i) {
+        std::string func_type;
+        std::cin >> func_type;
+
+        if (func_type == "Polynomial") {
+            int num_terms;
+            std::cin >> num_terms;
+            std::vector<float> coeffs(num_terms);
+            for (int j = 0; j < num_terms; ++j) {
+                std::cin >> coeffs[j];
+            }
+            functions.push_back(new Polynomial("Polynomial", coeffs));
+        } else if (func_type == "Quadratic") {
+            std::vector<float> coeffs(3);
+            for (int j = 0; j < 3; ++j) {
+                std::cin >> coeffs[j];
+            }
+            functions.push_back(new Quadratic("Quadratic", coeffs));
+        } else if (func_type == "Exponential") {
+            float constant, exp_coeff;
+            std::cin >> constant >> exp_coeff;
+            functions.push_back(new Exponential("Exponential", constant, exp_coeff));
+        } else if (func_type == "DiscreteFunction") {
+            std::vector<float> x_vals(3), y_vals(3);
+            for (int j = 0; j < 3; ++j) {
+                std::cin >> x_vals[j];
+            }
+            for (int j = 0; j < 3; ++j) {
+                std::cin >> y_vals[j];
+            }
+            functions.push_back(new DiscreteFunction("DiscreteFunction", x_vals, y_vals));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda) {
+    case 1:
+        for (auto& func : functions) {
+            func->display();
+        }
+        break;
+    case 2:
+        for (auto& func : functions) {
+            if (func->getType() == "Quadratic") {
+                func->print_roots();
+            }
+        }
+        break;
+    case 3:
+        int lim_jos, lim_sus;
+        std::cout << "Limits: ";
+        std::cin >> lim_jos >> lim_sus;
+        for (auto& func : functions) {
+            std::cout << std::fixed << std::setprecision(2) << func->get_max_value(lim_jos, lim_sus) << std::endl;
+        }
+        break;
+    case 4:
+        std::vector<float> x(3), y(3);
+        for (int i = 0; i < 3; ++i) {
+            std::cin >> x[i];
+        }
+        for (int i = 0; i < 3; ++i) {
+            std::cin >> y[i];
+        }
+        DiscreteFunction df("DiscreteFunction", x, y);
+        df.find_best_approximation(functions);
+        break;
+    }
+
+    for (auto& func : functions) {
+        delete func;
+    }
+
+    return 0;
+}

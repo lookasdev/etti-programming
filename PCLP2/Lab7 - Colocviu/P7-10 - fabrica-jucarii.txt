@@ -1,0 +1,140 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+#include <algorithm>
+#include <cmath>
+
+class Jucarie {
+protected:
+    std::string tematica;
+    std::string nume;
+
+public:
+    Jucarie(std::string tematica, std::string nume) 
+        : tematica(tematica), nume(nume) {}
+
+    virtual void afisare() = 0;
+    virtual float calculeazaDimensiuneMinimaPiesa() = 0;
+    virtual std::string getTip() = 0;
+    
+    std::string getNume() { return nume; }
+    std::string getTematica() { return tematica; }
+};
+
+class Action_figure : public Jucarie {
+private:
+    int inaltime;
+    int latime;
+    int lungime;
+
+public:
+    Action_figure(std::string tematica, std::string nume, int inaltime, int latime, int lungime)
+        : Jucarie(tematica, nume), inaltime(inaltime), latime(latime), lungime(lungime) {}
+
+    void afisare() override {
+        std::cout << "Action_figure " << tematica << " " << nume << " " << inaltime << " " << latime << " " << lungime << std::endl;
+    }
+
+    float calculeazaDimensiuneMinimaPiesa() override {
+        return std::min({inaltime, latime, lungime});
+    }
+
+    std::string getTip() override {
+        return "Action_figure";
+    }
+};
+
+class Puzzle : public Jucarie {
+private:
+    int numar_piese;
+    int latime;
+    int lungime;
+
+public:
+    Puzzle(std::string tematica, std::string nume, int numar_piese, int latime, int lungime)
+        : Jucarie(tematica, nume), numar_piese(numar_piese), latime(latime), lungime(lungime) {}
+
+    void afisare() override {
+        std::cout << "Puzzle " << tematica << " " << nume << " " << numar_piese << " " << latime << " " << lungime << std::endl;
+    }
+
+    float calculeazaDimensiuneMinimaPiesa() override {
+        float dimensiune_latime_piesa = 1.0 * latime / sqrt(numar_piese);
+        float dimensiune_lungime_piesa = 1.0 * lungime / sqrt(numar_piese);
+        return std::min(dimensiune_latime_piesa, dimensiune_lungime_piesa);
+    }
+
+    std::string getTip() override {
+        return "Puzzle";
+    }
+};
+
+bool regulaSortare(Jucarie* a, Jucarie* b) {
+    return (int) (10 / a->calculeazaDimensiuneMinimaPiesa()) < (int) (10 / b->calculeazaDimensiuneMinimaPiesa());
+}
+
+int main() {
+    int n;
+    std::cin >> n;
+    std::vector<Jucarie*> jucarii;
+
+    for (int i = 0; i < n; ++i) {
+        char tip;
+        std::string tematica, nume;
+        std::cin >> tip >> tematica >> nume;
+
+        if (tip == 'a') {
+            int inaltime, latime, lungime;
+            std::cin >> inaltime >> latime >> lungime;
+            jucarii.push_back(new Action_figure(tematica, nume, inaltime, latime, lungime));
+        } else if (tip == 'p') {
+            int numar_piese, latime, lungime;
+            std::cin >> numar_piese >> latime >> lungime;
+            jucarii.push_back(new Puzzle(tematica, nume, numar_piese, latime, lungime));
+        }
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda) {
+        case 1: {
+            for (auto jucarie : jucarii) {
+                jucarie->afisare();
+            }
+            break;
+        }
+        case 2: {
+            std::string tematica_cautata;
+            std::cin >> tematica_cautata;
+
+            for (auto jucarie : jucarii) {
+                if (jucarie->getTematica() == tematica_cautata) {
+                    jucarie->afisare();
+                }
+            }
+            break;
+        }
+        case 3: {
+            for (auto jucarie : jucarii) {
+                int varsta_minima = (int) (10 / jucarie->calculeazaDimensiuneMinimaPiesa());
+                std::cout << jucarie->getTip() << " " << jucarie->getNume() << " " << varsta_minima << std::endl;
+            }
+            break;
+        }
+        case 4: {
+            std::sort(jucarii.begin(), jucarii.end(), regulaSortare);
+
+            for (auto jucarie : jucarii) {
+                jucarie->afisare();
+            }
+            break;
+        }
+    }
+
+    for (auto jucarie : jucarii) {
+        delete jucarie;
+    }
+
+    return 0;
+}
