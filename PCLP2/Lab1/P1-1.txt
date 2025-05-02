@@ -1,0 +1,47 @@
+Scrieți o clasă Cutie cu 3 date membre publice: lungime, lățime, înălțime, de tip real. În programul principal se va instanția un obiect de tipul Cutie, se vor citi de la tastatură cele 3 atribute și se vor afișa pe ecran în ordinea precizată, cu o singură zecimală, fiecare pe un rând nou.
+
+Input
+
+
+lungime
+lățime
+înălțime
+
+Output
+
+lungime
+lățime
+înălțime
+
+
+
+#include <iomanip> // biblioteca necesara pentru std::setprecision
+
+#include <iostream>
+
+class Cutie
+{
+public:
+    float lungime, latime, inaltime;
+
+    void display()
+    {
+        std::cout << std::fixed << std::setprecision(1);
+        std::cout << lungime << std::endl;
+        std::cout << latime << std::endl;
+        std::cout << inaltime << std::endl;
+    }
+};
+
+int main()
+{
+    Cutie c1;
+    float lungime, latime, inaltime;
+    std::cin >> lungime >> latime >> inaltime;
+    c1.lungime = lungime;
+    c1.latime = latime;
+    c1.inaltime = inaltime;
+    
+    c1.display();
+    return 0;
+}

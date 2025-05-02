@@ -1,0 +1,127 @@
+Să se scrie o clasă Carte cu următoarele date membre: titlu, nume_autor, an_lansare, nr_pagini, pret. Se vor instanția obiecte din această clasă folosind un vector cu alocare dinamică de memorie. Se citește de la tastatură numărul de cărți pe care dorim să îl folosim. Ulterior, pentru fiecare carte se vor citi, de pe rânduri diferite datele membre în ordinea enunțată mai sus.
+
+Se va citi o comandă de la tastatură. În funcție de valoarea acesteia se vor executa diferite acțiuni:
+Se citește de la tastatură un nume de autor. Se afișează titlurile tuturor cărților scrise de acest autor, separate de virgulă și spațiu. Pentru simplitate, ultimul titlu va fi, de asemenea, urmat de virgulă și spațiu.
+Se va afișa cartea cu numărul minim de pagini. 
+Se va afișa cartea cel mai recent lansată. 
+Prin afișarea cărții se înțelege afișarea tuturor datelor membre ale cărții, fiecare pe un rând nou.
+
+
+#include <iostream>
+#include <string>
+
+class Carte
+{
+private:
+    std::string titlu;
+    std::string nume_autor;
+    int an_lansare;
+    int nr_pagini;
+    int pret;
+    
+public:
+    Carte(std::string titlu = "", std::string nume_autor = "", int an_lansare = 0, int nr_pagini = 0, int pret = 0):
+        titlu(titlu), nume_autor(nume_autor), an_lansare(an_lansare), nr_pagini(nr_pagini), pret(pret) {}
+    
+    void setTitlu(std::string titlu) { this->titlu = titlu; }
+    void setNumeAutor(std::string nume_autor) { this->nume_autor = nume_autor; }
+    void setAnLansare(int an_lansare) { this->an_lansare = an_lansare; }
+    void setNrPagini(int nr_pagini) { this->nr_pagini = nr_pagini; }
+    void setPret(int pret) { this->pret = pret; }
+    
+    std::string getTitlu() { return titlu; }
+    std::string getNumeAutor() { return nume_autor; }
+    int getAnLansare() { return an_lansare; }
+    int getNrPagini() { return nr_pagini; }
+    int getPret() { return pret; }
+    
+    void display()
+    {
+        std::cout << titlu << std::endl;
+        std::cout << nume_autor << std::endl;
+        std::cout << an_lansare << std::endl;
+        std::cout << nr_pagini << std::endl;
+        std::cout << pret << std::endl;
+    }
+    
+};
+
+int main()
+{
+    int nr_carti;
+    Carte ** Carte_array = nullptr;
+    
+    std::cin >> nr_carti;
+    std::cin.ignore();
+    Carte_array = new Carte * [nr_carti];
+    
+    std::string temp_titlu, temp_nume_autor;
+    int temp_an_lansare, temp_nr_pagini, temp_pret;
+    for (int i = 0; i < nr_carti; ++i)
+    {
+        std::getline(std::cin, temp_titlu);
+        std::getline(std::cin, temp_nume_autor);
+        std::cin >> temp_an_lansare >> temp_nr_pagini >> temp_pret;
+        std::cin.ignore();
+        
+        *(Carte_array + i) = new Carte(temp_titlu, temp_nume_autor, temp_an_lansare, temp_nr_pagini, temp_pret);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    std::cin.ignore();
+    
+    if (comanda == 1)
+    {
+        std::string nume_autor_cautat;
+        std::getline(std::cin, nume_autor_cautat);
+        
+        std::cout << nume_autor_cautat << std::endl; //in plus
+        
+        for (int i = 0; i < nr_carti; ++i)
+        {
+            if ((*(Carte_array + i)) -> getNumeAutor() == nume_autor_cautat)
+            {
+                std::cout << (*(Carte_array + i)) -> getTitlu();
+                std::cout << ", ";
+            }
+        }
+    }
+    else if (comanda == 2)
+    {
+        int minn = (*(Carte_array + 0)) -> getNrPagini();
+        int sol = 0;
+        for (int i = 0; i < nr_carti; ++i)
+        {
+            if ((*(Carte_array + i)) -> getNrPagini() < minn)
+            {
+                minn = (*(Carte_array + i)) -> getNrPagini();
+                sol = i;
+            }
+        }
+        (*(Carte_array + sol)) -> display();
+    }
+    else if (comanda == 3)
+    {
+        int maxx = (*(Carte_array + 0)) -> getAnLansare();
+        int sol = 0;
+        for (int i = 0; i < nr_carti; ++i)
+        {
+            if ((*(Carte_array + i)) -> getAnLansare() > maxx)
+            {
+                maxx = (*(Carte_array + i)) -> getAnLansare();
+                sol = i;
+            }
+        }
+        (*(Carte_array + sol)) -> display();
+    }
+    
+    for (int i = 0; i < nr_carti; ++i)
+    {
+        delete *(Carte_array + i);
+    }
+    
+    delete Carte_array;
+    
+    return 0;
+}

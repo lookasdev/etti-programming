@@ -1,0 +1,125 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+
+class Tren
+{
+private:
+    std::string nume_tren;
+    int ora_plecare, minute_plecare;
+    int numar_locuri;
+    static const int MAX_STATII = 20;
+    std::string statii[MAX_STATII];
+    int numar_statii;
+
+public:
+    Tren(std::string nume, int ora, int minute) : nume_tren(nume), ora_plecare(ora), minute_plecare(minute), numar_locuri(0), numar_statii(0) {}
+
+    void citesteStatii()
+    {
+        std::cin >> numar_statii; // se asigneaza direct prin citire valoarea datei membre de nr statii (int)
+        std::cin.ignore();
+
+        for (int i = 0; i < numar_statii; ++i)
+            std::getline(std::cin, statii[i]);
+    }
+
+    void afisareTren()
+    {
+        std::cout << nume_tren << " " << ora_plecare << ":" << minute_plecare << std::endl;
+        for (int i = 0; i < numar_statii; ++i)
+            std::cout << statii[i] << "; ";
+        std::cout << std::endl;
+    }
+
+    void durataCalatorie(int durata)
+    {
+        int ora_sosire = ora_plecare + (minute_plecare + durata) / 60;
+        int minute_sosire = (minute_plecare + durata) % 60;
+        std::cout << ora_sosire << ":" << minute_sosire << std::endl;
+    }
+
+    void afisarePasageri()
+    {
+        int pasageri_coborati, pasageri_urcati;
+        
+        int pasageri_diferiti = numar_locuri;
+        int pasageri_ramasi = numar_locuri;
+
+        int array_pasageri_ramasi[numar_statii];
+        for (int i = 1; i < numar_statii; ++i) // se da skip la prima statie
+        {
+            std::cin >> pasageri_coborati >> pasageri_urcati;
+            pasageri_diferiti += pasageri_coborati;
+            
+            pasageri_ramasi = pasageri_ramasi + pasageri_urcati - pasageri_coborati;
+            array_pasageri_ramasi[i] = pasageri_ramasi;
+        }
+        
+        std::cout << pasageri_diferiti << std::endl;
+        
+        std::cout << statii[0] << " " << numar_locuri << std::endl;
+        for (int i = 1; i < numar_statii; ++i) // se da skip la prima statie
+            std::cout << statii[i] << " " << array_pasageri_ramasi[i] << std::endl;
+
+    }
+
+    void afisareTimpPlecari(int durata_deplasare, int durata_stationare)
+    {
+        int ora_actuala = ora_plecare;
+        int minute_actuale = minute_plecare;
+        for (int i = 0; i < numar_statii; ++i)
+        {
+            std::cout << statii[i] << " " << ora_actuala << ":" << minute_actuale << std::endl;
+            // adaugam durata deplasarii si durata stationarii pentru a calcula ora si minutul pt urmatoarea plecare
+            ora_actuala = (ora_actuala + (minute_actuale + durata_deplasare + durata_stationare) / 60);
+            minute_actuale = (minute_actuale + durata_deplasare + durata_stationare) % 60;
+        }
+    }
+    
+    void set_nr_locuri (int numar_locuri) { this->numar_locuri = numar_locuri;}
+};
+
+int main()
+{
+    std::string nume_tren;
+    int ora_plecare, minute_plecare, numar_locuri, durata_calatorie, durata_deplasare, durata_stationare;
+
+    std::getline(std::cin, nume_tren);
+
+    std::cin >> ora_plecare >> minute_plecare;
+
+    Tren tren(nume_tren, ora_plecare, minute_plecare);
+
+    tren.citesteStatii();
+    
+    std::cin >> numar_locuri;
+    tren.set_nr_locuri(numar_locuri);
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+            tren.afisareTren();
+            break;
+        case 2:
+        {
+            std::cin >> durata_calatorie;
+            tren.durataCalatorie(durata_calatorie);
+            break;
+        }
+        case 3:
+            tren.afisarePasageri();
+            break;
+        case 4:
+        {
+            std::cin >> durata_deplasare;
+            std::cin >> durata_stationare;
+            tren.afisareTimpPlecari(durata_deplasare, durata_stationare);
+            break;
+        }
+    }
+    return 0;
+}

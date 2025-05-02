@@ -1,0 +1,146 @@
+#include <iostream>
+#include <string>
+#include <iomanip> // pt setarea preciziei la numerele float
+#include <algorithm> // pt fct std::max si std::min
+
+class Caseta
+{
+private:
+    int x1, y1, x2, y2;
+    std::string eticheta;
+
+public:
+    Caseta(int x1 = 0, int y1 = 0, int x2 = 0, int y2 = 0, std::string eticheta = "")
+    : x1(x1), y1(y1), x2(x2), y2(y2), eticheta(eticheta)
+    {}
+    
+    void display()
+    {
+        std::cout << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
+        std::cout << eticheta << std::endl;
+    }
+    
+    void setX1(int x1) { this->x1 = x1; }
+    void setY1(int y1) { this->y1 = y1; }
+    void setX2(int x2) { this->x2 = x2; }
+    void setY2(int y2) { this->y2 = y2; }
+    void setEticheta(std::string eticheta) { this->eticheta = eticheta; }
+    
+    int getX1() { return x1; }
+    int getY1() { return y1; }
+    int getX2() { return x2; }
+    int getY2() { return y2; }
+    std::string getEticheta() { return eticheta; }
+    
+    float calcArie()
+    {
+        return (std::max(x1,x2) - std::min(x1,x2) + 1) * (std::max(y1,y2) - std::min(y1,y2) + 1);
+    }
+    
+    float calcIoU(Caseta& c2)
+    {
+        int x1I = std::max(getX1(), c2.getX1());
+        int x2I = std::min(getX2(), c2.getX2());
+        int y1I = std::max(getY1(), c2.getY1());
+        int y2I = std::min(getY2(), c2.getY2());
+        
+        Caseta casetaIntersectie(x1I, y1I, x2I, y2I);
+        float arieIntersectie = casetaIntersectie.calcArie();
+        float arieReuniune = calcArie() + c2.calcArie() - arieIntersectie;
+        return arieIntersectie / arieReuniune;
+    }
+};
+
+int main()
+{
+    int nrCasete;
+    std::cin >> nrCasete;
+    
+    Caseta array_caseta[nrCasete];
+
+    for (int i = 0; i < nrCasete; ++i)
+    {
+        int x1, y1, x2, y2;
+        std::string eticheta;
+        std::cin >> x1 >> y1 >> x2 >> y2 >> eticheta;
+        array_caseta[i] = Caseta(x1, y1, x2, y2, eticheta);
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            for (int i = 0; i < nrCasete; ++i)
+                array_caseta[i].display();
+            break;
+        }
+        case 2:
+        {
+            int x1, y1, x2, y2;
+            std::string eticheta;
+            std::cin >> x1 >> y1 >> x2 >> y2 >> eticheta;
+            Caseta c2(x1, y1, x2, y2, eticheta);
+            std::cout << std::fixed << std::setprecision(4) << array_caseta[0].calcIoU(c2) << std::endl;
+            break;
+        }
+        case 3:
+        {
+            int x1, y1, x2, y2;
+            std::string eticheta;
+            float pragIoU;
+            std::cin >> x1 >> y1 >> x2 >> y2 >> eticheta >> pragIoU;
+            Caseta c2(x1, y1, x2, y2, eticheta);
+            float IoU = array_caseta[0].calcIoU(c2);
+        
+            // verificare predictie caseta
+            bool corect = false;
+            
+            // std::cout << array_caseta[0].getEticheta() << std::endl;
+            // std::cout << c2.getEticheta() << std::endl;
+            // std::cout << IoU << std::endl;
+            // std::cout << pragIoU << std::endl;
+            
+            if (array_caseta[0].getEticheta() == c2.getEticheta() && IoU > pragIoU) corect = true;
+                
+            std::cout << (corect ? 1 : 0) << std::endl; // 1 - true positive / 0 - false positive
+            break;
+        }
+        case 4:
+        {
+            int m;
+            std::cin >> m;
+            Caseta casete_ipoteza[m];
+            float TP = 0, FP = 0;
+        
+            for (int i = 0; i < m; ++i)
+            {
+                int x1, y1, x2, y2;
+                std::string eticheta;
+                std::cin >> x1 >> y1 >> x2 >> y2 >> eticheta;
+                Caseta c2(x1, y1, x2, y2, eticheta);
+                casete_ipoteza[i] = c2;
+            }
+            
+            float pragIoU;
+            std::cin >> pragIoU;
+            
+            for (int i = 0; i < m; ++i)
+            {
+                float IoU = array_caseta[i].calcIoU(casete_ipoteza[i]);
+                
+                // verificare predictie caseta
+                if (array_caseta[i].getEticheta() == casete_ipoteza[i].getEticheta() && IoU > pragIoU) TP++;
+                else FP++;
+            }
+            
+            float precizie = TP / (TP + FP);
+            std::cout << std::fixed << std::setprecision(4) << precizie << std::endl;
+            break;
+        }
+    }
+
+    return 0;
+}

@@ -1,0 +1,136 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+
+float Round(int nr)
+{
+    return (int) (nr / 1);
+}
+
+class Copac
+{
+private:
+    std::string soi;
+    float suprafataOcupata;
+    int numarExemplare;
+    std::string tipSoi;
+
+public:
+    Copac(std::string soi = "", float suprafataOcupata = 0.0f, int numarExemplare = 0, std::string tipSoi = "")
+        : soi(soi), suprafataOcupata(suprafataOcupata), numarExemplare(numarExemplare), tipSoi(tipSoi) {}
+    
+    void display()
+    {
+        std::cout << soi << " " << suprafataOcupata << " " << numarExemplare << " " << tipSoi << std::endl;
+    }
+    
+    float getSuprafataOcupata() { return suprafataOcupata; }
+    int getNumarExemplare() { return numarExemplare; }
+    std::string getTipSoi() { return tipSoi; }
+};
+
+class Livada
+{
+private:
+    Copac copac_array[20];
+    int nrCopaci;
+
+public:
+    Livada() : nrCopaci(0) {}
+
+    void adaugaCopac(const Copac& copac)
+    {
+        if (nrCopaci < 20) copac_array[nrCopaci++] = copac;
+    }
+    
+    void displayAll()
+    {
+        for (int i = 0; i < nrCopaci; ++i)
+            copac_array[i].display();
+    }
+    
+    void displayTipSoi(std::string tipSoi)
+    {
+        for (int i = 0; i < nrCopaci; ++i)
+            if (copac_array[i].getTipSoi() == tipSoi) copac_array[i].display();
+    }
+    
+    float calcSuprafataLibera(float suprafataLivada)
+    {
+        float suprafataOcupata = 0;
+        for (int i = 0; i < nrCopaci; ++i)
+        {
+            suprafataOcupata += copac_array[i].getNumarExemplare() * copac_array[i].getSuprafataOcupata();
+        }
+        return suprafataLivada - suprafataOcupata;
+    }
+    
+    void nrMaxCopaciPlantabili(float suprafataLivada)
+    {
+        for (int i = 0; i < nrCopaci; ++i)
+        {
+            float suprafataRamasa = suprafataLivada;
+            suprafataRamasa -= copac_array[i].getNumarExemplare() * copac_array[i].getSuprafataOcupata();
+            std::cout << Round(suprafataRamasa / copac_array[i].getSuprafataOcupata()) << std::endl;
+        }
+    }
+};
+
+int main()
+{
+    Livada liv;
+    float suprafataLivada;
+    std::cin >> suprafataLivada;
+    int nrCopaci;
+    std::cin >> nrCopaci;
+    std::cin.ignore();
+
+    for (int i = 0; i < nrCopaci; ++i)
+    {
+        std::string soi;
+        float suprafataOcupata;
+        int numarExemplare;
+        std::string tipSoi;
+        
+        std::getline(std::cin, soi);
+        std::cin >> suprafataOcupata >> numarExemplare;
+        std::cin.ignore();
+        std::getline(std::cin, tipSoi);
+
+        Copac temp_copac(soi, suprafataOcupata, numarExemplare, tipSoi);
+        liv.adaugaCopac(temp_copac);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            std::cout << suprafataLivada << std::endl;
+            liv.displayAll();
+            break;
+        }
+        case 2:
+        {
+            std::string tipSoiRequested;
+            std::cin.ignore();
+            std::getline(std::cin, tipSoiRequested);
+            liv.displayTipSoi(tipSoiRequested);
+            break;
+        }
+        case 3:
+        {
+            std::cout << std::fixed << std::setprecision(2) << liv.calcSuprafataLibera(suprafataLivada) << std::endl;
+            break;
+        }
+        case 4:
+        {
+            liv.nrMaxCopaciPlantabili(suprafataLivada);
+            break;
+        }
+    }
+
+    return 0;
+}

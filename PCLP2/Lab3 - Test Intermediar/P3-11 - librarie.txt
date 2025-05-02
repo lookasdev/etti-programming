@@ -1,0 +1,142 @@
+#include <iostream>
+#include <string>
+
+class Carte
+{
+private:
+    std::string titlu;
+    std::string nume_autor;
+    float pret;
+    int cantitate;
+
+public:
+    Carte(std::string titlu = "", std::string nume_autor = "", float pret = 0.0f, int cantitate = 0)
+        : titlu(titlu), nume_autor(nume_autor), pret(pret), cantitate(cantitate) {}
+    
+    void display()
+    {
+        std::cout << titlu << " " << nume_autor << " " << pret << " " << cantitate << std::endl;
+    }
+    
+    void setPret(float pret) { this->pret = pret; }
+    
+    std::string getTitlu() { return titlu; }
+    float getPret() { return pret; }
+    int getCantitate() { return cantitate; }
+};
+
+class Librarie
+{
+private:
+    Carte carte_array[20];
+    int nrCarti;
+
+public:
+    Librarie() : nrCarti(0) {}
+
+    void adaugaCarte(const Carte& carte)
+    {
+        if (nrCarti < 20) carte_array[nrCarti++] = carte;
+    }
+    
+    void displayAll()
+    {
+        for (int i = 0; i < nrCarti; ++i)
+            carte_array[i].display();
+    }
+    
+    void displayRestricted(float maxPret, int maxCantitate)
+    {
+        for (int i = 0; i < nrCarti; ++i)
+        {
+            if (carte_array[i].getPret() <= maxPret && carte_array[i].getCantitate() <= maxCantitate)
+                carte_array[i].display();
+        }
+    }
+    
+    void ieftinireCarti(float targetCantitate)
+    {
+        for (int i = 0; i < nrCarti; ++i)
+        {
+            if (carte_array[i].getCantitate() < targetCantitate)
+            {
+                float pret_initial = carte_array[i].getPret();
+                carte_array[i].setPret(pret_initial / 2);
+                std::cout << carte_array[i].getTitlu() << " " << pret_initial << " " << carte_array[i].getPret() << std::endl;
+            }
+        }
+    }
+    
+    float findAveragePrice()
+    {
+        float suma = 0;
+        for (int i = 0; i < nrCarti; ++i)
+            suma += carte_array[i].getPret();
+        return suma / nrCarti;
+    }
+};
+
+float Round(int nr)
+{
+    return (int) (nr / 1);
+}
+
+int main()
+{
+    Librarie lib;
+    float targetSuma;
+    std::cin >> targetSuma;
+    int nrCarti;
+    std::cin >> nrCarti;
+
+    for (int i = 0; i < nrCarti; ++i)
+    {
+        std::string titlu;
+        std::string nume_autor;
+        float pret;
+        int cantitate;
+        
+        std::cin.ignore();
+        std::getline(std::cin, titlu);
+        std::getline(std::cin, nume_autor);
+        std::cin >> pret >> cantitate;
+
+        Carte temp_carte(titlu, nume_autor, pret, cantitate);
+        lib.adaugaCarte(temp_carte);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            std::cout << targetSuma << std::endl;
+            lib.displayAll();
+            break;
+        }
+        case 2:
+        {
+            float maxPret;
+            int maxCantitate;
+            std::cin >> maxPret >> maxCantitate;
+            lib.displayRestricted(maxPret, maxCantitate);
+            break;
+        }
+        case 3:
+        {
+            int targetCantitate;
+            std::cin >> targetCantitate;
+            lib.ieftinireCarti(targetCantitate);
+            break;
+        }
+        case 4:
+        {
+            std::cout << Round(targetSuma / lib.findAveragePrice()); // functia mea de rotunjire - Round() pt ca trb rotunjit in jos la orice valoare ale zecimalelor
+            break;
+        }
+    }
+
+    return 0;
+}

@@ -1,0 +1,267 @@
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <vector>
+
+class Document {
+protected:
+    std::string tip;
+
+public:
+    Document(std::string tip) : tip(tip) {}
+    virtual void display() = 0;
+    virtual int CalcValue() = 0;
+    virtual void modifyValues(std::vector<int> payload) = 0;
+    virtual std::string getText() = 0;
+    virtual std::vector<int> getEsantioane() = 0;
+
+    std::string getTip() { return tip; }
+};
+
+class FisierText : public Document {
+private:
+    std::string text;
+    std::vector<int> values;
+
+public:
+    FisierText(std::string tip, std::string text, std::vector<int> values) :
+        Document(tip), text(text), values(values) {}
+
+    void display() {
+        std::cout << tip << " " << text << std::endl;
+    }
+
+    int CalcValue()
+    {
+        int sum=0;
+        for(char c : text){
+            sum += (int)(c);
+        }
+        return sum;
+    }
+
+    std::string getText() { return text; }
+    std::vector<int> getEsantioane() { return std::vector<int>(); } // ignora
+
+    void modifyValues(std::vector<int> payload)
+    {
+        unsigned int k = 0;
+        for(char& c : text)
+        {
+            if (k == payload.size()) break; // daca s-au terminat valorile numerice din payload
+            c = (char) payload[k];
+            k++;
+        }
+    }
+
+    // void modifyValues(std::vector<int> payload) {
+    //     for (int i = 0; i < payload.size() && i < text.size(); i++) {
+    //         text[i] = static_cast<char>(payload[i]);
+    //     }
+    // }
+};
+
+class FisierAudio : public Document {
+private:
+    int nrEsantioane;
+    std::vector<int> esantioane;
+
+public:
+    FisierAudio(std::string tip, int nrEsantioane, std::vector<int> esantioane) :
+        Document(tip), nrEsantioane(nrEsantioane), esantioane(esantioane) {}
+
+    void display() {
+        std::cout << tip;
+        for (int i = 0; i < nrEsantioane; i++) {
+            std::cout << " " << esantioane[i];
+        }
+        std::cout << std::endl;
+    }
+
+    int CalcValue()
+    {
+        int sum = 0;
+        for (int i = 0; i < nrEsantioane; i++)
+            sum += esantioane[i];
+        return sum;
+    }
+
+    std::vector<int> getEsantioane() { return esantioane; }
+    std::string getText() { return ""; } // ignora
+
+    void modifyValues(std::vector<int> payload)
+    {
+        for (unsigned int i = 0; i < payload.size() && i < esantioane.size(); i++)
+        {
+            esantioane[i] = payload[i];
+        }
+    }
+};
+
+bool regulaSortare(Document* a, Document* b)
+{
+    return a->CalcValue() < b->CalcValue();
+}
+
+class Dataloader {
+private:
+    std::vector<Document*> documente;
+
+public:
+    void adaugaDocument(Document* d) {
+        documente.push_back(d);
+    }
+    void displayAll() {
+        for (Document* document : documente) {
+            document->display();
+        }
+    }
+
+    void afisareBatch(int indexBatch, int batch_size)
+    {
+        for (unsigned int i = indexBatch * batch_size; i < (indexBatch * batch_size + batch_size) && i < documente.size(); i++)
+            documente[i]->display();
+    }
+
+    // void afisareBatch(int indexBatch, int batch_size) {
+    //     int start = indexBatch * batch_size;
+    //     int end = std::min(start + batch_size, (int)documente.size());
+    //     if (start < documente.size()) {
+    //         for (int i = start; i < end; i++) {
+    //             documente[i]->display();
+    //         }
+    //     } else {
+    //         std::cout << "Batch index out of range" << std::endl;
+    //     }
+    // }
+
+    void afisareMaxPerBatch(int batch_size)
+    {
+        int fullBatches = documente.size() / batch_size;
+
+        for (int i = 0; i < fullBatches; i++) {
+            int max = 0;
+            Document* docRez = nullptr;
+            for (int j = 0; j < batch_size; j++)
+            {
+                int value = documente[i*batch_size+j]->CalcValue();
+                if (value > max)
+                {
+                    max = value;
+                    docRez = documente[i*batch_size+j];
+                }
+            }
+            docRez->display();
+        }
+
+        int max = 0;
+        Document* docRez = nullptr;
+        for (unsigned int j = fullBatches * batch_size; j < documente.size(); j++)
+        {
+            int value = documente[j]->CalcValue();
+                if (value > max)
+                {
+                    max = value;
+                    docRez = documente[j];
+                }
+        }
+        docRez->display();
+
+    }
+
+    void broadcast(int indexDocument, int batch_size)
+    {
+        int indexBatch = indexDocument / batch_size;
+        std::vector<int> payload;
+        if (documente[indexDocument]->getTip() == "text")
+        {
+            for (char c : documente[indexDocument]->getText())
+                payload.push_back((int)(c));
+        } else if (documente[indexDocument]->getTip() == "audio")
+        {
+            payload = documente[indexDocument]->getEsantioane();
+        }
+
+        for (unsigned int j = indexBatch * batch_size; j < (indexBatch * batch_size + batch_size) && j < documente.size(); j++)
+        {
+            if (j != indexDocument)
+            {
+                documente[j]->modifyValues(payload);
+            }
+        }
+        // broadcast modifica doar, nu afiseaza nimic
+    }
+
+    void sortSumPayload()
+    {
+        std::sort(documente.begin(), documente.end(), regulaSortare);
+    }
+};
+
+int main() {
+    Dataloader d;
+    int nrDocumente;
+    int batch_size;
+    std::string tip;
+
+    std::cin >> nrDocumente >> batch_size;
+
+    for (int i = 0; i < nrDocumente; i++) {
+        std::cin >> tip;
+        if (tip == "text") {
+            std::string text;
+            std::cin.ignore();
+            std::getline(std::cin, text);
+            std::vector<int> values;
+            for(char c : text)
+            {
+                values.push_back((int)(c));
+            }
+            d.adaugaDocument(new FisierText(tip, text, values));
+        }
+        else if (tip == "audio") {
+            int nrEsantioane, esantion;
+            std::vector<int> esantioane;
+            std::cin >> nrEsantioane;
+            for (int i = 0; i < nrEsantioane; i++) {
+                std::cin >> esantion;
+                esantioane.push_back(esantion);
+            }
+            d.adaugaDocument(new FisierAudio(tip, nrEsantioane, esantioane));
+        }
+    }
+
+    int test;
+    std::cin >> test;
+
+    switch (test) {
+        case 1: {
+            d.displayAll();
+            break;
+        }
+
+        case 2: {
+            int indexBatch;
+            std::cin >> indexBatch;
+            d.afisareBatch(indexBatch, batch_size);
+            break;
+        }
+        case 3: {
+            d.afisareMaxPerBatch(batch_size);
+            break;
+        }
+        case 4: {
+            int indexDocument;
+            std::cin >> indexDocument;
+            d.broadcast(indexDocument, batch_size);
+            d.displayAll();
+            break;
+        }
+        case 5: {
+            d.sortSumPayload();
+            d.displayAll();
+            break;
+        }
+    }
+    return 0;
+}

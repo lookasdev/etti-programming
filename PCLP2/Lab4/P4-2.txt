@@ -1,0 +1,84 @@
+#include <iostream>
+#include <string>
+
+class Echipament_electronic
+{
+protected:
+    float tensiune;
+    float intensitate;
+    
+    // float get_tensiune() { return tensiune; }
+    // float get_intensitate() { return intensitate; }
+    
+public:
+    Echipament_electronic(float tensiune = 0.0f, float intensitate = 0.0f) : tensiune(tensiune), intensitate(intensitate) {}
+    
+};
+
+class Telefon: private Echipament_electronic
+{
+protected: 
+    std::string nr_tel; // propriu
+    // using Echipament_electronic::get_tensiune;
+    // using Echipament_electronic::get_intensitate;
+    float get_tensiune() { return tensiune; }
+    float get_intensitate() { return intensitate; }
+    
+public:
+    void suna(std::string nr_apelat)
+    {
+        std::cout << "Calling: " << nr_apelat << std::endl;
+    }
+    Telefon (float tensiune = 0.0f, float intensitate = 0.0f, std::string nr_tel = "") : Echipament_electronic(tensiune, intensitate), nr_tel(nr_tel) {}
+};
+
+class Telefon_mobil: protected Telefon
+{
+private: 
+    int baterie;
+    
+public:
+
+    float calcPutere()
+    {
+        return get_tensiune() * get_intensitate();
+    }
+    
+    int get_baterie() { return baterie; }
+    void set_baterie(int baterie) { this->baterie = baterie; }
+    
+    void suna(std::string nr_apelat, int durata_apel)
+    {
+        Telefon::suna(nr_apelat);
+        std::cout << "Outgoing number: " << nr_tel << std::endl; // nr_tel e nr_tel_propriu
+        
+        int baterieUpdate = get_baterie() - calcPutere() / 100 * durata_apel;
+        if (baterieUpdate > 0) set_baterie(baterieUpdate);
+        else set_baterie(0);
+    }
+    
+    Telefon_mobil (float tensiune = 0.0f, float intensitate = 0.0f, std::string nr_tel = "", int baterie = 0) : Telefon(tensiune, intensitate, nr_tel), baterie(baterie) {}
+};
+
+int main()
+{
+    float tensiune, intensitate;
+    std::string nr_tel_propriu;
+    int baterie;
+
+    std::cin >> tensiune >> intensitate >> nr_tel_propriu >> baterie;
+    
+    std::string nr_apelat;
+    int durata_apel;
+    
+    std::cin >> nr_apelat >> durata_apel;
+
+    Telefon_mobil tm1(tensiune, intensitate, nr_tel_propriu, baterie);
+    
+    //std::cout << tm1.calcPutere() << std::endl; // pt verif puterii
+    tm1.suna(nr_apelat, durata_apel);
+    
+    std::cout << tm1.get_baterie() << std::endl;
+    
+    return 0;
+}

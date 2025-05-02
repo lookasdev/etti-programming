@@ -1,0 +1,214 @@
+Să se scrie o clasă DVDRW cu data membră capacitate (=numărul maxim de filme ce pot fi stocate). Aceasta va conține un vector de obiecte din clasa Film, care, la rândul ei, conține următoarele date membre: titlu(std::string), gen(std::string), durata(int - exprimată în secunde) și nota(float). Se vor citi de la tastatură, în ordine, următoarele informații:
+un întreg reprezentând capacitatea maximă de stocare a DVDRW-ului;
+un întreg reprezentând numărul de filme scrise pe DVDRW. Pentru fiecare film se citesc următoarele date:
+titlul filmului
+genul filmului
+durata filmului
+nota filmului
+un întreg reprezentând o comandă, în funcție de care se vor executa diferite funcționalități:
+afișare_filme - se afișează toate filmele, în ordinea în care au fost introduse de la tastatură. Afișarea unui film presupune afișarea următoarelor informații pe ecran, pe linii separate:
+titlul filmului
+genul filmului
+durata filmului
+nota filmului
+adauga_film - se citesc de la tastatură datele unui nou film care se va adăuga în continuarea celor existente. Ulterior, se afișează toate filmele.
+sterge_film - se citește de la tastatură numele unui film care va fi șters de pe DVDRW. Ulterior, se afișează toate filmele.
+copiere_dvdrw - se creează o copie a DVDRW-ului și se afișează toate filmele pe care copia le conține.
+check_copy - se creează o copie a DVDRW-ului, se citește de la tastatură numele unui film ce va fi șters de pe DVDRW-ul inițial și se afișează toate filmele pe care copia le conține.
+afiseaza_gen - se citește de la tastatură un gen de film și se afișează pe ecran toate filmele care aparțin acestui gen.
+top_ranked - se citește de la tastatură un gen de film și se afișează pe ecran cel mai bine cotat film care aparține acestui gen.
+durata_totala - se afișează pe ecran durata totală a filmelor de pe DVDRW.
+
+
+#include <iostream>
+#include <string>
+
+class Film
+{
+private:
+    std::string titlu;
+    std::string gen;
+    int durata;
+    float nota;
+
+public:
+    Film(std::string titlu = "", std::string gen = "", int durata = 0, float nota = 0.0f)
+        : titlu(titlu), gen(gen), durata(durata), nota(nota) {}
+    
+    std::string getTitlu() { return titlu; }
+    std::string getGen() { return gen; }
+    float getNota() { return nota; }
+    int getDurata() { return durata; }
+    
+    void display()
+    {
+        std::cout << titlu << std::endl;
+        std::cout << gen << std::endl;
+        std::cout << durata << std::endl;
+        std::cout << nota << std::endl;
+    }
+};
+
+class DVDRW
+{
+private:
+    int capacitate;
+    Film** Film_array; 
+    int nr_filme;
+    
+public:
+    DVDRW(int capacitate = 0, int nr_filme = 0) :capacitate(capacitate), nr_filme(nr_filme)
+    {
+        Film_array = new Film*[capacitate];
+    }
+
+    ~DVDRW()
+    {
+        for (int i = 0; i < nr_filme; ++i)
+        {
+            delete Film_array[i];
+        }
+        delete[] Film_array;
+    }
+    
+    void init_film(std::string titlu, std::string gen, int durata, float nota, int nr)
+    {
+        Film_array[nr] = new Film(titlu, gen, durata, nota);
+    }
+    
+    void afisare_filme()
+    {
+        for (int i = 0; i < nr_filme; ++i) (*(Film_array + i)) -> display();
+    }
+    
+    void adauga_film(std::string titlu, std::string gen, int durata, float nota)
+    {
+        Film_array[nr_filme++] = new Film(titlu, gen, durata, nota);
+    }
+    
+    void sterge_film(std::string titlu)
+    {
+        for (int i = 0; i < nr_filme; ++i)
+        {
+            if (Film_array[i]->getTitlu() == titlu)
+            {
+                delete Film_array[i];
+                for (int j = i; j < nr_filme - 1; ++j) Film_array[j] = Film_array[j + 1];
+                nr_filme--;
+                break;
+            }
+        }
+    }
+    
+    DVDRW(const DVDRW& dvd) : capacitate(dvd.capacitate), nr_filme(dvd.nr_filme)
+    {
+        Film_array = new Film*[capacitate];
+        for (int i = 0; i < nr_filme; ++i) Film_array[i] = new Film(*(dvd.Film_array[i]));
+    }
+    
+    void afiseaza_gen(std::string gen)
+    {
+        for (int i = 0; i < nr_filme; ++i)
+            if (Film_array[i]->getGen() == gen) std::cout << Film_array[i]->getTitlu() << std::endl;
+    }
+    
+    void top_ranked(std::string gen)
+    {
+        float maxx = Film_array[0]->getNota();
+        int sol = 0;
+        for (int i = 0; i < nr_filme; ++i)
+        {
+            if (Film_array[i]->getGen() == gen && Film_array[i]->getNota() > maxx)
+            {
+                maxx = Film_array[i]->getNota();
+                sol = i;
+            }
+        }
+        std::cout << Film_array[sol]->getTitlu() << std::endl;
+    }
+    
+    void durata_totala()
+    {
+        int suma = 0;
+        for (int i = 0; i < nr_filme; ++i) suma += Film_array[i]->getDurata();
+        std::cout << suma << std::endl;
+    }
+};
+
+int main()
+{
+    int capacitate, nr_filme;
+
+    std::cin >> capacitate >> nr_filme;
+    std::cin.ignore();
+    DVDRW dvd(capacitate, nr_filme);
+
+    std::string temp_titlu, temp_gen;
+    int temp_durata;
+    float temp_nota;
+    
+    for (int i = 0; i < nr_filme; ++i)
+    {
+        std::getline(std::cin, temp_titlu);
+        std::getline(std::cin, temp_gen);
+        std::cin >> temp_durata >> temp_nota;
+        std::cin.ignore();
+        
+        dvd.init_film(temp_titlu, temp_gen, temp_durata, temp_nota, i);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    std::cin.ignore();
+    
+    if (comanda == 1)
+    {
+        dvd.afisare_filme();
+    }
+    else if (comanda == 2)
+    {
+        std::getline(std::cin, temp_titlu);
+        std::getline(std::cin, temp_gen);
+        std::cin >> temp_durata >> temp_nota;
+        std::cin.ignore();
+        
+        dvd.adauga_film(temp_titlu, temp_gen, temp_durata, temp_nota);
+        dvd.afisare_filme();
+    }
+    else if (comanda == 3)
+    {
+        std::getline(std::cin, temp_titlu);
+        dvd.sterge_film(temp_titlu);
+        dvd.afisare_filme();
+    }
+    else if (comanda == 4)
+    {
+        DVDRW dvd2(dvd);
+        dvd2.afisare_filme();
+    }
+    else if (comanda == 5)
+    {
+        DVDRW dvd2(dvd);
+        
+        std::getline(std::cin, temp_titlu);
+        dvd.sterge_film(temp_titlu);
+        
+        dvd2.afisare_filme();
+    }
+    else if (comanda == 6)
+    {
+        std::getline(std::cin, temp_gen);
+        dvd.afiseaza_gen(temp_gen);
+    }
+    else if (comanda == 7)
+    {
+        std::getline(std::cin, temp_gen);
+        dvd.top_ranked(temp_gen);
+    }
+    else if (comanda == 8)
+    {
+        dvd.durata_totala();
+    }
+
+    return 0;
+}

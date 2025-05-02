@@ -1,0 +1,163 @@
+#include <iostream>
+#include <string>
+
+class Mobil
+{
+private:
+    int id;
+    int distance;
+    std::string lastMessageReceived;
+    std::string lastMessageSent;
+
+public:
+    Mobil(int id = 0, int distance = 0, std::string lastMessageReceived = "", std::string lastMessageSent = "")
+        : id(id), distance(distance), lastMessageReceived(lastMessageReceived), lastMessageSent(lastMessageSent) {}
+
+    int getId() { return id; }
+    int getDistance() { return distance; }
+    std::string getLastMessageReceived() { return lastMessageReceived; }
+    std::string getLastMessageSent() { return lastMessageSent; }
+    
+    void setLastMessageReceived(std::string lastMessageReceived) { this->lastMessageReceived = lastMessageReceived; }
+    void setLastMessageSent(std::string lastMessageSent) { this->lastMessageSent = lastMessageSent; }
+    
+    void display()
+    {
+        std::cout << id << " " << distance << " " << lastMessageReceived << " " << lastMessageSent << std::endl;
+    }
+};
+
+class BaseStation
+{
+private:
+    Mobil mobil_array[20];
+    int nrMobile;
+
+public:
+    BaseStation() : nrMobile(0) {}
+
+    void adaugaMobil(const Mobil& mobil)
+    {
+        if (nrMobile < 20) mobil_array[nrMobile++] = mobil;
+    }
+    
+    void displayAll()
+    {
+        for (int i = 0; i < nrMobile; ++i)
+            mobil_array[i].display();
+    }
+    
+    void trimiteMesaj(int sursa, int destinatie, std::string mesaj, int comanda)
+    {
+        bool trimis = false;
+        bool primit = false;
+        int indexSursa = -1, indexDestinatie = -1;
+        for (int i = 0; i < nrMobile; ++i)
+        {
+            if (mobil_array[i].getId() == sursa) indexSursa = i;
+            if (mobil_array[i].getId() == destinatie) indexDestinatie = i;
+            if (indexSursa != -1 && indexDestinatie != -1) break;
+        }
+        if (mobil_array[indexSursa].getDistance() < 1500) trimis = true;
+        if (mobil_array[indexDestinatie].getDistance() < 1500) primit = true;
+        
+        if (trimis) mobil_array[indexSursa].setLastMessageSent(mesaj);
+        if (trimis && primit) mobil_array[indexDestinatie].setLastMessageReceived(mesaj);
+        
+        if (comanda == 2) // doar pt comanda 2 afisam
+        {
+            mobil_array[indexSursa].display();
+            mobil_array[indexDestinatie].display();
+        }
+    }
+    
+    void broadcast(std::string mesaj)
+    {
+        for (int i = 0; i < nrMobile; ++i)
+            if (mobil_array[i].getDistance() < 1500) mobil_array[i].setLastMessageReceived(mesaj);
+    }
+};
+
+int main()
+{
+    BaseStation base;
+    int nrMobile;
+    std::cin >> nrMobile;
+
+    for (int i = 0; i < nrMobile; ++i)
+    {
+        int id, distance;
+        std::string lastReceived, lastSent;
+        std::cin >> id >> distance;
+        std::cin.ignore();
+        std::getline(std::cin, lastReceived);
+        std::getline(std::cin, lastSent);
+        
+        Mobil temp_mobil(id, distance, lastReceived, lastSent);
+        base.adaugaMobil(temp_mobil);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            base.displayAll();
+            break;
+        }
+        case 2:
+        {
+            int sursa, destinatie;
+            std::string mesaj;
+            std::cin >> sursa >> destinatie;
+            std::cin.ignore();
+            std::getline(std::cin, mesaj);
+            
+            base.trimiteMesaj(sursa, destinatie, mesaj, comanda);
+            break;
+        }
+        case 3:
+        {
+            std::string mesaj;
+            std::cin.ignore();
+            std::getline(std::cin, mesaj);
+            base.broadcast(mesaj);
+            base.displayAll();
+            break;
+        }
+        case 4:
+        {
+            int numarTransmisii;
+            std::cin >> numarTransmisii;
+        
+            for (int i = 0; i < numarTransmisii; ++i)
+            {
+                std::string tipTransmisie;
+                std::cin >> tipTransmisie;
+        
+                if (tipTransmisie == "mesaj")
+                {
+                    int sursa, destinatie;
+                    std::string mesaj;
+                    std::cin >> sursa >> destinatie;
+                    std::cin.ignore();
+                    std::getline(std::cin, mesaj);
+                    base.trimiteMesaj(sursa, destinatie, mesaj, comanda);
+                }
+                else if (tipTransmisie == "broadcast")
+                {
+                    std::string mesajBroadcast;
+                    std::cin.ignore();
+                    std::getline(std::cin, mesajBroadcast);
+                    base.broadcast(mesajBroadcast);
+                }
+            }
+            base.displayAll();
+            break;
+        }
+    }
+
+    return 0;
+}

@@ -1,0 +1,98 @@
+Să se implementeze jocul Tic-Tac-Toe (X și O).
+se vor crea 2 jucători (unul dintre jucători poate fi înlocuit de calculator-AI)
+fiecare jucător va reține numărul de victorii și numele său
+se va crea planșa de joc - o matrice 3x3 comună pentru cei 2 jucători
+fiecare jucător va alege o căsuță liberă de pe planșa de joc unde să pună simbolul corespondent (X sau O). Planșa de joc poate fi indexată fie ca un tablou bidemensional de dimensiuni 3x3, fie ca un tablou unidimensional de lungime 9.
+jucătorul care reușește să plaseze 3 simboluri în linie (orizontală, verticală sau diagonală) câștigă.
+dacă niciunul dintre jucători nu reușește să plaseze 3 simboluri în linie se consideră egalitate.
+
+#include <iostream>
+
+void draw_start() {
+    std::cout << "\t .----------------.             .----------------.  .----------------.             .----------------. " << std::endl;
+    std::cout << "\t| .--------------. |           | .--------------. || .--------------. |           | .--------------. |" << std::endl;
+    std::cout << "\t| |  ____  ____  | |           | |    _______   | || |     _____    | |           | |     ____     | |" << std::endl;
+    std::cout << "\t| | |_  _||_  _| | |           | |   /  ___  |  | || |    |_   _|   | |           | |   .'    `.   | |" << std::endl;
+    std::cout << "\t| |   \\ \\  / /   | |           | |  |  (__ \\_|  | || |      | |     | |           | |  /  .--.  \\  | |" << std::endl;
+    std::cout << "\t| |    > `' <    | |           | |   '.___`-.   | || |      | |     | |           | |  | |    | |  | |" << std::endl;
+    std::cout << "\t| |  _/ /'`\\ \\_  | |           | |  |`\\____) |  | || |     _| |_    | |           | |  \\  `--'  /  | |" << std::endl;
+    std::cout << "\t| | |____||____| | |           | |  |_______.'  | || |    |_____|   | |           | |   `.____.'   | |" << std::endl;
+    std::cout << "\t| |              | |           | |              | || |              | |           | |              | |" << std::endl;
+    std::cout << "\t| '--------------' |           | '--------------' || '--------------' |           | '--------------' |" << std::endl;
+    std::cout << "\t '----------------'             '----------------'  '----------------'             '----------------' " << std::endl;
+    std::cout << std::endl << std::endl;
+}
+
+void draw_board(char board[3][3])
+{
+    std::cout << " "; // format
+    for (int i = 0; i < 3; i++) std::cout << "   " << i; // afisare numere verticala
+
+    std::cout << "\n  -------------\n"; // bara sus
+    for (int i = 0; i < 3; i++)
+    {
+        std::cout << i << " | "; // afisare numere verticala
+        for (int j = 0; j < 3; j++) std::cout << board[i][j] << " | ";
+        std::cout << "\n  -------------\n"; // bara jos
+    }
+}
+
+bool check_win(char board[3][3], char player)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        if (board[i][0] == player && board[i][1] == player && board[i][2] == player) return true;
+        if (board[0][i] == player && board[1][i] == player && board[2][i] == player) return true;
+    }
+    if (board[0][0] == player && board[1][1] == player && board[2][2] == player) return true;
+    if (board[0][2] == player && board[1][1] == player && board[2][0] == player) return true;
+
+    return false;
+}
+
+int main()
+{
+    char board[3][3] = { { ' ', ' ', ' ' },
+                         { ' ', ' ', ' ' },
+                         { ' ', ' ', ' ' } };
+    char player = 'X'; // jucatorul cu X incepe
+    int row, col;
+    int turn;
+
+    draw_start(); // deseneaza grafica ascii de start
+    //std::cout << "\nX si O\n\n";
+
+    for (turn = 0; turn < 9; turn++) // game loop
+    {
+        draw_board(board);
+        while (true)
+        {
+            std::cout << "\nPlayer " << player << ", enter row (0-2) and column (0-2): ";
+            std::cin >> row >> col;
+
+            if (board[row][col] != ' ' || row < 0 || row > 2 || col < 0 || col > 2) std::cout << "Invalid move. Try again.\n";
+
+            else break; // input valid, go to next turn
+        }
+
+        board[row][col] = player; //se pune X sau pe poz aleasa
+
+        if (check_win(board, player)) // se verif daca a castigat jucatorul al carui rand a fost
+        {
+            draw_board(board); // deseneaza tabla
+            std::cout << "Player " << player << " wins!\n";
+            break; // iese din game loop mai devreme de 9 mutari
+        }
+
+        if (player == 'X') player = 'O'; // se schimba jucatorul
+        else if (player == 'O') player = 'X';
+
+        std::cout << "\n\n\n\n\n\n";
+    }
+
+    draw_board(board); // se deseneaza tabla si la final => daca suntem in a 9a runda si nu a castigat niciun player
+
+    if (turn == 9 && !check_win(board, 'X') && !check_win(board, 'O')) std::cout << "It's a draw!\n"; // se verif daca jocul este terminat in egalitate (cand nu mai sunt spatii libere pe tabla)
+
+    return 0;
+}

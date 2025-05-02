@@ -1,0 +1,189 @@
+Să se implementeze jocul Spânzurătoarea.
+Se vor citi de la tastatură o serie de cuvinte posibile.
+Calculatorul alege aleator cuvântul ce trebuie ghicit.
+Se afișează pe ecran un șir de caractere de dimensiune egală cu cuvântul ce trebuie ghicit, unde fiecare literă este înlocuită de un simbol ('*' sau '_').
+Jucătorului îi este permis să ghicească la fiecare rundă câte o literă.
+Dacă litera se regăsește în cuvânt, ea va înlocui simbolul de pe poziția corespondentă.
+Dacă litera nu se regăsește în cuvânt, ea va fi afișată pe ecran, jucătorului nu îi va mai fi permis să încerce această literă și se va incrementa un contor. La 5 încercări greșite, jucătorul pierde.
+Jocul este câștigat atunci când sunt ghicite toate literele cuvântului.
+Extensie: implementați o versiune a acestui joc în care 2 jucători sunt în competiție pentru ghicirea aceluiași cuvânt:
+
+nu se va mai ține cont de contorul încercărilor.
+dacă un jucător ghicește o literă îi este permis să mai facă o încercare.
+câștigă jucătorul care ghicește ultima literă.
+
+
+
+#include <iostream>
+#include <string>
+
+void start()
+{
+    std::cout << "  ===================\n";
+    std::cout << "    Spanzuratoarea\n";
+    std::cout << "  ===================\n";
+}
+
+void display_gallow(int livesLost)
+{
+    if (livesLost == 0)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 1)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 2)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 3)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|    /|  \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 4)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|    /|\\ \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 5)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|    /|\\ \n";
+        std::cout << "\t|    /   \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+    else if (livesLost == 6)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     O \n";
+        std::cout << "\t|    /|\\ \n";
+        std::cout << "\t|    / \\ \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+    }
+}
+
+void display_status(char incorrect[], int incorrectSize, std::string answer)
+{
+    std::cout << "numar vieti: " << 7 - incorrectSize << std::endl;
+    std::cout << "greseli: ";
+    for (int i = 0; i < incorrectSize; i++) std::cout << incorrect[i] << " ";
+
+    std::cout << std::endl << std::endl;
+    for (unsigned int i = 0; i < answer.length(); i++) std::cout << answer[i] << " ";
+}
+
+void end_game(std::string answer, std::string secretWord)
+{
+    if (answer == secretWord)
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+        for (unsigned int i = 0; i < answer.length(); i++) std::cout << answer[i] << " ";
+        std::cout << "\nAi castigat! Bravo!!1\n";
+    }
+    else
+    {
+        std::cout << "\t+-----+ \n";
+        std::cout << "\t|     | \n";
+        std::cout << "\t|     X \n";
+        std::cout << "\t|    /|\\ \n";
+        std::cout << "\t|    / \\ \n";
+        std::cout << "\t|       \n";
+        std::cout << "\t=========\n";
+        for (unsigned int i = 0; i < answer.length(); i++) std::cout << answer[i] << " ";
+        std::cout << "\nAi pierdut!\n";
+    }
+
+}
+
+int main()
+{
+    start();
+
+    std::string secretWord;
+    std::cout << "Introduceti fraza secreta: ";
+
+    getline(std::cin, secretWord);
+
+    std::string answer(secretWord.length(), '_');
+    for (unsigned int i = 0; i < secretWord.length(); ++i)
+        if (secretWord[i] == ' ') answer[i] = ' ';
+
+    int livesLost = 0;
+    char incorrect[7]; // max 7 incercari gresite
+    int incorrectSize = 0; // size of array
+    bool guess = false;
+    char letter;
+
+    while (answer != secretWord && livesLost < 7)
+    {
+        display_gallow(livesLost);
+        display_status(incorrect, incorrectSize, answer);
+
+        std::cout << "\n\nlitera: ";
+        std::cin >> letter;
+
+        guess = false; // reset guess
+
+        for (unsigned int i = 0; i < secretWord.length(); i++)
+        {
+            if (letter == secretWord[i])
+            {
+                answer[i] = letter;
+                guess = true;
+            }
+        }
+
+        if (guess) std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nCorect!\n";
+        else
+        {
+            std::cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nGresit!\n";
+            incorrect[incorrectSize++] = letter; // add incorrect guess to array
+            livesLost++;
+        }
+    }
+
+    end_game(answer, secretWord);
+    return 0;
+}

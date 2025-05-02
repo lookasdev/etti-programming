@@ -1,0 +1,269 @@
+Să se implementeze jocul Battleships (similar cu Avioane).
+se vor crea 2 jucători (unul dintre jucători poate este calculatorul-AI)
+fiecare jucător va avea 2 planșe de joc - matrice 10x10 - una pe care își plasează propriile nave și una pe care reține locurile unde a tras el.
+fiecare jucător va reține numele său și 3 obiecte de tipul Ship. Clasa Ship reprezintă segmente de lungime 2, 3 sau 4. Segmentele pot fi reținute drept un vector de coordonate.
+amplasarea navelor pe planșa de joc se face aleator pentru fiecare dintre cei 2 jucători. Se poate extinde astfel încât jucătorul să își aleagă locul unde să fie amplasate.
+jocul se desfășoară în runde - AI trage aleator, jucătorul poate trage aleator sau la coordonate citite de la tastatură. Un jucător nu poate trage de 2 ori în același punct. O navă este considerată doborâtă doar dacă este lovită în fiecare punct al său. Pe planșa de joc aferentă loviturilor către inamic se vor înscrie în mod diferit ratările și locurile în care o navă este lovită.
+după fiecare rundă se afișează starea planșelor de joc ale jucătorului.
+jocul este câștigat de jucătorul care reușește să doboare toate navele inamice.
+
+
+#include <iostream>
+
+class Ship
+{
+private:
+    int pozX[4]; // Cea mai lunga nava ocupa 4 spatii
+    int pozY[4];
+    bool distrusa = false;
+
+public:
+    bool IsDestroyed() { return distrusa; }
+    void SetDestroyed(bool destroyed) { distrusa = destroyed; }
+
+    // Getter pentru pozX si pozY
+    int* GetPosX() { return pozX; }
+    int* GetPosY() { return pozY; }
+};
+
+class Player
+{
+private:
+    std::string nume;
+    const static int rows = 10;
+    const static int columns = 10;
+    int gameMatrix[rows][columns]; // Matricea de joc a jucatorului
+    int hitMatrix[rows][columns]; // Matricea loviturilor primite de la adversar
+    Ship array_ship[3]; // 3 nave per jucator
+
+public:
+    Player(const std::string& name) : nume(name) {}
+
+    void Init()
+    {
+        for(int i = 0; i < rows; i++)
+            for(int j = 0; j < columns; j++)
+            {
+                gameMatrix[i][j] = 0;
+                hitMatrix[i][j] = 0;
+            }
+    }
+
+    void ShowGameMatrix()
+    {
+        for(int i = 0; i < rows; i++)
+        {
+            for(int j = 0; j < columns; j++)
+                std::cout << gameMatrix[i][j] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    void ShowHitMatrix()
+    {
+        for(int i = 0; i < rows; i++)
+        {
+            for(int j = 0; j < columns; j++)
+                std::cout << hitMatrix[i][j] << " ";
+            std::cout << std::endl;
+        }
+    }
+
+    void PlaceShipsManually()
+    {
+        for (int i = 0; i < 3; ++i)
+            {
+            int shipSize = i + 2; // Dimensiunea navei (2, 3 sau 4 segmente)
+            int startX, startY;
+            char orientation;
+            std::cout << "Introduceti pozitia pentru nava de dimensiune " << shipSize << " (format: linie coloana orientare(h/v)): ";
+            std::cin >> startX >> startY >> orientation;
+
+            bool horizontal = (orientation == 'h');
+            if (!CanPlaceShip(startX, startY, shipSize, horizontal, gameMatrix))
+            {
+                std::cout << "Nu puteti plasa nava la pozitia introdusa. Introduceti o alta pozitie.\n";
+                --i;
+                continue;
+            }
+            PlaceShip(startX, startY, shipSize, horizontal, gameMatrix, array_ship[i]);
+        }
+    }
+
+    void PlaceShip(int startX, int startY, int shipSize, bool horizontal, int matrix[][columns], Ship& ship)
+    {
+        if (horizontal)
+        {
+            for (int j = 0; j < shipSize; ++j)
+            {
+                matrix[startX][startY + j] = shipSize; // Marcare segment de nava
+                ship.GetPosX()[j] = startX; // Retinerea pozitiei X a segmentului
+                ship.GetPosY()[j] = startY + j; // Retinerea pozitiei Y a segmentului
+            }
+        }
+        else if (!horizontal)
+        {
+            for (int j = 0; j < shipSize; ++j)
+            {
+                matrix[startX + j][startY] = shipSize; // Marcare segment de nava
+                ship.GetPosX()[j] = startX + j; // Retinerea pozitiei X a segmentului
+                ship.GetPosY()[j] = startY; // Retinerea pozitiei Y a segmentului
+            }
+        }
+    }
+
+    bool CanPlaceShip(int startX, int startY, int shipSize, bool horizontal, int matrix[][columns])
+    {
+        if (horizontal)
+        {
+            for (int j = 0; j < shipSize; ++j)
+                if (matrix[startX][startY + j] == 1) return false;
+        }
+        else if (!horizontal)
+        {
+            for (int j = 0; j < shipSize; ++j)
+                if (matrix[startX + j][startY] == 1) return false;
+        }
+        return true;
+    }
+
+    void Attack(Player& opponent, int x, int y)
+    {
+        if (!IsValidAttack(x, y, this->hitMatrix))
+        {
+            std::cout << "Coordonatele atacului sunt invalide sau aceasta pozitie a fost deja atacata. Alegeti alte coordonate.\n";
+            return;
+        }
+
+        if (opponent.gameMatrix[x][y] != 0)
+        {
+            hitMatrix[x][y] = 1; // Marcheaza atacul ca HIT pe matricea de lovituri
+            std::cout << "Lovitura!" << std::endl;
+            opponent.gameMatrix[x][y] = 1; // Marcheaza segmentul navei ca lovit
+            CheckShipDestroyed(x, y, opponent.gameMatrix, opponent.array_ship);
+        } else
+        {
+            hitMatrix[x][y] = 5; // Marcheaza atacul ca MISS pe matricea de lovituri
+            std::cout << "Ratat!" << std::endl;
+        }
+    }
+
+    bool IsValidAttack(int x, int y, int matrix[][columns])
+    {
+        return (x >= 0 && x < rows && y >= 0 && y < columns && matrix[x][y] == 0);
+    }
+
+    void CheckShipDestroyed(int x, int y, int matrix[][columns], Ship ships[])
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < i + 2; ++j)
+            {
+                if (ships[i].GetPosX()[j] == x && ships[i].GetPosY()[j] == y)
+                {
+                    bool allSegmentsHit = true;
+                    for (int k = 0; k < i + 2; ++k)
+                    {
+                        int posX = ships[i].GetPosX()[k];
+                        int posY = ships[i].GetPosY()[k];
+                        if (matrix[posX][posY] != 1)
+                        {
+                            allSegmentsHit = false;
+                            break;
+                        }
+                    }
+                    if (allSegmentsHit) ships[i].SetDestroyed(true);
+                    break;
+                }
+            }
+        }
+    }
+
+    int ShipsLeft()
+    {
+        int shipsLeft = 0;
+        for (int i = 0; i < 3; ++i)
+            if (!array_ship[i].IsDestroyed()) shipsLeft++;
+        return shipsLeft;
+    }
+
+    void DisplayGame()
+    {
+
+        std::cout << this->nume << " - Game Matrix:" << std::endl << std::endl;
+        ShowGameMatrix();
+        std::cout << std::endl << this->nume << " - Hit Matrix:" << std::endl << std::endl;
+        ShowHitMatrix();
+        std::cout << std::endl << std::endl << std::endl << std::endl;
+    }
+};
+
+void waitForInput()
+{
+    char input;
+    do
+    {
+        std::cout << "Press 'c' to continue: ";
+        std::cin >> input;
+    }
+    while (input != 'c');
+}
+
+int main() {
+    Player player1("Player 1");
+    Player player2("Player 2");
+
+    // Initializare si plasare aleatoare a navelor pentru ambii jucatori
+    player1.Init();
+    std::cout << "\n\nJucatorul 1, introduceti pozitiile navelor:" << std::endl << std::endl;
+    player1.PlaceShipsManually();
+
+    player2.Init();
+    std::cout << "\n\nJucatorul 2, introduceti pozitiile navelor:" << std::endl << std::endl;
+    player2.PlaceShipsManually();
+
+    std::cout << std::endl << std::endl;
+
+    // Game Loop
+    bool gameOver = false;
+    while (!gameOver)
+    {
+        // Player 1 turn
+        player1.DisplayGame();
+
+        // Jucatorul 1 ataca
+        int x, y;
+        std::cout << "Jucatorul 1, introduceti coordonatele atacului (x y): ";
+        std::cin >> x >> y;
+        player1.Attack(player2, x, y);
+        std::cout << "Nave ramase pentru Jucatorul 2: " << player2.ShipsLeft() << std::endl;
+
+        // Verificam daca Jucatorul 2 a pierdut
+        if (player2.ShipsLeft() == 0) {
+            std::cout << "Jucatorul 1 a castigat!" << std::endl;
+            gameOver = true;
+            break;
+        }
+
+        waitForInput(); // Asteptam ca jucatorul sa apese caracterul C pentru a continua rularea programului si a finaliza turn-ul
+
+        // Player 2 turn
+        player2.DisplayGame();
+
+        // Jucatorul 2 ataca
+        std::cout << "Jucatorul 2, introduceti coordonatele atacului (x y): ";
+        std::cin >> x >> y;
+        player2.Attack(player1, x, y);
+        std::cout << "Nave ramase pentru Jucatorul 1: " << player1.ShipsLeft() << std::endl;
+
+        // Verificam daca Jucatorul 1 a pierdut
+        if (player1.ShipsLeft() == 0) {
+            std::cout << "Jucatorul 2 a castigat!" << std::endl;
+            gameOver = true;
+        }
+
+        waitForInput(); // Asteptam ca jucatorul sa apese caracterul C pentru a continua rularea programului si a finaliza turn-ul
+    }
+
+    return 0;
+}

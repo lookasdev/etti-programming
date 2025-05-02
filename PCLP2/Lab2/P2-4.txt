@@ -1,0 +1,200 @@
+Să se scrie o clasă Mail_box cu datele membre email și capacitate (numărul maxim de mesaje ce pot fi stocate <= 10). Aceasta va conține și un vector de obiecte din clasa Mail. Clasa Mail conține următoarele date membre de tipul std::string: sender, recipient, subject și body. Se vor citi de la tastatură, în ordine, următoarele informații:
+un șir de caractere reprezentând adresa de email proprie;
+un întreg reprezentând capacitatea maximă de stocare;
+un întreg reprezentând numărul de mesaje primite. Pentru fiecare mesaj primit se citesc următoarele date:
+adresa de email a expeditorului;
+adresa de email a destinatarului;
+subiectul mesajului;
+corpul mesajului;
+un întreg reprezentând o comandă, în funcție de care se vor executa diferite funcționalități:
+check_inbox - se afișează toate mesajele destinate adresei reținute în obiectul Mail_box, în ordinea în care au fost introduse de la tastatură. Afișarea unui mesaj presupune afișarea următoarelor informații pe ecran, pe linii separate:
+Index:<index-ul din lista de mesaje>
+From:<sender>
+To:<recipient>
+Subject:<subject>
+Body:<body>
+---
+check_outbox - se afișează toate mesajele trimise de către adresa reținută în obiectul Mail_box, în ordinea în care au fost trimise.
+send - se citesc datele (fără expeditor) pentru un obiect Mail care va fi trimis către destinatar. Ulterior, se afișează pe ecran mesajele trimise.
+reply - se citește de la tastatură un întreg reprezentând indexul mesajului din lista de mesaje din inbox căruia dorim să ii răspundem. Se citesc datele (subiectul si corpul mesajului) pentru un obiect Mail nou care va fi trimis ca răspuns pentru mesajul selectat. Ulterior, se afișează pe ecran mesajele trimise.
+forward - se citește de la tastatură un întreg reprezentând indexul mesajului din lista de mesaje din inbox pe care dorim să îl redirecționăm. Se citește de la tastatură doar adresa de email către care facem redirecționarea, corpul și subiectul mesajului fiind preluate de la mesajul din inbox. Ulterior, se afișează pe ecran mesajele trimise.
+
+
+#include <iostream>
+#include <string>
+
+class Mail
+{
+private:
+    std::string sender;
+    std::string recipient;
+    std::string subject;
+    std::string body;
+
+public:
+    Mail(std::string sender, std::string recipient, std::string subject, std::string body)
+        : sender(sender), recipient(recipient), subject(subject), body(body) {}
+    
+    std::string getRecipient() { return recipient; }
+    std::string getSender() { return sender; }
+    std::string getSubject() { return subject; }
+    std::string getBody() { return body; }
+    
+    void display()
+    {
+        std::cout << "From:" << sender << std::endl;
+        std::cout << "To:" << recipient << std::endl;
+        std::cout << "Subject:" << subject << std::endl;
+        std::cout << "Body:" << body << std::endl;
+        std::cout << "---" << std::endl;
+    }
+};
+
+class Mail_box
+{
+private:
+    std::string email; // my email
+    int capacity;
+    Mail** Mail_array; // vector dinamic de pointeri catre obiecte de tip Mail
+    int numMessages;
+
+public:
+    Mail_box(std::string email = "", int capacity = 0, int numMessages = 0)
+        : email(email), capacity(capacity), numMessages(numMessages)
+    {
+        Mail_array = new Mail*[capacity]; // init vector dinamic
+    }
+
+    ~Mail_box()
+    {
+        for (int i = 0; i < numMessages; ++i)
+        {
+            delete Mail_array[i]; // eliberare memorie pentru fiecare obiect de tip Mail
+        }
+        delete[] Mail_array; // eliberare memorie pentru vectorul de pointeri
+    }
+
+    void receive(std::string sender, std::string recipient, std::string subject, std::string body, int nr)
+    {
+        Mail_array[nr] = new Mail(sender, recipient, subject, body);
+    }
+
+    void check_inbox()
+    {
+        for (int i = 0; i < numMessages; ++i)
+        {
+            if (Mail_array[i]->getRecipient() == email)
+            {
+                std::cout << "Index:" << i << std::endl;
+                Mail_array[i]->display();
+            }
+        }
+    }
+
+    void check_outbox()
+    {
+        for (int i = 0; i < numMessages; ++i)
+        {
+            if (Mail_array[i]->getSender() == email)
+            {
+                std::cout << "Index:" << i << std::endl;
+                Mail_array[i]->display();
+            }
+        }
+    }
+
+    void send(std::string recipient, std::string subject, std::string body)
+    {
+        Mail_array[numMessages++] = new Mail(email, recipient, subject, body);
+    }
+
+    void reply(int index, std::string subject, std::string body)
+    {
+        if (index >= 0 && index < numMessages)
+        {
+            Mail* originalMessage = Mail_array[index];
+            std::string recipient = originalMessage->getSender();
+            send(recipient, subject, body);
+        }
+        //else std::cout << "invalid index" << std::endl;
+    }
+
+    void forward(int index, std::string recipient)
+    {
+        if (index >= 0 && index < numMessages) {
+            Mail* originalMessage = Mail_array[index];
+            std::string subject = originalMessage->getSubject();
+            std::string body = originalMessage->getBody();
+            send(recipient, subject, body);
+        }
+        //else std::cout << "invalid index" << std::endl;
+    }
+};
+
+int main()
+{
+    std::string ownEmail;
+    int capacity, numMessages;
+
+    std::cin >> ownEmail >> capacity >> numMessages;
+    std::cin.ignore();
+    Mail_box mailbox(ownEmail, capacity, numMessages);
+
+    std::string temp_sender, temp_recipient, temp_subject, temp_body;
+    for (int i = 0; i < numMessages; ++i)
+    {
+        std::getline(std::cin, temp_sender);
+        std::getline(std::cin, temp_recipient);
+        std::getline(std::cin, temp_subject);
+        std::getline(std::cin, temp_body);
+        
+        mailbox.receive(temp_sender, temp_recipient, temp_subject, temp_body, i);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    std::cin.ignore();
+
+    int temp_index;
+    
+    if (comanda == 1)
+    {
+        mailbox.check_inbox(); //mesaje primite
+    }
+    else if (comanda == 2)
+    {
+        mailbox.check_outbox(); //mesaje trimise
+    }
+    else if (comanda == 3)
+    {
+        std::getline(std::cin, temp_recipient);
+        std::getline(std::cin, temp_subject);
+        std::getline(std::cin, temp_body);
+        mailbox.send(temp_recipient, temp_subject, temp_body);
+        
+        mailbox.check_outbox(); //mesaje trimise
+    }
+    else if (comanda == 4)
+    {
+        std::cin >> temp_index;
+        std::cin.ignore();
+        
+        std::getline(std::cin, temp_subject);
+        std::getline(std::cin, temp_body);
+        mailbox.reply(temp_index, temp_subject, temp_body);
+        
+        mailbox.check_outbox(); //mesaje trimise
+    }
+    else if (comanda == 5)
+    {
+        std::cin >> temp_index;
+        std::cin.ignore();
+        
+        std::getline(std::cin, temp_recipient);
+        mailbox.forward(temp_index, temp_recipient);
+        
+        mailbox.check_outbox(); //mesaje trimise
+    }
+
+    return 0;
+}

@@ -1,0 +1,160 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+
+class Vagon
+{
+private:
+    int capacitateMax;
+    int nrCalatori;
+    int clasa;
+    float pretLoc;
+
+public:
+    Vagon(int capacitateMax = 0, int nrCalatori = 0, int clasa = 0, float pretLoc = 0.0f)
+        : capacitateMax(capacitateMax), nrCalatori(nrCalatori), clasa(clasa), pretLoc(pretLoc) {}
+    
+    void display()
+    {
+        std::cout << nrCalatori << "/" << capacitateMax << " " << clasa << " " << pretLoc << std::endl;
+    }
+    
+    float pretBiletePerVagon()
+    {
+        return pretLoc * nrCalatori;
+    }
+    
+    void setPretLoc(float pretLoc) { this->pretLoc = pretLoc; }
+    void setNrCalatori(int nrCalatori) { this->nrCalatori = nrCalatori; }
+    
+    int getClasa() { return clasa; }
+    float getPretLoc() { return pretLoc; }
+    int getCapacitateMax() { return capacitateMax; }
+    int getNrCalatori() { return nrCalatori; }
+};
+
+class Tren
+{
+private:
+    std::string ruta;
+    Vagon vagon_array[20];
+    int nrVagoane;
+
+public:
+    Tren() : ruta(""), nrVagoane(0) {}
+    
+    void setRuta(std::string ruta) { this->ruta = ruta; }
+    std::string getRuta() { return ruta; }
+    
+    void adaugaVagon(const Vagon& vagon)
+    {
+        if (nrVagoane < 20) vagon_array[nrVagoane++] = vagon;
+    }
+    
+    void displayAll()
+    {
+        for (int i = 0; i < nrVagoane; ++i)
+            vagon_array[i].display();
+    }
+    
+    int venitTotal()
+    {
+        float suma;
+        for (int i = 0; i < nrVagoane; ++i)
+            suma += vagon_array[i].pretBiletePerVagon();
+        return suma;
+    }
+    
+    void tryDiscountVagon(int index, int procentDiscount)
+    {
+        float procentOcupatie = 1.0 * vagon_array[index].getNrCalatori() / vagon_array[index].getCapacitateMax() * 100;
+        if (procentOcupatie >= 70)
+        {
+            float pret_initial = vagon_array[index].getPretLoc();
+            float reducere = 1.0 * procentDiscount / 100 * pret_initial;
+            vagon_array[index].setPretLoc(pret_initial - reducere);
+        }
+    }
+    
+    void tryMovingPeople(int index, int &peopleLeftToMove)
+    {
+        peopleLeftToMove = vagon_array[index].getNrCalatori();
+        int clasaIndex = vagon_array[index].getClasa();
+        vagon_array[index].setNrCalatori(0);
+        for (int i = 0; i < nrVagoane; ++i)
+        {
+            if (vagon_array[i].getClasa() == clasaIndex && i != index) // asumam ca vor ramane oameni fara loc la finalul iteratiilor si nu procesam si vagonul pe care l-am golit (vagonul index - parametru)
+            {
+                int spacesLeft = vagon_array[i].getCapacitateMax() - vagon_array[i].getNrCalatori();
+                peopleLeftToMove -= spacesLeft;
+                vagon_array[i].setNrCalatori(vagon_array[i].getCapacitateMax());
+            }
+        }
+    }
+};
+
+int main()
+{
+    Tren t1;
+    std::string ruta;
+    std::getline(std::cin, ruta);
+    t1.setRuta(ruta);
+    int nrVagoane;
+    std::cin >> nrVagoane;
+
+    for (int i = 0; i < nrVagoane; ++i)
+    {
+        int capacitateMax;
+        int nrCalatori;
+        int clasa;
+        float pretLoc;
+        
+        std::cin >> capacitateMax >> nrCalatori >> clasa >> pretLoc;
+
+        Vagon temp_vagon(capacitateMax, nrCalatori, clasa, pretLoc);
+        t1.adaugaVagon(temp_vagon);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            std::cout << t1.getRuta() << std::endl;
+            t1.displayAll();
+            break;
+        }
+        case 2:
+        {
+            std::cout << std::fixed << std::setprecision(2) << t1.venitTotal() << std::endl;
+            break;
+        }
+        case 3:
+        {
+            int nrVagoaneDiscounted;
+            std::cin >> nrVagoaneDiscounted;
+            for (int i = 0; i < nrVagoaneDiscounted; ++i)
+            {
+                int index, procentDiscount;
+                std::cin >> index >> procentDiscount;
+                t1.tryDiscountVagon(index, procentDiscount);
+            }
+            std::cout << std::fixed << std::setprecision(2) << t1.venitTotal() << std::endl;
+            break;
+        }
+        case 4:
+        {
+            int index, peopleLeftToMove = 0;
+            std::cin >> index;
+            std::cout << t1.getRuta() << std::endl;
+            t1.tryMovingPeople(index, peopleLeftToMove);
+            t1.displayAll();
+            std::cout << peopleLeftToMove << std::endl;
+            break;
+        }
+    }
+
+    return 0;
+}

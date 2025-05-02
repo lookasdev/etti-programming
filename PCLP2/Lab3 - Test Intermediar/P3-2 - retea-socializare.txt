@@ -1,0 +1,227 @@
+#include <iostream>
+#include <string>
+
+const int MAX_UTILIZATORI = 100;
+const int MAX_POSTARI = 100;
+
+class Profil
+{
+private:
+    static int nextID; // ID-ul urmator pentru fiecare utilizator
+    int userID;
+    std::string numeUtilizator;
+    int anNastere;
+    int lunaNastere;
+    int ziuaNastere;
+
+public:
+    Profil(std::string numeUtilizator = "", int anNastere = 0, int lunaNastere = 0, int ziuaNastere = 0)
+        : numeUtilizator(numeUtilizator), anNastere(anNastere), lunaNastere(lunaNastere), ziuaNastere(ziuaNastere)
+        {
+            userID = nextID++;
+        }
+
+    void afiseazaDetalii()
+    {
+        std::cout << userID << std::endl;
+        std::cout << numeUtilizator << std::endl;
+        std::cout << anNastere << " " << lunaNastere << " " << ziuaNastere << std::endl;
+    }
+
+    void verificaDataNasterii()
+    {
+        std::cout << userID << std::endl;
+        if (anNastere < 1900 || anNastere > 2021 || lunaNastere < 1 || lunaNastere > 12 || ziuaNastere < 1 || ziuaNastere > 30) std::cout << "EROARE: Data de nastere introdusa nu e valida" << std::endl;
+        else std::cout << anNastere << " " << lunaNastere << " " << ziuaNastere << std::endl;
+    }
+
+    int calculeazaVarsta(int anCurent, int lunaCurenta, int ziuaCurenta)
+    {
+        int varsta = anCurent - anNastere;
+        if (lunaCurenta < lunaNastere || (lunaCurenta == lunaNastere && ziuaCurenta < ziuaNastere)) varsta--;
+        return varsta;
+    }
+
+    std::string getNumeUtilizator() { return numeUtilizator; }
+    int getUserID() { return userID; }
+    
+    int getVarsta(int anCurent, int lunaCurenta, int ziuaCurenta) { return calculeazaVarsta(anCurent, lunaCurenta, ziuaCurenta); }
+
+};
+
+int Profil::nextID = 0 - MAX_UTILIZATORI; // se init nextID cu 0
+
+class Post
+{
+private:
+    int userID;
+    int varstaMinima;
+    int varstaMaxima;
+    std::string continut;
+
+public:
+    Post(int userID = 0, int varstaMinima = 0, int varstaMaxima = 0, std::string continut = "")
+        : userID(userID), varstaMinima(varstaMinima), varstaMaxima(varstaMaxima), continut(continut) {}
+
+    bool poateFiVizualizat(int varstaUtilizator) { return (varstaUtilizator >= varstaMinima && varstaUtilizator <= varstaMaxima); }
+        
+    void afiseazaPost(std::string numePoster)
+    {
+            std::cout << numePoster << std::endl;
+            std::cout << continut << std::endl;
+    }
+    
+    int getPostID() { return userID; }
+};
+
+class Website
+{
+private:
+    Profil utilizatori[MAX_UTILIZATORI];
+    Post postari[MAX_POSTARI];
+    int numarUtilizatori = 0;
+    int numarPostari = 0;
+
+public:
+    void adaugaUtilizator(std::string numeUtilizator, int anNastere, int lunaNastere, int ziuaNastere)
+    {
+        if (numarUtilizatori < MAX_UTILIZATORI)
+        {
+            Profil utilizator(numeUtilizator, anNastere, lunaNastere, ziuaNastere);
+            utilizatori[numarUtilizatori++] = utilizator;
+        }
+    }
+    
+    void adaugaPostare(int userID, int varstaMinima, int varstaMaxima, std::string continut)
+    {
+        if (numarPostari < MAX_POSTARI)
+        {
+            Post post(userID, varstaMinima, varstaMaxima, continut);
+            postari[numarPostari++] = post;
+        }
+    }
+    
+    void afiseazaUtilizatori()
+    {
+        for (int i = 0; i < numarUtilizatori; ++i)
+            utilizatori[i].afiseazaDetalii();
+    }
+
+    void verificaDataNasterii()
+    {
+        for (int i = 0; i < numarUtilizatori; ++i)
+            utilizatori[i].verificaDataNasterii();
+    }
+    
+    void calculeazaVarsta(int anCurent, int lunaCurenta, int ziuaCurenta)
+    {
+        for (int i = 0; i < numarUtilizatori; ++i)
+        {
+            int varsta = utilizatori[i].calculeazaVarsta(anCurent, lunaCurenta, ziuaCurenta);
+            if (varsta >= 18)
+            {
+                std::cout << utilizatori[i].getNumeUtilizator() << std::endl;
+                std::cout << varsta << std::endl;
+            }
+        }
+    }
+    
+    std::string findNameOfPoster(int id)
+    {
+        for (int i = 0; i < numarUtilizatori; ++i)
+            if (utilizatori[i].getUserID() == id) return utilizatori[i].getNumeUtilizator();
+        return "";
+    }
+    
+    void afiseazaFeedPrimulUtilizator(int anCurent, int lunaCurenta, int ziuaCurenta)
+    {
+        int varstaPrimulUtilizator = utilizatori[0].getVarsta(anCurent, lunaCurenta, ziuaCurenta);
+        std::string numePrimulUtilizator = utilizatori[0].getNumeUtilizator();
+        
+        std::cout << "News Feed" << std::endl;
+        bool existaPostari = false;
+        
+        for (int i = 0; i < numarPostari; ++i)
+        {
+            std::string numePoster = findNameOfPoster(postari[i].getPostID());
+            if (postari[i].poateFiVizualizat(varstaPrimulUtilizator) || numePrimulUtilizator == numePoster)
+            {
+                postari[i].afiseazaPost(numePoster);
+                existaPostari = true;
+            }
+        }
+        if (!existaPostari) std::cout << "No posts for you" << std::endl;
+    }
+};
+
+int main()
+{
+    Website website;
+
+    int numarUtilizatori;
+    std::cin >> numarUtilizatori;
+    std::cin.ignore();
+
+    for (int i = 0; i < numarUtilizatori; ++i)
+    {
+        std::string numeUtilizator;
+        int anNastere, lunaNastere, ziuaNastere;
+        std::getline(std::cin, numeUtilizator);
+        std::cin >> anNastere >> lunaNastere >> ziuaNastere;
+        std::cin.ignore();
+
+        website.adaugaUtilizator(numeUtilizator, anNastere, lunaNastere, ziuaNastere);
+    }
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            website.afiseazaUtilizatori();
+            break;
+        }
+        case 2:
+        {
+            website.verificaDataNasterii();
+            break;
+        }
+        case 3:
+        {
+            int anCurent, lunaCurenta, ziuaCurenta;
+            std::cin >> anCurent >> lunaCurenta >> ziuaCurenta;
+            website.calculeazaVarsta(anCurent, lunaCurenta, ziuaCurenta);
+            break;
+        }
+        case 4:
+        {
+            int anCurent, lunaCurenta, ziuaCurenta;
+            std::cin >> anCurent >> lunaCurenta >> ziuaCurenta;
+            
+            int numarPostari;
+            std::cin >> numarPostari;
+            std::cin.ignore();
+
+            for (int i = 0; i < numarPostari; ++i)
+            {
+                int userID, varstaMinima, varstaMaxima;
+                std::string continut;
+                std::cin >> userID;
+                std::cin >> varstaMinima >> varstaMaxima;
+                
+                std::cin.ignore();
+                std::getline(std::cin, continut);
+
+                website.adaugaPostare(userID, varstaMinima, varstaMaxima, continut);
+            }
+            
+            website.afiseazaFeedPrimulUtilizator(anCurent, lunaCurenta, ziuaCurenta);
+            break;
+        }
+    }
+
+    return 0;
+}
+

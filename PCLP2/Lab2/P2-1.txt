@@ -1,0 +1,85 @@
+Pentru clasa Punctaj se va defini un destructor, un constructor de copiere și o funcție membră care modifică nota de la un index dat. Ulterior:
+Se va instanția un obiect de tip Punctaj folosind constructorul cu 2 parametri - numărul de note, respectiv un pointer către un vector de întregi reprezentând valorile notelor;
+Se va crea o nouă instanță prin copierea acestuia;
+Se va modifica nota de la un anumit index cu o nouă valoare (atât indexul, cât și valoarea vor fi citite de la tastatură);
+Se vor afișa pe ecran notele celui de-al doilea obiect.
+
+Se va apela în mod explicit destructorul primului obiect, după care se vor afișa din nou pe ecran notele celui de-al doilea obiect.
+
+Comentați definiția constructorului de copiere și repetați pașii de mai sus.
+
+
+#include <iostream>
+
+class Punctaj
+{
+private:
+    int nr_note;
+    int *note;
+    
+public:
+    Punctaj(int nr_note=0, int *note=nullptr): nr_note(nr_note), note(new int[nr_note]) //constructor normal
+    {
+        for (int i = 0; i < this->nr_note; i++)
+        {
+            *(this->note + i) = *(note + i);
+        }
+    }
+    
+    Punctaj(const Punctaj &p) //constructor copiere
+    {
+        this->nr_note = p.nr_note;
+        this->note = new int[this->nr_note];
+        for (int i = 0; i < this->nr_note; i++)
+        {
+            *(this->note+i) = *(p.note+i);
+        }
+    }
+
+    ~Punctaj() //destructor
+    {
+        //std::cout << "Apel destructor punctaj cu " << this->nr_note << " note" << std::endl;
+        delete [] this->note;
+    }
+    
+    void afisare() //afisare note
+    {
+        for (int i = 0; i < this->nr_note; i++)
+        {
+            std::cout << *(this->note + i) << " ";
+        }
+    }
+    
+    void modifNota(int index, int valoare) 
+    {
+        note[index] = valoare;
+    }
+};
+
+int main()
+{
+    int temp_nr_note;
+    int *temp_note = nullptr;
+    
+    std::cin >> temp_nr_note;
+    temp_note = new int[temp_nr_note];
+    for (int i = 0; i < temp_nr_note; i++)
+    {
+        std::cin >> *(temp_note + i);
+    }
+    
+    Punctaj p1(temp_nr_note, temp_note);
+    Punctaj p2(p1);
+    
+    int index, valoare;
+    std::cin >> index >> valoare;
+    p2.modifNota(index, valoare); //modif nota de la poz index cu valoarea citita
+    
+    delete [] temp_note; //am folosit "new" si in main()
+    
+    //p1.~Punctaj(); //destructorul apelat explicit
+    
+    p2.afisare(); //afisare cu note modificate
+    
+    return 0;
+}

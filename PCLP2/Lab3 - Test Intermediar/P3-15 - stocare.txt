@@ -1,0 +1,108 @@
+#include <iostream>
+#include <string>
+
+class Document
+{
+private:
+    std::string tip;
+    int dimensiune; // exprimata in biti
+    
+public:
+    Document(std::string tip, int dimensiune):tip(tip), dimensiune(dimensiune){}
+    
+    void display()
+    {
+        std::cout << tip << " " << dimensiune << std::endl;
+    }
+    
+    void display2(int dim)
+    {
+        std::cout << tip << " " << dimensiune << " " << this->get_size_on_disk(dim) << std::endl;
+    }
+    
+    int get_size_on_disk(int dim_bloc)
+    {
+        if (this->dimensiune % dim_bloc == 0) return this->dimensiune;
+        else return (this->dimensiune / dim_bloc + 1) * dim_bloc;
+    }
+    
+    std::string get_tip() { return this->tip; }
+    int get_dimensiune() { return this->dimensiune; }
+};
+
+int main()
+{
+    int nr_documente;
+    std::string temp_tip;
+    int temp_dimensiune;
+    int dim_bloc;
+    int comanda;
+    Document **vec_documente = nullptr;
+    
+    std::cin >> nr_documente;
+    vec_documente = new Document*[nr_documente];
+    
+    
+    for (int i = 0; i < nr_documente; i++)
+    {
+        std::cin.ignore();
+        std::getline(std::cin, temp_tip);
+        std::cin >> temp_dimensiune;
+        *(vec_documente+i) = new Document(temp_tip, temp_dimensiune);
+    }
+    
+    std::cin >> comanda;
+    
+    switch(comanda)
+    {
+        case 1:
+        {
+            for(int i = 0; i < nr_documente; i++)
+            {
+                vec_documente[i]->display();
+                // (vec_documente+i)->display();
+                // *(vec_documente+i).display();
+            }
+            break;
+        }
+        case 2:
+        {
+            std::cin.ignore();
+            std::getline(std::cin, temp_tip);
+            for(int i = 0; i < nr_documente; i++)
+                if (vec_documente[i]->get_tip() == temp_tip) vec_documente[i]->display();
+            break;
+        }
+        case 3:
+        {
+            std::cin >> dim_bloc;
+            for(int i = 0; i < nr_documente; i++)
+                vec_documente[i]->display2(dim_bloc);
+            break;
+        }
+        case 4:
+        {
+            std::cin >> dim_bloc; // dimensiunea minima de bloc de memorie
+            std::string tip = "arhiva";
+            int dim = 0;
+            for(int i = 0; i < nr_documente; i++)
+                dim += vec_documente[i]->get_dimensiune();
+            
+            Document arhiva(tip, dim);
+            
+            for(int i = 0; i < nr_documente; i++)
+                vec_documente[i]->display2(dim_bloc);
+                
+            arhiva.display2(dim_bloc);
+            
+            int sum_individuale = 0;
+            for(int i = 0; i < nr_documente; i++)
+                sum_individuale += vec_documente[i]->get_size_on_disk(dim_bloc);
+            
+            std::cout << sum_individuale - arhiva.get_size_on_disk(dim_bloc) << std::endl;
+            
+            break;
+        }
+    }
+    return 0;
+}

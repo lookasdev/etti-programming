@@ -1,0 +1,50 @@
+Să se scrie o clasă Cerc cu data membră "raza" de tip real. Clasa trebuie să conțină următoarele funcții membre:
+
+set_raza
+get_raza
+get_arie
+get_circumferinta
+constructor implicit
+constructor parametrizat
+Se citește de la tastatură o valoare reală reprezentând raza. Să se afișeze pe rânduri succesive următoarele informații, cu câte 2 zecimale:
+
+raza
+aria
+circumferinta
+
+
+#include <iostream>
+#include <iomanip> // biblioteca necesara pentru std::setprecision
+
+class Cerc
+{
+private:
+    float raza;
+    
+public:
+    const float PI = 3.14;
+    void set_raza(float raza) { this->raza = raza; }
+    float get_raza() { return this->raza; }
+    float get_arie() { return PI * raza*raza; }
+    float get_circumferinta() { return 2*PI * raza; }
+    Cerc() {}
+    Cerc(float raza)
+    {
+        this->raza = raza;
+    }
+};
+
+int main()
+{
+    float raza;
+    std::cin >> raza;
+    
+    Cerc c1(raza);
+    
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << c1.get_raza() << std::endl;
+    std::cout << c1.get_arie() << std::endl;
+    std::cout << c1.get_circumferinta() << std::endl;
+    
+    return 0;
+}

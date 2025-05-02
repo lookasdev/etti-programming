@@ -1,0 +1,183 @@
+#include <iostream>
+#include <cmath>
+#include <iomanip>
+
+const int NUM_IMAGES = 3;
+const int NUM_FEATURES = 5;
+
+class Image
+{
+private:
+    int id;
+    float features[NUM_FEATURES];
+    int label;
+
+public:
+
+    Image(int id = 0, float features[NUM_FEATURES] = nullptr, int label = 0)
+    {
+        this->id = id;
+        if (features != nullptr) // important!
+            for (int i = 0; i < NUM_FEATURES; ++i) this->features[i] = features[i];
+        this->label = label;
+    }
+
+    void display()
+    {
+        std::cout << id << " ";
+        for (int i = 0; i < NUM_FEATURES; ++i)
+            std::cout << features[i] << " ";
+        std::cout << label << std::endl;
+    }
+    
+    void display2() // pt 4
+    {
+        std::cout << id << " ";
+        std::cout << std::fixed << std::setprecision(2);
+        for (int i = 0; i < NUM_FEATURES; ++i)
+            std::cout << features[i] << " ";
+        std::cout << label << std::endl;
+    }
+    
+    float calculateDistance(float newFeatures[NUM_FEATURES])
+    {
+        float distance = 0;
+        for (int i = 0; i < NUM_FEATURES; ++i)
+            distance += (features[i] - newFeatures[i]) * (features[i] - newFeatures[i]);
+        return sqrt(distance);
+    }
+    
+    int getId() { return id; }
+    int getLabel() { return label; }
+    float getFeature(int index) { return features[index]; }
+    void setFeature(int index, float feature) { features[index] = feature; }
+};
+
+class Database
+{
+private:
+    Image images[NUM_IMAGES];
+    int count;
+    int min; // pt 4
+    int max; // pt 4
+
+public:
+    Database() : count(0) {}
+
+    void addImage(int id, float features[NUM_FEATURES], int label)
+    {
+        images[count++] = Image(id, features, label);
+    }
+
+    void displayImages()
+    {
+        for (int i = 0; i < count; ++i)
+            images[i].display();
+    }
+    
+    void displayImages2() //pt 4
+    {
+        for (int i = 0; i < count; ++i)
+            images[i].display2();
+    }
+    
+    void findNearestImage(float newFeatures[NUM_FEATURES])
+    {
+        float minDistance = 999.0f;
+        int closestId = -1;
+        int closestLabel = -1;
+
+        for (int i = 0; i < count; ++i)
+        {
+            float distance = images[i].calculateDistance(newFeatures);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestId = images[i].getId();
+                closestLabel = images[i].getLabel();
+            }
+        }
+
+        if (closestId != -1 && closestLabel != -1)
+            std::cout << closestId << " " << closestLabel << std::endl;
+    }
+    
+    void findMinMaxFeatures()
+    {
+        float minFeature = 999.0f;
+        float maxFeature = -1.0f;
+
+        for (int i = 0; i < count; ++i) // parcurgem toate imaginile din baza de date
+        {
+            for (int j = 0; j < NUM_FEATURES; ++j) // parcurgem toate trasaturile imaginii curente
+            {
+                float feature = images[i].getFeature(j);
+                if (feature < minFeature) minFeature = feature;
+                if (feature > maxFeature) maxFeature = feature;
+            }
+        }
+        
+        min = minFeature;
+        max = maxFeature;
+    }
+    
+    void normalizeFeatures()
+    {
+        for (int i = 0; i < count; ++i) // parcurgem toate imaginile din baza de date
+        {
+            for (int j = 0; j < NUM_FEATURES; ++j) // parcurgem toate trasaturile imaginii curente
+            {
+                float newValue = (images[i].getFeature(j) - min) / (max - min);
+                images[i].setFeature(j, newValue);
+            }
+        }
+    }
+    
+    int getMin() { return min; }
+    int getMax() { return max; }
+};
+
+int main()
+{
+    Database database;
+
+    for (int i = 0; i < NUM_IMAGES; ++i)
+    {
+        int id, label;
+        float features[NUM_FEATURES];
+
+        std::cin >> id;
+        for (int j = 0; j < NUM_FEATURES; ++j)
+            std::cin >> features[j];
+        std::cin >> label;
+
+        database.addImage(id, features, label);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+    if (comanda == 1)
+    {
+        database.displayImages();
+    }
+    else if (comanda == 2)
+    {
+        
+        float newFeatures[NUM_FEATURES];
+        for (int i = 0; i < NUM_FEATURES; ++i)
+            std::cin >> newFeatures[i];
+        database.findNearestImage(newFeatures);
+    }
+    else if (comanda == 3)
+    {
+        database.findMinMaxFeatures();
+        std::cout << database.getMin() << " " << database.getMax() << std::endl;
+    }     
+    else if (comanda == 4)
+    {
+        database.findMinMaxFeatures();
+        database.normalizeFeatures();
+        database.displayImages2();
+    }
+    return 0;
+}

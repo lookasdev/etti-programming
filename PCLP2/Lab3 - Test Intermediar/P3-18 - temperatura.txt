@@ -1,0 +1,115 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+
+class Termometru
+{
+private:
+    std::string nume_incapere;
+    static const int MAX_MASURATORI = 12;
+    double temperaturi[MAX_MASURATORI];
+    int numar_masuratori;
+
+public:
+    Termometru(std::string nume) : nume_incapere(nume), numar_masuratori(0) {}
+
+    void citesteTemperaturi()
+    {
+        // std::cin >> numar_masuratori;
+        // this->numar_masuratori = numar_masuratori;
+        // for (int i = 0; i < this->numar_masuratori; ++i)
+        //     std::cin >> temperaturi[i];
+        
+        // nu este nevoie de varianta de mai sus, exista un singur numar_masuratori in acest scope
+        std::cin >> numar_masuratori;
+        for (int i = 0; i < numar_masuratori; ++i)
+            std::cin >> temperaturi[i];
+    }
+
+    void afisareIncapere()
+    {
+        std::cout << nume_incapere << std::endl;
+        for (int i = 0; i < numar_masuratori; ++i)
+            std::cout << std::fixed << std::setprecision(2) << temperaturi[i] << " ";
+        std::cout << std::endl;
+    }
+
+    void temperaturaMedie()
+    {
+        double suma = 0;
+        for (int i = 0; i < numar_masuratori; ++i)
+            suma += temperaturi[i];
+            
+        double medie = (double) suma / numar_masuratori;
+        std::cout << nume_incapere << std::endl;
+        std::cout << std::fixed << std::setprecision(3) << medie << std::endl;
+    }
+
+    void temperaturaMaximaMinima()
+    {
+        double temp_maxima = temperaturi[0];
+        double temp_minima = temperaturi[0];
+        
+        for (int i = 1; i < numar_masuratori; ++i)
+        {
+            if (temperaturi[i] > temp_maxima) temp_maxima = temperaturi[i];
+            else if (temperaturi[i] < temp_minima) temp_minima = temperaturi[i];
+        }
+        
+        std::cout << std::fixed << std::setprecision(2);
+        std::cout << temp_minima << std::endl << temp_maxima << std::endl;
+    }
+
+    void verificareTemperaturaMedie(double limita_inferioara, double limita_superioara)
+    {
+        double suma = 0;
+        for (int i = 0; i < numar_masuratori; ++i)
+            suma += temperaturi[i];
+        double medie = (double) suma / numar_masuratori;
+
+        if (medie < limita_inferioara)
+        {
+            std::cout << std::fixed << std::setprecision(2);
+            std::cout << (limita_inferioara - medie);
+        }
+        else if (medie > limita_superioara)
+        {
+            std::cout << std::fixed << std::setprecision(2);
+            std::cout << (limita_superioara - medie);
+        }
+    }
+};
+
+int main()
+{
+    std::string nume_incapere;
+    std::getline(std::cin >> std::ws, nume_incapere);
+
+    Termometru termometru(nume_incapere);
+
+    termometru.citesteTemperaturi();
+
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+            termometru.afisareIncapere();
+            break;
+        case 2:
+            termometru.temperaturaMedie();
+            break;
+        case 3:
+            termometru.temperaturaMaximaMinima();
+            break;
+        case 4:
+        {
+            double limita_inf, limita_sup;
+            std::cin >> limita_inf >> limita_sup;
+            termometru.verificareTemperaturaMedie(limita_inf, limita_sup);
+            break;
+        }
+    }
+    return 0;
+}

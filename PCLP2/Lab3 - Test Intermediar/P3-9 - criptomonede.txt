@@ -1,0 +1,177 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+
+class Criptomoneda
+{
+private:
+    std::string nume;
+    float valoare_fractionara;
+    float valoare_unitara;
+
+public:
+    Criptomoneda(std::string nume = "", float valoare_fractionara = 0.0f, float valoare_unitara = 0.0f) : nume(nume), valoare_fractionara(valoare_fractionara), valoare_unitara(valoare_unitara) {}
+
+    std::string getNume() { return nume; }
+
+    float getValoareFractionara() { return valoare_fractionara; }
+
+    float getValoareUnitara() { return valoare_unitara; }
+
+    void setValoareFractionara(float valoare_fractionara) { this->valoare_fractionara = valoare_fractionara; }
+};
+
+class Portofel
+{
+private:
+    float sold_disponibil;
+    int nr_criptomonede;
+    static const int MAX_CRIPTOMONEDE = 10;
+    Criptomoneda criptomonede[MAX_CRIPTOMONEDE];
+
+public:
+    Portofel() : sold_disponibil(0), nr_criptomonede(0) {}
+
+    void adaugaCriptomoneda(const Criptomoneda& criptomoneda)
+    {
+        if (nr_criptomonede < MAX_CRIPTOMONEDE) criptomonede[nr_criptomonede++] = criptomoneda;
+    }
+    
+    void setSold (float sold) { sold_disponibil = sold; }
+    
+    void afiseazaPortofel() // pt comanda 1 si comanda 4
+    {
+        std::cout << std::fixed << std::setprecision(2);
+        std::cout << sold_disponibil << std::endl;
+        for (int i = 0; i < nr_criptomonede; ++i) std::cout << criptomonede[i].getNume() << " " << criptomonede[i].getValoareFractionara() << " " << criptomonede[i].getValoareUnitara() << std::endl;
+    }
+    
+    void afiseazaCriptomoneda(std::string nume) // pt comanda 2 si comanda 3
+    {
+        for (int i = 0; i < nr_criptomonede; ++i)
+        {
+            if (criptomonede[i].getNume() == nume)
+            {
+                std::cout << std::fixed << std::setprecision(2);
+                std::cout << criptomonede[i].getNume() << " " << criptomonede[i].getValoareFractionara() << " " << criptomonede[i].getValoareUnitara() << std::endl;
+            }
+        }
+    }
+
+    void cumparaCriptomoneda(std::string nume, float valoare_fractionara)
+    {
+        for (int i = 0; i < nr_criptomonede; ++i)
+        {
+            if (criptomonede[i].getNume() == nume)
+            {
+                float pret_unitar = criptomonede[i].getValoareUnitara(); // valoarea unitara este data membru a fiecarei criptomonezi
+                
+                float pret_total = valoare_fractionara * pret_unitar;
+                if (pret_total <= sold_disponibil) // daca avem destui bani sa cumparam criptomonezile propuse
+                {
+                    criptomonede[i].setValoareFractionara(criptomonede[i].getValoareFractionara() + valoare_fractionara);
+                    sold_disponibil -= pret_total;
+                } else // cumparam tot ce putem
+                {
+                    float cantitate_maxima = sold_disponibil / pret_unitar;
+                    criptomonede[i].setValoareFractionara(criptomonede[i].getValoareFractionara() + cantitate_maxima);
+                    sold_disponibil = 0;
+                }
+                break;
+            }
+        }
+    }
+
+    void vindeCriptomoneda(std::string nume, float valoare_fractionara)
+    {
+        for (int i = 0; i < nr_criptomonede; ++i)
+        {
+            if (criptomonede[i].getNume() == nume)
+            {
+                float pret_unitar = criptomonede[i].getValoareUnitara(); // valoarea unitara este data membru a fiecarei criptomonezi
+                
+                if (valoare_fractionara <= criptomonede[i].getValoareFractionara()) // daca avem destule criptomonezi de vandut
+                {
+                    criptomonede[i].setValoareFractionara(criptomonede[i].getValoareFractionara() - valoare_fractionara);
+                    sold_disponibil += valoare_fractionara * pret_unitar;
+                } else // vindem tot ce putem
+                {
+                    sold_disponibil += criptomonede[i].getValoareFractionara() * pret_unitar;
+                    criptomonede[i].setValoareFractionara(0);
+                }
+                break;
+            }
+        }
+    }
+};
+
+int main()
+{
+    float sold_initial;
+    int nr_criptomonede;
+    
+    std::cin >> sold_initial;
+    std::cin >> nr_criptomonede;
+
+    Portofel portofel;
+    portofel.setSold(sold_initial); // se seteaza doar soldul, vezi jos de ce
+
+    for (int i = 0; i < nr_criptomonede; ++i)
+    {
+        std::string nume;
+        float valoare_fractionara, pret_unitar;
+        std::cin >> nume >> valoare_fractionara >> pret_unitar;
+        
+        Criptomoneda temp_criptomoneda(nume, valoare_fractionara, pret_unitar);
+        portofel.adaugaCriptomoneda(temp_criptomoneda); // aici se incrementeaza treptat data membra nr_criptomonede din clasa Portofel
+    }
+
+    int comanda;
+    std::cin >> comanda;
+    
+    std::string nume; // declarat aici ca sa evitam declararea in fiecare case
+    float valoare_fractionara; // declarat aici ca sa evitam declararea in fiecare case
+    
+    switch (comanda)
+    {
+        case 1:
+        {
+            portofel.afiseazaPortofel();
+            break;
+        }
+        case 2:
+        {
+            std::cin >> nume >> valoare_fractionara;
+            
+            portofel.cumparaCriptomoneda(nume, valoare_fractionara);
+            portofel.afiseazaCriptomoneda(nume);
+            break;
+        }
+        case 3:
+        {
+            std::cin >> nume >> valoare_fractionara;
+            
+            portofel.vindeCriptomoneda(nume, valoare_fractionara);
+            portofel.afiseazaCriptomoneda(nume);
+            break;
+        }
+        case 4:
+        {
+            int nr_tranzactii;
+            std::cin >> nr_tranzactii;
+
+            for (int i = 0; i < nr_tranzactii; ++i)
+            {
+                std::string tip_tranzactie;
+                std::cin >> tip_tranzactie >> valoare_fractionara >> nume;
+                
+                if (tip_tranzactie == "cumpara") portofel.cumparaCriptomoneda(nume, valoare_fractionara);
+                else if (tip_tranzactie == "vinde") portofel.vindeCriptomoneda(nume, valoare_fractionara);
+            }
+            portofel.afiseazaPortofel();
+            break;
+        }
+    }
+
+    return 0;
+}

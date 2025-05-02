@@ -1,0 +1,332 @@
+#include <iostream>
+#include <string>
+
+class Produs
+{
+private:
+    std::string denumire;
+    float pret;
+    int stocRamas;
+
+public:
+    Produs(std::string denumire = "", float pret = 0.0f, int stocRamas = 0)
+        : denumire(denumire), pret(pret), stocRamas(stocRamas) {}
+    
+    void display()
+    {
+        if (stocRamas > 0)
+            std::cout << denumire << std::endl << pret << std::endl << stocRamas << std::endl;
+    }
+    
+    int getStocRamas() { return stocRamas; }
+    std::string getDenumire() { return denumire; }
+    float getPret() { return pret; }
+    
+    void setPret(float pret) { this->pret = pret; }
+};
+
+class Magazin
+{
+private:
+    Produs produs_array[10];
+    int nrProduse;
+
+public:
+    Magazin() : nrProduse(0) {}
+
+    void adaugaProdus(const Produs& produs)
+    {
+        if (nrProduse < 10) produs_array[nrProduse++] = produs;
+    }
+    
+    void displayAll()
+    {
+        for (int i = 0; i < nrProduse; ++i)
+            produs_array[i].display();
+    }
+    
+    int getStocSpecific(std::string denumire)
+    {
+        for (int i = 0; i < nrProduse; ++i)
+            if (produs_array[i].getDenumire() == denumire) return produs_array[i].getStocRamas();
+        return 0;
+    }
+    
+    int getPretSpecific(std::string denumire)
+    {
+        for (int i = 0; i < nrProduse; ++i)
+            if (produs_array[i].getDenumire() == denumire) return produs_array[i].getPret();
+        return 0;
+    }
+};
+
+class Reducere
+{
+private:
+    int procent;
+    int capatJos;
+    int capatSus;
+    
+public:
+    Reducere(int procent = 0, int capatJos = 0, int capatSus = 0)
+        : procent(procent), capatJos(capatJos), capatSus(capatSus) {}
+        
+    int getProcent() { return procent; }
+    int getCapatJos() { return capatJos; }
+    int getCapatSus() { return capatSus; }
+};
+
+class Cos_cumparaturi
+{
+private:
+    Produs produs_array[10];
+    int nrProduse;
+    
+public:
+    Cos_cumparaturi() : nrProduse(0){}
+    
+    Cos_cumparaturi(const Cos_cumparaturi& other) : nrProduse(other.nrProduse)
+    {
+        for (int i = 0; i < nrProduse; ++i)
+            produs_array[i] = other.produs_array[i];
+    }
+    
+    void adaugaProdus(const Produs& produs)
+    {
+        if (nrProduse < 10) produs_array[nrProduse++] = produs;
+    }
+    
+    float totalPlata()
+    {
+        float suma = 0;
+        for (int i = 0; i < nrProduse; ++i)
+            suma += produs_array[i].getPret() * produs_array[i].getStocRamas(); // stoc ramas se refera aici la cantitatea ceruta (specific clasa Cos)
+        return suma;
+    }
+    
+    void tryApplyDiscount(Reducere reducere) // pt comanda 3 si comanda 4 (functie apelata de 3 multe ori pt comanda 4)
+    {
+        for (int i = 0; i < nrProduse; ++i)
+        {
+            if (produs_array[i].getPret() >= reducere.getCapatJos() && produs_array[i].getPret() <= reducere.getCapatSus())
+            {
+                float discount = produs_array[i].getPret() * (1.0 * reducere.getProcent() / 100);
+                produs_array[i].setPret(produs_array[i].getPret() - discount);
+            }
+        }
+    }
+    
+    void tryApplyBestDiscount(Reducere reducere1, Reducere reducere2, Reducere reducere3) // pt comanda 5
+    {
+        for (int i = 0; i < nrProduse; ++i)
+        {
+            float maxDiscount = 0;
+            for (int j = 0; j < 3; ++j) // parcurgem fiecare reducere
+            {
+                Reducere currentReduction;
+                switch(j)
+                {
+                    case 0:
+                        currentReduction = reducere1;
+                        break;
+                    case 1:
+                        currentReduction = reducere2;
+                        break;
+                    case 2:
+                        currentReduction = reducere3;
+                        break;
+                }
+    
+                if (produs_array[i].getPret() >= currentReduction.getCapatJos() && produs_array[i].getPret() <= currentReduction.getCapatSus())
+                {
+                    float discount = produs_array[i].getPret() * (1.0 * currentReduction.getProcent() / 100);
+                    if (discount > maxDiscount)
+                        maxDiscount = discount;
+                }
+            }
+            produs_array[i].setPret(produs_array[i].getPret() - maxDiscount);
+        }
+    }
+
+};
+
+int main()
+{
+    Magazin emag;
+    
+    std::string denumire;
+    float pret;
+    int stocRamas;
+    
+    while(true)
+    {
+        std::getline(std::cin, denumire);
+        if (denumire == "STOP") break;
+        std::cin >> pret >> stocRamas;
+        std::cin.ignore();
+        
+        Produs temp_produs(denumire, pret, stocRamas);
+        emag.adaugaProdus(temp_produs);
+    }
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            emag.displayAll();
+            break;
+        }
+        case 2:
+        {
+            Cos_cumparaturi c1;
+            std::string numeProdus;
+            int cantitateCeruta;
+            bool cosOk = true;
+            while(true)
+            {
+                std::getline(std::cin, numeProdus);
+                if (numeProdus == "STOP") break;
+                
+                if (numeProdus.empty()) // important, altfel ramane blocat la - Evaluating - infinit
+                    continue;
+                
+                std::cin >> cantitateCeruta;
+                std::cin.ignore();
+                
+                Produs temp_produs(numeProdus, emag.getPretSpecific(numeProdus), cantitateCeruta); // pretul produsului se ia din valoarea stocata in clasa Magazin
+                c1.adaugaProdus(temp_produs);
+                int cantitateRamasa = emag.getStocSpecific(numeProdus);
+                if (cantitateCeruta > cantitateRamasa)
+                {
+                    cosOk = false;
+                    std::cout << "Produsul " << numeProdus << " mai are doar " << cantitateRamasa << " bucati in stoc" << std::endl;
+                }
+            }
+            if (cosOk)
+                std::cout << "Total de plata" << std::endl << c1.totalPlata() << std::endl;
+            break;
+        }
+        case 3:
+        {
+            int procent, capatJos, capatSus;
+            std::cin >> procent >> capatJos >> capatSus;
+            std::cin.ignore();
+            Reducere reducere1(procent, capatJos, capatSus);
+
+            Cos_cumparaturi c1;
+            std::string numeProdus;
+            int cantitateCeruta;
+            while(true)
+            {
+                std::getline(std::cin, numeProdus);
+                if (numeProdus == "STOP") break;
+                
+                if (numeProdus.empty()) // important, altfel ramane blocat la - Evaluating - infinit
+                    continue;
+                
+                std::cin >> cantitateCeruta;
+                std::cin.ignore();
+                
+                Produs temp_produs(numeProdus, emag.getPretSpecific(numeProdus), cantitateCeruta); // pretul produsului se ia din valoarea stocata in clasa Magazin
+                c1.adaugaProdus(temp_produs);
+            }
+            float totalInitial = c1.totalPlata();
+            c1.tryApplyDiscount(reducere1);
+            float totalNou = c1.totalPlata();
+            if (totalInitial == totalNou) std::cout << "Niciun produs nu e eligibil pentru reducere" << std::endl;
+            std::cout << "Total de plata" << std::endl << totalNou << std::endl;
+            break;
+        }
+        case 4: // un singur cod de reducere per cos, care reduce cel mai mult costul cosului (din 3 coduri date)
+        {
+            int procent, capatJos, capatSus;
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere1(procent, capatJos, capatSus);
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere2(procent, capatJos, capatSus);
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere3(procent, capatJos, capatSus);
+            
+            Cos_cumparaturi c1;
+            std::string numeProdus;
+            int cantitateCeruta;
+            while(true)
+            {
+                std::getline(std::cin, numeProdus);
+                if (numeProdus == "STOP") break;
+                
+                if (numeProdus.empty()) // important, altfel ramane blocat la - Evaluating - infinit
+                    continue;
+                
+                std::cin >> cantitateCeruta;
+                std::cin.ignore();
+                
+                Produs temp_produs(numeProdus, emag.getPretSpecific(numeProdus), cantitateCeruta); // pretul produsului se ia din valoarea stocata in clasa Magazin
+                c1.adaugaProdus(temp_produs);
+            }
+            
+            float totalInitial = c1.totalPlata();
+            float minCos = totalInitial;
+            
+            Cos_cumparaturi c1Red1(c1);
+            c1Red1.tryApplyDiscount(reducere1);
+            float totalNou1 = c1Red1.totalPlata();
+            if (totalNou1 < minCos) minCos = totalNou1;
+            
+            Cos_cumparaturi c1Red2(c1);
+            c1Red2.tryApplyDiscount(reducere2);
+            float totalNou2 = c1Red2.totalPlata();
+            if (totalNou2 < minCos) minCos = totalNou2;
+            
+            Cos_cumparaturi c1Red3(c1);
+            c1Red3.tryApplyDiscount(reducere3);
+            float totalNou3 = c1Red3.totalPlata();
+            if (totalNou3 < minCos) minCos = totalNou3;
+            
+            if (totalInitial == totalNou1 && totalInitial == totalNou2 && totalInitial == totalNou3) std::cout << "Niciun produs nu e eligibil pentru reducere" << std::endl;
+            else std::cout << "Total de plata" << std::endl << minCos << std::endl;
+
+            break;
+        }
+        case 5: // optimizam folosind cel mai bun cod de reducere pt fiecare produs, se pot folosi mai multe coduri pe cos
+        {
+            int procent, capatJos, capatSus;
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere1(procent, capatJos, capatSus);
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere2(procent, capatJos, capatSus);
+            std::cin >> procent >> capatJos >> capatSus;
+            Reducere reducere3(procent, capatJos, capatSus);
+            
+            Cos_cumparaturi c1;
+            std::string numeProdus;
+            int cantitateCeruta;
+            while(true)
+            {
+                std::getline(std::cin, numeProdus);
+                if (numeProdus == "STOP") break;
+                
+                if (numeProdus.empty()) // important, altfel ramane blocat la - Evaluating - infinit
+                    continue;
+                
+                std::cin >> cantitateCeruta;
+                std::cin.ignore();
+                
+                Produs temp_produs(numeProdus, emag.getPretSpecific(numeProdus), cantitateCeruta); // pretul produsului se ia din valoarea stocata in clasa Magazin
+                c1.adaugaProdus(temp_produs);
+            }
+            float totalInitial = c1.totalPlata();
+            c1.tryApplyBestDiscount(reducere1, reducere2, reducere3);
+            float totalNou = c1.totalPlata();
+            if (totalInitial == totalNou) std::cout << "Niciun produs nu e eligibil pentru reducere" << std::endl;
+            std::cout << "Total de plata" << std::endl << totalNou << std::endl;
+            
+            break;
+        }
+    }
+
+    return 0;
+}

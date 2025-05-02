@@ -1,0 +1,96 @@
+#include <iostream>
+#include <string>
+
+class Persoana
+{
+protected:
+    std::string nume;
+
+public:
+    Persoana(std::string nume = "") : nume(nume) {}
+};
+
+class Student : public Persoana
+{
+private:
+    char serie;
+    int nota;
+
+public:
+    Student(std::string nume = "", char serie = ' ', int nota = 0) : Persoana(nume), serie(serie), nota(nota) {}
+
+    char getSerie() { return serie; }
+    int getNota() { return nota; }
+};
+
+class Serie
+{
+private:
+    char serie;
+    Student** p_student;
+    int nr_studenti;
+
+public:
+    Serie(char serie, Student* studenti[], int nr_studenti) : serie(serie), nr_studenti(nr_studenti)
+    {
+        p_student = new Student*[nr_studenti];
+        for (int i = 0; i < nr_studenti; ++i)
+        {
+            if (studenti[i]->getSerie() == serie) p_student[i] = studenti[i];
+            else p_student[i] = nullptr;
+        }
+    }
+
+    ~Serie() // destructor
+    {
+        delete[] p_student;
+    }
+
+    int nota_max()
+    {
+        int maxNota = -1;
+        for (int i = 0; i < nr_studenti; ++i)
+            if (p_student[i] && p_student[i]->getNota() > maxNota) maxNota = p_student[i]->getNota();
+        return maxNota;
+    }
+
+    float nota_medie()
+    {
+        if (nr_studenti == 0) return 0;
+        int sumaNote = 0;
+        int nrStudentiSerie = 0;
+        for (int i = 0; i < nr_studenti; ++i)
+        {
+            if (p_student[i])
+            {
+                sumaNote += p_student[i]->getNota();
+                ++nrStudentiSerie;
+            }
+        }
+        return (float) sumaNote / nrStudentiSerie;
+    }
+};
+
+int main()
+{
+    Student* studenti[] = {new Student("Costache", 'A', 9),
+                           new Student("Dobre", 'B', 10),
+                           new Student("Enache", 'A', 8),
+                           new Student("Faur", 'A', 5),
+                           new Student("Georgescu", 'B', 2),
+                           new Student("Harapu", 'A', 10),
+                           new Student("Ionescu", 'C', 7),
+                           new Student("Jianu", 'B', 9),
+                           new Student("Konstantinos", 'A', 10),
+                           new Student("Laica", 'B', 3),
+                           new Student("Manea", 'A', 9)};
+                           
+    Serie s('A', studenti, sizeof(studenti) / sizeof(Student*)); // sizeof(studenti) / sizeof(Student*) reprezinta nr de studenti
+
+    std::cout << "Nota maxima: " << s.nota_max() << std::endl;
+    std::cout << "Nota medie: " << s.nota_medie() << std::endl;
+
+    for (int i = 0; i < sizeof(studenti) / sizeof(Student*); ++i) delete studenti[i]; // eliberarea memoriei alocate dinamic pentru fiecare student
+
+    return 0;
+}

@@ -1,0 +1,65 @@
+#include <iostream>
+#include <string>
+
+class Vehicul
+{
+private:
+    std::string nume;
+    float pret;
+    float greutate;
+    
+protected:
+    std::string get_nume() { return this->nume; }
+    float get_pret() { return this->pret; }
+    float get_greutate()  {return this->greutate; }
+    
+public:
+    void afisare()
+    {
+        std::cout << "nume: " << this->nume << std::endl;
+        std::cout << "pret: " << this->pret << std::endl;
+        std::cout << "greutate: " << this->greutate << std::endl;
+    }
+    Vehicul(std::string nume = "", float pret = 0.0f, float greutate = 0.0f) : nume(nume), pret(pret), greutate(greutate) {}
+    
+};
+
+class Autovehicul: public Vehicul
+{
+private: 
+    int putere;
+    
+public:
+    void afisare()
+    {
+        Vehicul::afisare();
+        // std::cout << "nume: " << this->nume << std::endl;
+        // std::cout << "pret: " << this->pret << std::endl;
+        // std::cout << "greutate: " << this->greutate << std::endl;
+        std::cout << "putere: " << this->putere << std::endl;
+    }
+    Autovehicul (std::string nume = "", float pret = 0.0f, float greutate = 0.0f, int putere = 0) : Vehicul(nume, pret, greutate), putere(putere) {}
+};
+
+int main()
+{
+    std::string Vnume;
+    float Vpret, Vgreutate;
+    
+    std::cin >> Vnume >> Vpret >> Vgreutate;
+    
+    std::string Anume;
+    float Apret, Agreutate;
+    int Aputere;
+    
+    std::cin >> Anume >> Apret >> Agreutate >> Aputere;
+    
+    Vehicul v1(Vnume, Vpret, Vgreutate);
+    v1.afisare();
+    
+    Autovehicul a1(Anume, Apret, Agreutate, Aputere);
+    a1.afisare(); // apel Autovehicul::afisare()
+    //a1.Vehicul::afisare(); // apel Vehicul::afisare()
+    
+    return 0;
+}

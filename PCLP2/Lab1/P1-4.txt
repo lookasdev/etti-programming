@@ -1,0 +1,35 @@
+Pentru a evita utilizarea a 3 funcții diferite pentru inițializarea datelor membre ale unui obiect din clasa Cutie, se va crea un constructor ce primește 3 argumente, în această ordine: lungime, lățime, înălțime. În programul principal se vor citi de la tastatură cele 3 atribute și se va instanția un obiect cu ajutorul lor. Ulterior, se vor afișa pe ecran atributele respective în ordinea precizată, fiecare pe un rând nou.
+
+
+#include <iostream>
+
+class Cutie
+{
+private:
+    float lungime, latime, inaltime;
+
+public:
+    Cutie(float lungime, float latime, float inaltime)
+    {
+        this->lungime = lungime;
+        this->latime = latime;
+        this->inaltime = inaltime;
+    }
+    
+    float get_lungime() {return this->lungime;}
+    float get_latime() {return this->latime;}
+    float get_inaltime() {return this->inaltime;}
+};
+
+int main()
+{
+    float lungime, latime, inaltime;
+    std::cin >> lungime >> latime >> inaltime;
+    Cutie c1(lungime, latime, inaltime);
+    
+    std::cout << c1.get_lungime() << std::endl;
+    std::cout << c1.get_latime() << std::endl;
+    std::cout << c1.get_inaltime() << std::endl;
+    
+    return 0;
+}

@@ -1,0 +1,111 @@
+Să se scrie două clase distincte, Vector și Matrice care să conțină drept date membre un vector de maxim 20 de întregi, respectiv un tablou bidimensional, de dimensiune maximă 20 x 20. Se vor scrie constructorii aferenți celor 2 clase și o funcție membră de afișare a elementelor (cel puțin pentru clasa Vector). Se va scrie o funcție de tip friend care să execute înmulțirea dintre un Vector și o Matrice. Funcția va verifica mai întâi dacă operația poate avea loc (numărul de coloane ale vectorului să coincidă cu numărul de linii ale matricei). În caz contrar, va afișa mesajul “EROARE” pe ecran. Vectorul este considerat de tipul linie. Toate inițializările din constructori vor fi făcute cu ajutorul listei de inițializare.
+Se citesc de la tastatură, de pe linii diferite, următoarele date:
+
+un întreg n, reprezentând numărul de elemente ale vectorului;
+
+n valori întregi, reprezentând valorile vectorului;
+
+doi întregi, m și n, reprezentând numărul de linii, respectiv coloane ale matrice;
+
+m x n valori întregi, reprezentând valorile matricei.
+
+Se va afișa pe ecran rezultatul obținut în urma înmulțirii vectorului cu matricea, respectiv "EROARE", în cazul în care înmulțirea nu poate avea loc.
+
+Extensie: funcția friend va întoarce în programul apelant un obiect de tipul Vector drept rezultat.
+Extensie 2: atât Vectorul, cât și Matricea, vor stoca valorile în mod dinamic.
+Extensie 3: separați declarațiile claselor și definițiile funcțiilor membre în fișiere diferite. Notă: trebuie avute în vedere declarațiile în avans (forward declaration) ale claselor și a funcției friend - discutăm împreună.
+
+
+
+#include <iostream>
+
+class Vector
+{
+private:
+    int array[20];
+    int size;
+    
+public:
+    Vector(int n, int inputArray[]) : size(n)
+    {
+        for (int i = 0; i < size; ++i) array[i] = inputArray[i];
+    }
+
+    void display()
+    {
+        for (int i = 0; i < size; ++i) std::cout << array[i] << " ";
+        std::cout << std::endl;
+    }
+
+    friend int* multiply(const Vector& vec, const class Matrice& mat); // forward declaration Matrice class
+};
+
+class Matrice
+{
+private:
+    int rows;
+    int cols;
+    int array[20][20];
+    
+public:
+    int get_cols() { return cols; }
+
+    Matrice(int m, int n, int inputArray[20][20]) : rows(m), cols(n)
+    {
+        for (int i = 0; i < rows; ++i) 
+            for (int j = 0; j < cols; ++j) 
+                array[i][j] = inputArray[i][j];
+    }
+
+    friend int* multiply(const Vector& vec, const Matrice& mat);
+};
+
+bool ok = true;
+
+int* multiply(const Vector& vec, const Matrice& mat)
+{
+    int* vectorRez = new int[mat.cols]; // init vector rezultat
+    if (vec.size != mat.rows) // conditia impusa
+    {
+        std::cout << "EROARE" << std::endl;
+        ok = false;
+        return vectorRez;
+    }
+
+    for (int i = 0; i < mat.cols; ++i) //functia propriu-zisa de inmultire *
+    {
+        int suma = 0;
+        for (int j = 0; j < mat.rows; ++j) suma += vec.array[j] * mat.array[j][i];
+        vectorRez[i] = suma;
+    }
+
+    return vectorRez;
+}
+
+int main()
+{
+    int temp_m, temp_n;
+    std::cin >> temp_n;
+    int vec_array[20];
+    for (int i = 0; i < temp_n; ++i) std::cin >> vec_array[i];
+    Vector vec(temp_n, vec_array);
+    
+    std::cin >> temp_m >> temp_n;
+    int mat_array[20][20];
+    for (int i = 0; i < temp_m; ++i)
+        for (int j = 0; j < temp_n; ++j)
+            std::cin >> mat_array[i][j];
+    Matrice mat(temp_m, temp_n, mat_array);
+
+    int* vectorRez = multiply(vec, mat);
+    
+    if (ok)
+    {
+        for (int i = 0; i < mat.get_cols(); ++i) std::cout << vectorRez[i] << " ";
+        std::cout << std::endl;
+    }
+    
+    delete[] vectorRez;
+
+    return 0;
+}

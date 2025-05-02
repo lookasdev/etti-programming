@@ -1,0 +1,54 @@
+Se va crea o clasă Segment, care este definită în spațiu de o pereche de puncte în coordonate carteziene în plan tridimensional. Punctele sunt create ca instanțe ale clasei Punct. Să se definească un constructor cu 6 argumente pentru clasa Segment și o funcție care să calculeze lungimea segmentului. În programul principal se va instanția un obiect de tipul Segment, prin citirea de la tastatură a celor 6 atribute, în ordinea x1, y1, z1, x2, y2, z2 și se va afișa pe ecran lungimea segmentului, cu 2 zecimale.
+
+
+#include <iomanip> // biblioteca necesara pentru std::setprecision
+#include <iostream>
+#include <cmath>
+
+class Punct
+{
+private:
+    float x, y, z;
+    
+public:
+    Punct(float x = 0, float y = 0, float z = 0)
+    {
+        this->x = x;
+        this->y = y;
+        this->z = z;
+    }
+    
+    float get_x() { return this->x; }
+    float get_y() { return this->y; }
+    float get_z() { return this->z; }
+};
+
+class Segment
+{
+private:
+    Punct p1, p2;
+    
+public:
+    Segment(float x1, float y1, float z1, float x2, float y2, float z2) : p1(x1, y1, z1), p2(x2, y2, z2) {}
+
+    float lungime()
+    {
+        float dx = p1.get_x() - p2.get_x();
+        float dy = p1.get_y() - p2.get_y();
+        float dz = p1.get_z() - p2.get_z();
+        return std::sqrt(dx * dx + dy * dy + dz * dz);
+    }
+};
+
+int main()
+{
+    float x1, y1, z1, x2, y2, z2;
+    std::cin >> x1 >> y1 >> z1 >> x2 >> y2 >> z2;
+
+    Segment segment(x1, y1, z1, x2, y2, z2);
+    
+    std::cout << std::fixed << std::setprecision(1);
+    std::cout << segment.lungime() << std::endl;
+
+    return 0;
+}

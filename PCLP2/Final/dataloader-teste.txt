@@ -1,0 +1,136 @@
+7
+3
+audio
+5
+104 101 108 108 111
+text
+Examen
+text
+This is a test string
+text
+Another string
+audio
+4
+13 25 118 132
+audio
+11
+116 101 115 116 32 115 116 114 105 110 103
+audio
+6
+114 97 110 100 111 109
+1
+
+
+
+
+8
+3
+audio
+5
+104 101 108 108 111
+text
+Examen
+text
+This is a test string
+text
+Another string
+audio
+4
+13 25 118 132
+audio
+11
+116 101 115 116 32 115 116 114 105 110 103
+audio
+6
+114 97 110 100 111 109
+text
+Final de test
+2
+2
+
+
+8
+3
+audio
+5
+104 101 108 108 111
+text
+Examen
+text
+Test
+text
+Another string
+audio
+4
+13 25 118 132
+audio
+11
+116 101 115 116 32 115 116 114 105 110 103
+audio
+6
+114 97 110 100 111 109
+text
+Final de test
+3
+
+
+
+
+8
+3
+audio
+5
+104 101 108 108 111
+text
+Examen
+text
+Test
+text
+Another string
+audio
+4
+13 25 118 132
+audio
+11
+116 101 115 116 32 115 116 114 105 110 103
+audio
+6
+114 97 110 100 111 109
+text
+Final de test
+4
+5
+
+
+
+8
+3
+audio
+5
+104 101 108 108 111
+text
+Examen
+text
+Test
+text
+Another string
+audio
+4
+13 25 118 132
+audio
+11
+116 101 115 116 32 115 116 114 105 110 103
+audio
+6
+114 97 110 100 111 109
+text
+Final de test
+5
+
+
+
+verif:
+
+1213 - 10 (endline) -> doc text pe la finalul listei sortate
+
+1143 -> audio de langa

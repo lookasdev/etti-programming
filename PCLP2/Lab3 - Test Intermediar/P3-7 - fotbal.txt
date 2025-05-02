@@ -1,0 +1,219 @@
+#include <iostream>
+#include <string>
+
+class Echipa
+{
+private:
+    std::string nume;
+    int victorii;
+    int egaluri;
+    int infrangeri;
+    int total_puncte;
+
+public:
+    Echipa(std::string nume = "", int victorii = 0, int egaluri = 0, int infrangeri = 0, int total_puncte = 0) : nume(nume), victorii(victorii), egaluri(egaluri), infrangeri(infrangeri) {}
+
+    std::string getNume() { return nume; }
+    int getVictorii() { return victorii; }
+    int getEgaluri() { return egaluri; }
+    int getInfrangeri() { return infrangeri; }
+    
+    void setTotalPuncte(int total_puncte) { this->total_puncte = total_puncte; }
+    int getTotalPuncte() { return total_puncte; }
+    
+    void actualizeazaRezultate(int v, int e, int i)
+    {
+        victorii += v;
+        egaluri += e;
+        infrangeri += i;
+        total_puncte = calculeazaTotalPuncte();
+    }
+
+    int calculeazaTotalPuncte()
+    {
+        return victorii * 3 + egaluri;
+    }
+    
+    int calculeazaNrMeciuri()
+    {
+        return victorii + egaluri + infrangeri;
+    }
+};
+
+class Liga
+{
+private:
+    Echipa echipe_array[10];
+    int numar_echipe;
+
+public:
+    Liga(int numar_echipe = 0) : numar_echipe(numar_echipe) {}
+
+    void adaugaEchipa(const Echipa& echipa)
+    {
+        if (numar_echipe < 10) echipe_array[numar_echipe++] = echipa;
+    }
+
+    void afiseazaEchipe()
+    {
+        for (int i = 0; i < numar_echipe; ++i)
+            std::cout << echipe_array[i].getNume() << " " << echipe_array[i].getVictorii() << " " << echipe_array[i].getEgaluri() << " " << echipe_array[i].getInfrangeri() << std::endl;
+    }
+    
+    void calculeazaNrPuncte()
+    {
+        for (int i = 0; i < numar_echipe; ++i)
+            std::cout << echipe_array[i].getNume() << " " << echipe_array[i].getTotalPuncte() << std::endl;
+    }
+    
+    void actualizeazaRezultateMeci(std::string nume1, std::string nume2, int scor1, int scor2)
+    {
+        for (int i = 0; i < numar_echipe; ++i)
+        {
+            if (echipe_array[i].getNume() == nume1)
+            {
+                if (scor1 == scor2)
+                    echipe_array[i].actualizeazaRezultate(0, 1, 0);
+                else if (scor1 > scor2)
+                    echipe_array[i].actualizeazaRezultate(1, 0, 0);
+                else
+                    echipe_array[i].actualizeazaRezultate(0, 0, 1);
+            }
+            else if (echipe_array[i].getNume() == nume2)
+            {
+                if (scor1 == scor2)
+                    echipe_array[i].actualizeazaRezultate(0, 1, 0);
+                else if (scor1 > scor2)
+                    echipe_array[i].actualizeazaRezultate(0, 0, 1);
+                else
+                    echipe_array[i].actualizeazaRezultate(1, 0, 0);
+            }
+        }
+    }
+    
+    void afisareLocIntai()
+    {
+        int top, maxPuncte, maxVictorii, minMeciuri;
+        maxPuncte = echipe_array[0].getTotalPuncte();
+        maxVictorii = echipe_array[0].getVictorii();
+        minMeciuri = echipe_array[0].calculeazaNrMeciuri();
+        
+        for (int i = 0; i < numar_echipe; ++i)
+        {
+            if (echipe_array[i].getTotalPuncte() > maxPuncte)
+            {
+                maxPuncte = echipe_array[i].getTotalPuncte();
+                maxVictorii = echipe_array[i].getVictorii();
+                minMeciuri = echipe_array[i].calculeazaNrMeciuri();
+                top = i;
+            }
+            else if (echipe_array[i].getTotalPuncte() == maxPuncte)
+            {
+                if (echipe_array[i].getVictorii() > maxVictorii)
+                {
+                    maxVictorii = echipe_array[i].getVictorii();
+                    minMeciuri = echipe_array[i].calculeazaNrMeciuri();
+                    top = i;
+                }
+                else if (echipe_array[i].getVictorii() == maxVictorii)
+                {
+                    if (echipe_array[i].calculeazaNrMeciuri() < minMeciuri)
+                    {
+                        minMeciuri = echipe_array[i].calculeazaNrMeciuri();
+                        top = i;
+                    }
+                }
+            }
+        }
+        std::cout << "Locul 1: " << echipe_array[top].getNume() << std::endl;
+    }
+    
+    void verificaCastigator()
+    {
+        int meciuriPerEchipa = (numar_echipe - 1) * 2;
+        int meciuriRamasePerEchipa = meciuriPerEchipa - echipe_array[0].calculeazaNrMeciuri();
+        int punctajMaximInPlus = meciuriRamasePerEchipa * 3;
+        
+        int pozitieLocul1 = -1;
+        int pozitieLocul2 = -1;
+        int maxPuncteLocul1 = 0;
+        int maxPuncteLocul2 = 0;
+
+        for (int i = 0; i < numar_echipe; ++i)
+        {
+            int puncteCurente = echipe_array[i].getTotalPuncte();
+        
+            if (puncteCurente > maxPuncteLocul1)
+            {
+                pozitieLocul2 = pozitieLocul1;
+                maxPuncteLocul2 = maxPuncteLocul1;
+        
+                pozitieLocul1 = i;
+                maxPuncteLocul1 = puncteCurente;
+            }
+            else if (puncteCurente > maxPuncteLocul2 && i != pozitieLocul1)
+            {
+                pozitieLocul2 = i;
+                maxPuncteLocul2 = puncteCurente;
+            }
+        }
+
+        if (echipe_array[pozitieLocul2].getTotalPuncte() + punctajMaximInPlus < echipe_array[pozitieLocul1].getTotalPuncte()) std::cout << echipe_array[pozitieLocul1].getNume() << " a castigat!" << std::endl;
+        else std::cout << "Nu exista castigator!" << std::endl; // adica castigator matematic declarat pana in momentul de fata
+    }
+};
+
+int main()
+{
+    Liga liga1;
+    int n;
+    std::cin >> n;
+    
+    for (int i = 0; i < n; ++i)
+    {
+        std::string temp_nume;
+        int temp_victorii, temp_egaluri, temp_infrangeri;
+        std::cin >> temp_nume >> temp_victorii >> temp_egaluri >> temp_infrangeri;
+        Echipa temp_echipa(temp_nume, temp_victorii, temp_egaluri, temp_infrangeri);
+        temp_echipa.setTotalPuncte(temp_echipa.calculeazaTotalPuncte());
+        liga1.adaugaEchipa(temp_echipa);
+    }
+
+    int comanda;
+    std::cin >> comanda;
+    
+    if (comanda == 1)
+    {
+        liga1.afiseazaEchipe();
+    }
+    else if (comanda == 2)
+    {
+        liga1.calculeazaNrPuncte();
+    }
+    else if (comanda == 3)
+    {
+        int nrMeciuri;
+        std::cin >> nrMeciuri;
+        for (int j = 0; j < nrMeciuri; ++j)
+        {
+            std::string numeHome, numeAway;
+            int scorHome, scorAway;
+            std::cin >> numeHome >> scorHome >> scorAway >> numeAway;
+            liga1.actualizeazaRezultateMeci(numeHome, numeAway, scorHome, scorAway);
+        }
+        int displayMode;
+        std::cin >> displayMode;
+        if (displayMode == 1) liga1.afiseazaEchipe();
+        else if (displayMode == 2) liga1.calculeazaNrPuncte();
+    }
+    else if (comanda == 4)
+    {
+        liga1.afisareLocIntai();
+    }
+    else if (comanda == 5)
+    {
+        liga1.verificaCastigator();
+    }
+
+    return 0;
+}

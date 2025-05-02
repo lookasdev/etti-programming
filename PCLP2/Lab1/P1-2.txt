@@ -1,0 +1,80 @@
+Scrieți o clasă Cutie cu 3 date membre publice: lungime, lățime, înălțime, de tip real și o funcție membră care întoarce volumul cutiei.
+
+Definiți o funcție membră care calculează volumul rămas în cutia inițială dacă în ea se va introduce o altă cutie transmisă ca argument în funcție. Se va verifica, mai întâi, dacă cea de-a doua cutie poate fi introdusă în prima cutie (considerăm că cele 3 dimensiuni respectă aceeași ordine și nu putem roti nicio cutie). În caz contrar, se va afișa volumul cutiei inițiale.
+
+În programul principal se va instanția un obiect de tipul Cutie, se vor citi de la tastatură cele 3 atribute și se va citi un întreg reprezentând o comandă, în funcție de valoarea căreia se vor executa diferite acțiuni:
+1. Se afișează pe ecran volumul cutiei, cu 3 zecimale.
+2. Se citesc un nou set de atribute: lungime, lățime, înălțime cu ajutorul cărora se instanțiază o a doua cutie. Se afișează pe ecran volumul rămas liber în prima cutie după introducerea celei de-a doua cutii (dacă este posibil), cu 3 zecimale.
+
+
+#include <iomanip> // biblioteca necesara pentru std::setprecision
+
+#include <iostream>
+
+class Cutie
+{
+public:
+    float lungime, latime, inaltime;
+
+    float calcVolum(float lungime, float latime, float inaltime)
+    {
+        return lungime * latime * inaltime;
+    }
+    
+    float get_lungime()
+    {
+        return this->lungime;
+    }
+    float get_latime()
+    {
+        return this->latime;
+    }
+    float get_inaltime()
+    {
+        return this->inaltime;
+    }
+};
+
+int main()
+{
+    Cutie c1;
+    float lungime, latime, inaltime;
+    std::cin >> lungime >> latime >> inaltime;
+    c1.lungime = lungime;
+    c1.latime = latime;
+    c1.inaltime = inaltime;
+    
+    int comanda;
+    std::cin >> comanda;
+    
+    if (comanda == 1)
+    {
+        float volum = c1.calcVolum(c1.lungime, c1.latime, c1.inaltime);
+        std::cout << std::fixed << std::setprecision(3);
+        std::cout << c1.calcVolum(c1.lungime, c1.latime, c1.inaltime) << std::endl;
+    }
+    else if (comanda == 2)
+    {
+        Cutie c2;
+        float lungime2, latime2, inaltime2;
+        std::cin >> lungime2 >> latime2 >> inaltime2;
+        c2.lungime = lungime2;
+        c2.latime = latime2;
+        c2.inaltime = inaltime2;
+        
+        if (c1.lungime > c2.lungime && c1.latime > c2.latime && c1.inaltime > c2.inaltime) //verif dim, adica daca cutia2 incape in cutia1
+        {
+            float volum1 = c1.calcVolum(c1.lungime, c1.latime, c1.inaltime);
+            float volum2 = c2.calcVolum(c2.lungime, c2.latime, c2.inaltime);
+            std::cout << std::fixed << std::setprecision(3);
+            std::cout << volum1 - volum2 << std::endl;
+        }
+        else
+        {
+            float volum1 = c1.calcVolum(c1.lungime, c1.latime, c1.inaltime);
+            std::cout << std::fixed << std::setprecision(3);
+            std::cout << volum1 << std::endl;
+        }
+    }
+    return 0;
+}

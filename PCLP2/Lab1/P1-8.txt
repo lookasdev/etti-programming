@@ -1,0 +1,56 @@
+Să se scrie o clasă Coș, care conține 2 date membre: nr_mere, nr_pere. Clasa va conține o funcție care poate transfera mere și pere într-un alt Coș, transmis ca parametru. Funcția va avea următorul prototip:
+
+void transfer(int nr_mere, int nr_pere, Cos &c)
+
+Să se inițializeze 2 obiecte de tipul Coș de la tastatură și să se facă transferul unui număr de mere și pere de la primul coș către cel de-al doilea coș. Să se afișeze pe ecran numerele de mere și pere stocate în fiecare dintre cele 2 coșuri atât înainte, cât și după transfer.
+
+
+#include <iostream>
+
+class Cos
+{
+private:
+    int nr_mere, nr_pere;
+    
+public:
+    void transfer(int nr_mere, int nr_pere, Cos &c) //param sunt nr de mere si pere transferate
+    {
+        c.nr_mere += nr_mere;
+        this->nr_mere -= nr_mere;
+        
+        c.nr_pere += nr_pere;
+        this->nr_pere -= nr_pere;
+    }
+    
+    Cos(int nr_mere = 0, int nr_pere = 0)
+    {
+        this->nr_mere = nr_mere;
+        this->nr_pere = nr_pere;
+    }
+    
+    void display()
+    {
+        std::cout << this->nr_mere << " " << this->nr_pere << std::endl;
+    }
+};
+
+int main()
+{
+    int m1, p1, m2, p2; // nr mere si pere pt cos 1 si cos 2
+    std::cin >> m1 >> p1 >> m2 >> p2;
+    
+    Cos c1(m1, p1);
+    Cos c2(m2, p2);
+    
+    c1.display(); //afisare nr fructe cos 1 inainte de transfer
+    c2.display(); //afisare nr fructe cos 2 inainte de transfer
+    
+    int mTrasf, pTransf; // nr mere si pere transferate
+    std::cin >> mTrasf >> pTransf;
+    c1.transfer(mTrasf, pTransf, c2); //c1.transfer => fructele se transfera din cosul 1 in cosul 2
+    
+    c1.display(); //afisare nr fructe cos 1 dupa transfer
+    c2.display(); //afisare nr fructe cos 2 dupa transfer
+    
+    return 0;
+}

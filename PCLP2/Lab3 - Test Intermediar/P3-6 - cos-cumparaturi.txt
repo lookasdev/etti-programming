@@ -1,0 +1,157 @@
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <iomanip>
+
+class Produs
+{
+private:
+    std::string nume;
+    std::string categorie;
+    float pret;
+    float greutate;
+
+public:
+    Produs(std::string nume = "", std::string categorie = "", float pret = 0.0f, float greutate = 0.0f) : nume(nume), categorie(categorie), pret(pret), greutate(greutate) {}
+
+    std::string getNume() { return nume; }
+
+    std::string getCategorie() { return categorie; }
+
+    float getPret() { return pret; }
+
+    float getGreutate() { return greutate; }
+};
+
+
+class Cos_cumparaturi
+{
+private:
+    Produs produs_array[20];
+    int nrProduse;
+
+public:
+    Cos_cumparaturi() : nrProduse(0) {}
+
+    void adaugaProdus(const Produs& produs)
+    {
+        if (nrProduse < 20) produs_array[nrProduse++] = produs;
+    }
+
+    void afiseazaToateProdusele()
+    {
+        for (int i = 0; i < nrProduse; ++i) std::cout << produs_array[i].getNume() << ", " << produs_array[i].getCategorie() << ", " << produs_array[i].getPret() << " lei, " << produs_array[i].getGreutate() << " kg\n";
+    }
+
+    void afiseazaProduseCategorie(const std::string& categorie)
+    {
+        bool gasit = false;
+        for (int i = 0; i < nrProduse; ++i)
+        {
+            if (produs_array[i].getCategorie() == categorie)
+            {
+                std::cout << produs_array[i].getNume() << ", " << produs_array[i].getCategorie() << ", " << produs_array[i].getPret() << " lei, " << produs_array[i].getGreutate() << " kg\n";
+                gasit = true;
+            }
+        }
+        if (!gasit) std::cout << "N/A\n";
+    }
+
+    void afiseazaProduseUnice() 
+    {
+        for (int i = 0; i < nrProduse; ++i) // NU (i < nrProduse - 1) pentru ca altfel nu ar verifica unicitatea ultimului produs din cos
+        {
+            if (produs_array[i].getNume() != "")
+            {
+                int count = 1;
+                for (int j = i + 1; j < nrProduse; ++j) // bucla nu se va executa daca j egal cu nrProduse (nu e nicio problema, nu e ca la sortare)
+                {
+                    if (produs_array[i].getNume() == produs_array[j].getNume())
+                    {
+                        produs_array[j] = Produs("", "", 0, 0); // marcam produs ca duplicat - procesat
+                        count++;
+                    }
+                }
+                std::cout << produs_array[i].getNume() << ", " << produs_array[i].getCategorie() << ", " << produs_array[i].getPret() << " lei, " << produs_array[i].getGreutate() << " kg, " << count << " buc\n";
+            }
+        }
+    }
+
+    float greutateTotala()
+    {
+        float total = 0;
+        for (int i = 0; i < nrProduse; ++i) total += produs_array[i].getGreutate();
+        return total;
+    }
+
+    float pretTotal(float pragGreutate, float costAditionalPerKg)
+    {
+        float greutate = greutateTotala();
+        float total = 0;
+        float extraGreutate = ceil(greutate - pragGreutate);
+        if (greutate > pragGreutate) total += extraGreutate * costAditionalPerKg; // adaugam taxa aditionala pt greutate in plus
+
+        for (int i = 0; i < nrProduse; ++i) total += produs_array[i].getPret();
+
+        return total;
+    }
+};
+
+
+int main()
+{
+    int n;
+    int comanda;
+    Cos_cumparaturi cos1;
+    std::string temp_nume, temp_categorie;
+    float temp_pret, temp_greutate;
+    
+    std::cin >> n;
+    std::cin.ignore();
+    
+    for(int i = 0; i < n; i++)
+    {
+        getline(std::cin, temp_nume);
+        getline(std::cin, temp_categorie);
+        std::cin >> temp_pret >> temp_greutate;
+        std::cin.ignore();
+        
+        Produs temp_produs(temp_nume, temp_categorie, temp_pret, temp_greutate);
+        cos1.adaugaProdus(temp_produs);
+    }
+    
+    std::cin >> comanda;
+    std::cin.ignore();
+    
+    switch (comanda)
+    {
+        case 1:
+            cos1.afiseazaToateProdusele();
+            break;
+        case 2:
+        {
+            std::string categorie;
+            std::getline(std::cin, categorie);
+            cos1.afiseazaProduseCategorie(categorie);
+            break;
+        }
+        case 3:
+            cos1.afiseazaProduseUnice();
+            break;
+        case 4:
+            std::cout << std::fixed << std::setprecision(2) << cos1.greutateTotala();
+            break;
+        case 5:
+        {
+            float pragGreutate, costAditionalPerKg;
+            std::cin >> pragGreutate >> costAditionalPerKg;
+            std::cout << std::fixed << std::setprecision(2) << cos1.pretTotal(pragGreutate, costAditionalPerKg);
+            break;
+        }
+        default:
+            std::cout << "nr comanda invalid\n";
+            break;
+    }
+    
+    return 0;
+}

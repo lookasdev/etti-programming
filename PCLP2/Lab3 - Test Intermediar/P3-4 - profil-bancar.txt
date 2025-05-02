@@ -1,0 +1,107 @@
+#include <iostream>
+#include <string>
+
+class Profil
+{
+private:
+    std::string nume;
+    float soldCard;
+    float soldContEconomii;
+    float dobandaContEconomii;
+
+public:
+    Profil(std::string nume = "", float soldCard = 0.0f, float soldContEconomii = 0.0f, float dobandaContEconomii = 0.0f)
+        : nume(nume), soldCard(soldCard), soldContEconomii(soldContEconomii), dobandaContEconomii(dobandaContEconomii) {}
+    
+    void interogareProfil()
+    {
+        std::cout << nume << std::endl;
+        std::cout << "card_bancar:" << std::endl << soldCard << std::endl;
+        std::cout << "cont_economii:" << std::endl << soldContEconomii << std::endl << dobandaContEconomii << std::endl;
+    }
+    
+    void setSoldCard(float soldCard) { this->soldCard = soldCard; }
+    void setSoldContEconomii(float soldContEconomii) { this->soldContEconomii = soldContEconomii; }
+    
+    float getSoldCard() { return soldCard; }
+    float getSoldContEconomii() { return soldContEconomii; }
+    float getDobandaContEconomii() { return dobandaContEconomii; }
+};
+
+int main()
+{
+    std::string nume;
+    float soldCard;
+    float soldContEconomii;
+    float dobandaContEconomii;
+    
+    std::getline(std::cin, nume);
+    std:: cin >> soldCard >> soldContEconomii >> dobandaContEconomii;
+    
+    Profil p1(nume, soldCard, soldContEconomii, dobandaContEconomii);
+    
+    int comanda;
+    std::cin >> comanda;
+
+    switch (comanda)
+    {
+        case 1:
+        {
+            p1.interogareProfil();
+            break;
+        }
+        case 2:
+        {
+            float sumaDepusa;
+            std::cin >> sumaDepusa;
+            if (sumaDepusa < 0) std::cout << "EROARE: depunere suma negativa";
+            else
+            {
+                p1.setSoldCard(p1.getSoldCard() + sumaDepusa);
+                std::cout << "card_bancar:" << std::endl << p1.getSoldCard() << std::endl;
+            }
+            break;
+        }
+        case 3:
+        {
+            float sumaExtrasa;
+            std::cin >> sumaExtrasa;
+            if (sumaExtrasa > p1.getSoldCard()) std::cout << "EROARE: fonduri insuficiente";
+            else
+            {
+                p1.setSoldCard(p1.getSoldCard() - sumaExtrasa);
+                std::cout << "card_bancar:" << std::endl << p1.getSoldCard() << std::endl;
+            }
+            break;
+        }
+        case 4:
+        {
+            float fonduriTransferate;
+            std::cin >> fonduriTransferate;
+            if (fonduriTransferate > p1.getSoldCard()) std::cout << "EROARE: fonduri insuficiente";
+            else
+            {
+                p1.setSoldCard(p1.getSoldCard() - fonduriTransferate);
+                p1.setSoldContEconomii((p1.getSoldContEconomii() + fonduriTransferate) * (1.0 + (p1.getDobandaContEconomii() / 100 * 1.0)));
+                std::cout << "card_bancar:" << std::endl << p1.getSoldCard() << std::endl;
+                std::cout << "cont_economii:" << std::endl << p1.getSoldContEconomii() << std::endl << p1.getDobandaContEconomii() << std::endl;
+            }
+            break;
+        }
+        case 5:
+        {
+            float targetSuma;
+            int nrLuni = 0;
+            std::cin >> targetSuma;
+            while (p1.getSoldContEconomii() < targetSuma)
+            {
+                p1.setSoldContEconomii(p1.getSoldContEconomii() * (1.0 + (p1.getDobandaContEconomii() / 100 * 1.0)));
+                nrLuni++;
+            }
+            std::cout << nrLuni << std::endl;
+            break;
+        }
+    }
+
+    return 0;
+}
