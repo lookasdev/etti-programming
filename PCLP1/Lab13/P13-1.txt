@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+void citesteSir(char **sir)
+{
+    char c;
+    int size = 0;
+    while ((c = getchar()) != '\n')
+    {
+        *sir = (char *)realloc(*sir, (size + 1) * sizeof(char));
+        (*sir)[size++] = c;
+    }
+
+    *sir = (char *)realloc(*sir, (size + 1) * sizeof(char));
+    (*sir)[size] = '\0';
+}
+
+int main()
+{
+    int nr;
+    scanf("%d%*c", &nr); // cu %*c ignoram enter-ul
+
+    for (int i = 1; i <= nr; ++i)
+    {
+        bool semafor = false;
+        char *sir = NULL;
+        sir = (char *)malloc(1 * sizeof(char)); // trb sa aiba o adresa (alocata) initiala
+        citesteSir(&sir);
+        char *token = strtok(sir, ",");
+        //printf("\n\n\n");
+        while (token != NULL)
+        {
+            char *futureToken = strtok(NULL, ",");
+            if (futureToken != NULL && strcmp(futureToken, "0") == 0)
+            {
+                int k = 0;
+                while (futureToken != NULL && strcmp(futureToken, "0") == 0)
+                {
+                    k++;
+                    futureToken = strtok(NULL, ",");
+                }
+                if (semafor == false)
+                {
+                    printf("(%s,%d)", token, k); // cazul de compresie
+                    semafor = true;
+                } else printf(",(%s,%d)", token, k); // cazul de compresie
+            } else
+            {
+                if (semafor == false)
+                {
+                    printf("%s", token); // cazul normal
+                    semafor = true;
+                } else printf(",%s", token); // cazul normal
+            }
+            token = futureToken;
+        }
+        printf("\n");
+        free(sir);
+    }
+    return 0;
+}

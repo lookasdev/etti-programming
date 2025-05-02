@@ -1,0 +1,36 @@
+Scrieţi un program care citeşte de la tastatură două şiruri de caractere, s1 și s2 (de maximum 41 de caractere fiecare), şi determină de câte ori apare secvenţa de caractere din al doilea şir, s2, în primul șir, s1. Exemplu: sir1 = "abcdabcc", sir2 = "ab" şi programul trebuie să afişeze 2 (șirul "ab" apare de 2 ori).
+
+Date de intrare
+Se vor citi de la tastatură (fluxul stdin) următoarele date:
+
+un șir de caractere s1, urmat de caracterul linie nouă (tasta Enter);
+un șir de caractere s2, urmat de caracterul linie nouă.
+Date de ieşire
+
+Programul va afişa, pe ecran, la ieşire, numărul de apariţii a șirului de caractere s2, în șirul s1.
+
+#include <stdio.h>
+
+int main()
+{
+    char sir1[42], sir2[42];
+    scanf("%s", sir1);
+    scanf("%s", sir2);
+    int i = 0;
+    int k = 0; //contor aparitii
+    while(sir1[i] != '\0')
+    {
+        int j = 0;
+        bool ok = true;
+        while(sir2[j] != '\0')
+        {
+            if (sir2[j] != sir1[i]) ok = false;
+            i++; //i creste si atunci cand se ajunge la \0 in sir2
+            j++;
+        }
+        i--; //asa ca aducem i inapoi cu 1 poz
+        if (ok) k++;
+    }
+    printf("%d", k);
+    return 0;
+}

@@ -1,0 +1,26 @@
+Un triplet pitagoreic este reprezentat de un set the trei numere naturale, a < b < c, pentru care a2 + b2 = c2
+
+De exemplu: 32 + 42 = 9 + 16 = 25 = 52.
+
+Există un singur triplet pitagoreic exact pentru care a + b + c = 1000. Realizați un program care să determine produsul abc. Afișați în consolă valorile pentru care a, b, și, c satisfac condiția, fiecare pe o linie nouă, iar în continuare, pe linia următoare, afișați produsul lor.
+
+#include <stdio.h>
+
+int main()
+{
+    int a, b, c, produs;
+    for (int i = 1; i <= 1000/3; i++)
+        for (int j = i; j <= 1000/2; j++)
+        {
+            c = 1000 - i - j;
+            a = i;
+            b = j;
+            if (a*a + b*b == c*c)
+            {
+                produs = a*b*c;
+                printf("%d\n%d\n%d\n%d\n", a, b, c, produs);
+                return 0;
+            }
+        }
+    return 0;     
+}

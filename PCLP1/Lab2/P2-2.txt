@@ -1,0 +1,14 @@
+Scrieţi un program care calculează şi afişează pe ecran media aritmetică a două numere întregi citite de la tastatură. 
+
+#include <stdio.h>
+
+int main()
+{
+    int a, b;
+    float ma;
+    scanf("%d", &a);
+    scanf("%d", &b);
+    ma = (float)(a+b)/2;
+    printf("%f", ma);
+    return 0;
+}

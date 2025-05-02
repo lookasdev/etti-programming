@@ -1,0 +1,16 @@
+Scrieți un program care declară câte o variabilă pentru fiecare tip fundamental disponibil în limbajul C (exluzând tipul void), și apoi le inițializează, folosind operatorul de atribuire, cu valori arbitrare (orice valoare de tipul respectiv de dată).
+
+#include <stdio.h>
+
+int main()
+{
+    int a;
+    float b;
+    char c;
+    double d;
+    a = 1;
+    b = 2.5f;
+    c = 'C';
+    d = 11.11f;
+    return 0;
+}

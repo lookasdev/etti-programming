@@ -1,0 +1,54 @@
+#include <stdio.h>
+
+int median(int a, int b, int c, int d, int e)
+{
+    int v[5];
+    v[0] = a;
+    v[1] = b;
+    v[2] = c;
+    v[3] = d;
+    v[4] = e;
+    for (int i = 0; i < 5-1; i++)
+        for (int j = i+1; j < 5; j++)
+            if (v[i] > v[j])
+            {
+                int aux = v[i];
+                v[i] = v[j];
+                v[j] = aux;
+            }
+    return v[2];
+}
+
+int main()
+{
+    int m[55][55], rez[55][55];
+    int rows, columns;
+    scanf("%d %d", &rows, &columns);
+    rows += 2;
+    columns += 2;
+    
+    for (int i = 1; i < rows-1; i++)
+        for (int j = 1; j < columns-1; j++)
+            scanf("%d", &m[i][j]);
+            
+    for (int j = 0; j < columns; j++)
+    {
+        m[0][j] = 0;
+        m[rows-1][j] = 0;
+    }
+    for (int i = 0; i < rows; i++)
+    {
+        m[i][0] = 0;
+        m[i][columns-1] = 0;
+    }
+    
+    for (int i = 1; i < rows-1; i++)
+        for (int j = 1; j < columns-1; j++)
+            rez[i][j] = median(m[i-1][j], m[i][j-1], m[i][j], m[i][j+1], m[i+1][j]);
+            
+    for (int i = 1; i < rows-1; i++)
+        for (int j = 1; j < columns-1; j++)
+            printf("%d\n", rez[i][j]);
+
+    return 0;
+}

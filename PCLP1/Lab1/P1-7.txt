@@ -1,0 +1,11 @@
+Scrieți un program care să citească de la tastatură un caracter folosind funcția getchar() și apoi să îl afișeze în consolă folosind funcția putchar().
+
+#include <stdio.h>
+
+int main()
+{
+    char c;
+    c = getchar();
+    putchar(c);
+    return 0;
+}

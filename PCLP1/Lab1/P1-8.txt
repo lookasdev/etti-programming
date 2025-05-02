@@ -1,0 +1,12 @@
+Scrieți un program care să citească de la tastatură un șir de caractere de dimensiune maximă 255 caractere folosind funcția fgets() și apoi să îl afișeze în consolă folosind funcția puts().
+
+#include <stdio.h>
+
+int main()
+{
+    char s[256];
+    fgets(s, 256, stdin);
+    puts(s);
+    //fputs(s, stdout);
+    return 0;
+}

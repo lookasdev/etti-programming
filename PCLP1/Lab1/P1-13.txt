@@ -1,0 +1,12 @@
+Scrieți un program care să citească de la tastatură două valoari întreagi, și o valoare reală, printr-o singură apelare a funcției scanf() și afișează pe ecran numărul de date citite de la tastatură.
+
+#include <stdio.h>
+
+int main()
+{
+    int a1, a2, rez;
+    float b;
+    rez = scanf("%d %d %f", &a1, &a2, &b);
+    printf("%d", rez);
+    return 0;
+}

@@ -1,0 +1,33 @@
+Realizați un program care să citească o valoare întreagă de la tastatură și să determine dacă este un număr prim prin afișarea în consolă a valorii 1 pentru număr prim, sau 0 altfel. 
+
+#include <stdio.h>
+
+int main()
+{
+    int nr;
+    scanf("%d", &nr);
+    //cazuri particulare
+    if (nr == 0 || nr == 1)
+    {
+        printf("nr dat este 0 sau 1");
+        return 0;
+    }
+    if (nr == 2)
+    {
+        printf("1");
+        return 0;
+    }
+    //optimizare
+    if (nr % 2 == 0) 
+    {
+        printf("0");
+        return 0;
+    }
+    //algoritmul
+    bool prim = true;
+    for (int d = 3; d*d <= nr; d+=2)
+        if (nr % d == 0) prim = false;
+    if (prim) printf("1");
+    else printf("0");
+    return 0;
+}

@@ -1,0 +1,65 @@
+Sunteți un dezvoltator de aplicații și doriți să realizați un joc de strategie care să simuleze epoca medievală. În acest context, aplicația trebuie să permită generarea a două civilizații formate din (i) muncitori de tipul: fermieri, pădurari, fierari, mineri, (ii) soldați de tipul: cavaleri, arcași, călăreți, și (iii) comercianți de tipul: negustori ambulanți și negustori sedentari, așa cum se arată în Figura 1. Realizați un program care permite inițializarea de la tastatură a celor două civilizații și le afișează în consolă, pe rând, în ordinea citirii de la tastatură.
+
+#include <stdio.h>
+
+int main()
+{
+    struct MUNCITORI
+    {
+        int fermieri;
+        int padurari;
+        int fierari;
+        int mineri;
+    };
+    struct SOLDATI
+    {
+        int cavaleri;
+        int arcasi;
+        int calareti;
+    };
+    struct COMERCIANTI
+    {
+        int negustori_ambulanti;
+        int negustori_sedentari;
+    };
+    
+    struct CIVILIZATIE
+    {
+        struct MUNCITORI muncitori;
+        struct SOLDATI soldati;
+        struct COMERCIANTI comercianti;
+    };
+    
+    struct CIVILIZATIE civ1;
+    struct CIVILIZATIE civ2;
+    
+    //printf("CIVILIZATIA 1 \n");
+    //printf("introduceti numerele de muncitori (fermieri, padurari, fierari, mineri): \n");
+    scanf("%d %d %d %d", &civ1.muncitori.fermieri, &civ1.muncitori.padurari, &civ1.muncitori.fierari, &civ1.muncitori.mineri);
+    //printf("introduceti numerele de soldati (cavaleri, arcasi, calareti): \n");
+    scanf("%d %d %d", &civ1.soldati.cavaleri, &civ1.soldati.arcasi, &civ1.soldati.calareti);
+    //printf("introduceti numerele de comercianti (negustori ambulanti/sedentari): \n");
+    scanf("%d %d", &civ1.comercianti.negustori_ambulanti, &civ1.comercianti.negustori_sedentari);
+    
+    //printf("\n \n");
+    
+    //printf("CIVILIZATIA 2 \n");
+    //printf("introduceti numerele de muncitori (fermieri, padurari, fierari, mineri): \n");
+    scanf("%d %d %d %d", &civ2.muncitori.fermieri, &civ2.muncitori.padurari, &civ2.muncitori.fierari, &civ2.muncitori.mineri);
+    //printf("introduceti numerele de soldati (cavaleri, arcasi, calareti): \n");
+    scanf("%d %d %d", &civ2.soldati.cavaleri, &civ2.soldati.arcasi, &civ2.soldati.calareti);
+    //printf("introduceti numerele de comercianti (negustori ambulanti/sedentari): \n");
+    scanf("%d %d", &civ2.comercianti.negustori_ambulanti, &civ2.comercianti.negustori_sedentari);
+    
+    //printf("\n \n asemanator se afiseaza cele 2 civilizatii");
+    
+    printf("%d \n %d \n %d \n %d \n", civ1.muncitori.fermieri, civ1.muncitori.padurari, civ1.muncitori.fierari, civ1.muncitori.mineri);
+    printf("%d \n %d \n %d \n", civ1.soldati.cavaleri, civ1.soldati.arcasi, civ1.soldati.calareti);
+    printf("%d \n %d \n", civ1.comercianti.negustori_ambulanti, civ1.comercianti.negustori_sedentari);
+    
+    printf("%d \n %d \n %d \n %d \n", civ2.muncitori.fermieri, civ2.muncitori.padurari, civ2.muncitori.fierari, civ2.muncitori.mineri);
+    printf("%d \n %d \n %d \n", civ2.soldati.cavaleri, civ2.soldati.arcasi, civ2.soldati.calareti);
+    printf("%d \n %d \n", civ2.comercianti.negustori_ambulanti, civ2.comercianti.negustori_sedentari);
+    
+    return 0;
+}

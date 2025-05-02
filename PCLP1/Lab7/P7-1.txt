@@ -1,0 +1,45 @@
+Realizați un program care să determine lungimea reală a unui șir de caractere de dimensiune maximă de 64 caractere, citit de la tastatură.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    char *sir;
+    int segment = 10;
+    int i = 0;
+    int k = 0; //contor
+    char c;
+    sir = (char*) malloc((segment + 1) * sizeof(char));
+    if (sir == NULL)
+    {
+        printf("eroare malloc");
+        return 0;
+    }
+    while ((c = getchar()) != '\n')
+    {
+        sir[i++] = c;
+        k++; //creste lungimea sirului
+        if (i == segment)
+        {
+            segment += 10; //segment *= 2;
+            sir = (char*) realloc(sir, (segment + 1) * sizeof(char));
+            if (sir == NULL)
+            {
+                printf("eroare realloc");
+                return 0;
+            }
+        }
+    }
+    sir[i] = '\0';
+    sir = (char*) realloc(sir, (i + 1) * sizeof(char));
+    if (sir == NULL)
+    {
+        printf("eroare realloc");
+        return 0;
+    }
+    printf("%d", k);
+    //printf("%s", sir);
+    free(sir);
+    return 0;
+}

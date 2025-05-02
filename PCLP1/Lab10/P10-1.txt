@@ -1,0 +1,212 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void citesteMatrice(int ***matrice, int nrLinii, int nrColoane) // fct pentru citirea valorilor matricei
+{
+    *matrice = (int **)malloc(nrLinii * sizeof(int *));
+    for (int i = 0; i < nrLinii; ++i) (*matrice)[i] = (int *)malloc(nrColoane * sizeof(int));
+
+    for (int i = 0; i < nrLinii; ++i)
+        for (int j = 0; j < nrColoane; ++j)
+            scanf("%d", &(*matrice)[i][j]);
+}
+
+void afiseazaMatrice(int **matrice, int nrLinii, int nrColoane) // fct pentru afisarea valorilor matricei
+{
+    for (int i = 0; i < nrLinii; ++i)
+    {
+        for (int j = 0; j < nrColoane; ++j)
+            printf("%d ", matrice[i][j]);
+        printf("\n");
+    }
+}
+
+void elibereazaMatrice(int ***matrice, int nrLinii) // fct pentru eliberarea memoriei
+{
+    for (int i = 0; i < nrLinii; ++i)
+        free((*matrice)[i]);
+    free(*matrice);
+    *matrice = NULL;
+}
+
+void sortare(int v[], int n) //sortare directa crescatoare
+{
+    for(int i = 0 ; i < n - 1 ; i ++)
+        for(int j = i + 1 ; j < n ; j ++)
+            if(v[i] > v[j])
+            {
+                int aux = v[i];
+                v[i] = v[j];
+                v[j] = aux;
+            }
+}
+
+struct solutie
+{
+    int rang;
+    int dif1; //pt cazul de egalitate 1
+    int dif2; //pt cazul de egalitate 2
+    int dif3; //pt cazul de egalitate 3
+};
+
+solutie rang(int mana[])
+{
+    sortare(mana, 5); //sort crescator varianta/mana pt a ne asigura ca ne ocupam/prelucram mai intai de perechile mai slabe/mici inaintea celor mai mari
+    int freq[14+1];
+    for (int i = 2; i <= 14; i++) freq[i] = 0; //init cu 0 vectorul de freq
+    for (int i = 0; i < 5; i++) freq[mana[i]]++; //construim vect de freq
+    int maxx = 0;
+    int a = 0, b = 0, c = 0;
+
+    for (int i = 2; i <= 14; i++)
+    {
+        if (freq[i] == 1 && i > c)
+        {
+            if (freq[i] > maxx) maxx = freq[i]; //c va stoca cea mai mare carte care apare 1 singura data, termenul al 3lea de comparatie
+            c = i;
+        }
+        else if (freq[i] == 2 && b == 0)
+        {
+            if (freq[i] > maxx) maxx = freq[i];
+            b = i; //mai intai pun in b pt ca am sortat crescator mana/varianta (a va avea pondere mai mare la comparatii, in b va fi perechea mai slaba)
+        }
+        else if (freq[i] == 2 && b != 0)
+        {
+            if (freq[i] > maxx) maxx = freq[i];
+            a = i;
+        }
+        else if (freq[i] == 3)
+        {
+            if (freq[i] > maxx) maxx = freq[i];
+            if (a != 0) b = a; //pt rang 2 cand gasim a 2a pereche
+            a = i;
+        }
+        else if (freq[i] == 4)
+        {
+            if (freq[i] > maxx) maxx = freq[i];
+            a = i;
+        }
+        if (a == 0) //pt rang 5
+        {
+            a = b;
+            b = 0;
+        }
+    }
+
+    solutie sol; //init variabila de tip solutie
+    if (maxx == 4) //rang 1 doar in fct de a
+    {
+        sol.rang = 1;
+        sol.dif1 = a;
+        sol.dif2 = 0;
+        sol.dif3 = 0;
+    }
+    else if (maxx == 3 && b != 0) //rang 2 doar in fct de a
+    {
+        sol.rang = 2;
+        sol.dif1 = a;
+        sol.dif2 = 0;
+        sol.dif3 = 0;
+    }
+    else if (maxx == 3 && b == 0) //rang 3 doar in fct de a
+    {
+        sol.rang = 3;
+        sol.dif1 = a;
+        sol.dif2 = 0;
+        sol.dif3 = 0;
+    }
+    else if (maxx == 2 && b != 0) //rang 4 in fct de a, b si c
+    {
+        int aux; //pt rang 4 trb efectuata o interschimbare intre a si b pt a avea in a perechea mai valoroasa si in b perechea mai slaba
+        aux = a;
+        a = b;
+        b = aux;
+        sol.rang = 4;
+        sol.dif1 = a;
+        sol.dif2 = b;
+        sol.dif3 = c;
+    }
+    else if (maxx == 2 && b == 0) //rang 5 in fct de a si c
+    {
+        sol.rang = 5;
+        sol.dif1 = a;
+        sol.dif2 = 0;
+        sol.dif3 = c;
+    }
+    else if (maxx == 1) //rang 6 doar in fct de c
+    {
+        sol.rang = 6;
+        sol.dif1 = 0;
+        sol.dif2 = 0;
+        sol.dif3 = c;
+    }
+    //printf("\n\n%d\n\n", maxx);
+    return sol;
+}
+
+int main()
+{
+    int **matrice = NULL;
+    int nrLinii, nrColoane, test;
+
+    nrColoane = 5; //maini de 5 carti
+
+    scanf("%d", &test);
+    if (test == 1)
+    {
+        scanf("%d", &nrLinii);
+        citesteMatrice(&matrice, nrLinii, nrColoane);
+        afiseazaMatrice(matrice, nrLinii, nrColoane);
+        elibereazaMatrice(&matrice, nrLinii);
+    }
+    else if (test == 2)
+    {
+        solutie rez;
+        int mana[5];
+        for (int i = 0; i < 5; i++) scanf("%d", &mana[i]);
+        rez = rang(mana);
+        printf("%d", rez.rang);
+    }
+    else if (test == 3)
+    {
+        int mana[5];
+        scanf("%d", &nrLinii);
+        citesteMatrice(&matrice, nrLinii, nrColoane);
+        solutie *rezultate = (solutie *)malloc(nrLinii * sizeof(solutie));
+        for (int i = 0; i < nrLinii; i++) //calc rangul si stabilim valorile care vor face diff la egalitate pt fiecare mana/varianta
+        {
+            for (int j = 0; j < 5; j++)
+                mana[j] = matrice[i][j];
+            rezultate[i] = rang(mana);
+        }
+        int rezFinal;
+        int minn = 7; //rangul 7, cel mai mic rang care nu exista
+        for (int i = 0; i < nrLinii; i++)
+        {
+            if (rezultate[i].rang < minn) //cautam rangul cel mai mic dintre maini
+            {
+                rezFinal = i;
+                minn = rezultate[i].rang;
+            }
+            else if (rezultate[i].rang == minn) //in cazul ca rangul mainii citite coincide cu rangul mainii minime, verificam diferentele(in fct de ce se stabileste varianta/mana mai valoroasa) din cerinta
+            {
+                if (rezultate[i].dif1 > rezultate[rezFinal].dif1) rezFinal = i;
+                else if (rezultate[i].dif1 == rezultate[rezFinal].dif1)
+                {
+                    if (rezultate[i].dif2 > rezultate[rezFinal].dif2) rezFinal = i;
+                    else if (rezultate[i].dif2 == rezultate[rezFinal].dif2)
+                    {
+                        if (rezultate[i].dif3 > rezultate[rezFinal].dif3) rezFinal = i;
+                        else if (rezultate[i].dif3 == rezultate[rezFinal].dif3) rezFinal = i;
+                    }
+                }
+
+            }
+        }
+        for (int j = 0; j < 5; j++)
+            printf("%d ", matrice[rezFinal][j]);
+        free(rezultate);
+        elibereazaMatrice(&matrice, nrLinii);
+    }
+    return 0;
+}

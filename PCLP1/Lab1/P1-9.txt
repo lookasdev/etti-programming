@@ -1,0 +1,20 @@
+Scrieți un program care să citească de la tastatură un șir de caractere de dimensiune maximă 255 caractere, o valoare întreagă, și o valoare reală. Se va afișa în consolă fiecare dată, în ordinea citirii, pe cate o linie nouă.
+
+#include <stdio.h>
+
+int main()
+{
+    //char c;
+    char s[256];
+    int a;
+    float b;
+    //scanf("%c", &c);
+    fgets(s, 256, stdin);
+    scanf("%d", &a);
+    scanf("%f", &b);
+    //printf("%c \n", c);
+    puts(s);
+    //printf("%d \n", a);
+    //printf("%f \n", b);
+    return 0;
+}

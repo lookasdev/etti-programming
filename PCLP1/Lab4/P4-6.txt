@@ -1,0 +1,13 @@
+Scrieți un program care să permită citirea de la tastatură a două numere naturale a și n, și să afișeze în consolă rezultatul a^n.
+
+#include <stdio.h>
+
+int main()
+{
+    int a, n, aux;
+    scanf("%d %d", &a, &n);
+    aux = a;
+    for (int i = 1; i < n; i++) a *= aux;
+    printf("%d", a);
+    return 0;
+}

@@ -1,0 +1,32 @@
+Conversia unui numar zecimal în binar se realizează prin împărțirea succesivă a numărului respectiv la baza în care se dorește conversia (2), mai precis, se împarte numărul la bază, iar în continuare, câtul se împarte la bază până când acesta devine zero. Șirul binar se obține prin concatenarea resturilor fiecărei împărțiri, în ordine inversă. Realizați un program care să permită citirea unui număr întreg x, unde  x∈Z
+, introdus de la tastatură și afișează în consolă corespondența binară. 
+
+#include <stdio.h>
+
+int main()
+{
+    int nr;
+    bool negativ = false;
+    unsigned long long int rez = 0;
+    scanf("%d", &nr);
+    if (nr < 0)
+    {
+        nr = - nr; //modul
+        negativ = true;
+    }
+    while (nr)
+    {
+        if (nr % 2 == 1) rez = rez * 10 + 1;
+        else if (nr % 2 == 0) rez = rez * 10 + 2; //punem 2 in loc de 0
+        nr /= 2;
+    }
+    //printf("%d\n", rez); //test
+    if (negativ) printf("1");
+    while (rez)
+    {
+        if (rez % 10 == 1) printf("1");
+        if (rez % 10 == 2) printf("0");
+        rez /= 10;
+    }
+    return 0;
+}

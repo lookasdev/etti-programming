@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct array_1d
+{
+    char *values;
+    int length;
+};
+
+int main()
+{
+    struct array_1d arr = {};
+    int length;
+    //char sir[] = "ATTACGGCGCCGTAAT";
+    char sir[1025];
+    scanf("%s", sir);
+    int len = 0;
+    while(sir[len] != '\0')
+        len++;
+    arr.values = (char *)malloc(len * sizeof(char));
+    arr.length = len;
+    //printf("%d\n", len);
+    for (int i = 0; i < arr.length; i++)
+        arr.values[i] = sir[i];
+    
+    bool ok;
+    //for(int i = arr.length-1; i >= arr.length/2; i--)
+    for(int i = 0; i < arr.length/2; i++)
+    {
+        //printf("%c %c\n", arr.values[i], arr.values[arr.length-1-i]);
+        ok = false;
+        if (arr.values[i] == 'A' && arr.values[arr.length-1-i] == 'T') ok = true;
+        if (arr.values[i] == 'T' && arr.values[arr.length-1-i] == 'A') ok = true;
+        if (arr.values[i] == 'C' && arr.values[arr.length-1-i] == 'G') ok = true;
+        if (arr.values[i] == 'G' && arr.values[arr.length-1-i] == 'C') ok = true;
+        if (!ok)
+        {
+            printf("%d", i+1);
+            return 0;
+        }
+    }
+        
+    free(arr.values);
+    arr.length = 0;
+    printf("0");
+    return 0;
+}

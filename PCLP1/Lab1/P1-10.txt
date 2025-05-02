@@ -1,0 +1,11 @@
+Scrieți un program care să citească de la tastatură o valoare reală, și o afișează în consolă cu doar 4 zecimale.
+
+#include <stdio.h>
+
+int main()
+{
+    float b;
+    scanf("%f", &b);
+    printf("%.4f", b);
+    return 0;
+}

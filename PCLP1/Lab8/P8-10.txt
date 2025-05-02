@@ -1,0 +1,53 @@
+#include <stdio.h>
+
+void sortare(int v[], int n)
+{
+    for (int i = 0; i < n-1; i++)
+        for (int j = i+1; j < n; j++)
+            if (v[i] > v[j])
+            {
+                int aux = v[i];
+                v[i] = v[j];
+                v[j] = aux;
+            }
+}
+
+void binar(int v[], int n, int x)
+{
+    int stanga = 0, dreapta = n - 1, mijloc;
+    while (stanga <= dreapta) //conditia de iesire din struct repetitiva
+    {
+        mijloc = (dreapta + stanga) / 2;
+        if ((dreapta - stanga) % 2 == 1) dreapta += 1;
+
+        printf("%d\n", v[mijloc]); //printam valorea comparata
+
+        if (v[mijloc] == x) break; //nr gasit
+        else if (v[mijloc] < x)
+        {
+            stanga = mijloc + 1; // sau stanga = mijloc in cazul de mai jos
+            if ((dreapta - stanga) % 2 == 1) stanga--; //include in subvector val de mijloc anterioara pt a avea nr impar de elem
+        }
+        else if (v[mijloc] > x)
+        {
+            dreapta = mijloc - 1; // sau dreapta = mijloc in cazul de mai jos
+            if ((dreapta - stanga) % 2 == 1) dreapta++; //include in subvector val de mijloc anterioara pt a avea nr impar de elem
+        }
+
+    }
+}
+
+int main()
+{
+    int n, x;
+    int v[22];
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++)
+        scanf("%d", &v[i]);
+    scanf("%d", &x); //nr de cautat
+
+    sortare(v,n);
+    binar(v,n,x);
+
+    return 0;
+}

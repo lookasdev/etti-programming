@@ -1,0 +1,36 @@
+Realizați un program care să permită alocarea dinamică de memorie pentru o matrice bidimensională M, de m × n elemente reale, inițializată inițial cu valoarea 0. Ulterior, se vor citi de la tastatură elementele matricei M. Să se afișeze valoarea și adresa primului element și respectiv, valoarea și adresa ultimului element din matrice. Asigurați-vă că programul gestionează corect spațiul de memorie.
+
+Notă: Această problemă nu permite evaluarea automată. Adresele de memorie variază între execuții.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct array_2d
+{
+    float **values;
+    int rows;
+    int columns;
+};
+
+int main()
+{
+    struct array_2d arr = {};
+    int rows, columns;
+    scanf("%d %d", &rows, &columns);
+    arr.values = (float**)calloc(rows, sizeof(float *));
+    for (int i = 0; i < rows; i++)
+        arr.values[i] = (float *)calloc(columns, sizeof(float));
+    arr.rows = rows;
+    arr.columns = columns;
+    for (int i = 0; i < arr.rows; i++)
+        for (int j = 0; j < arr.columns; j++)
+            scanf("%f", *(arr.values + i) + j);
+    printf("%.2f %p\n", arr.values[0][0], &arr.values[0][0]);
+    printf("%.2f %p", arr.values[rows-1][columns-1], &arr.values[rows-1][columns-1]);
+    for (int i = 0; i < arr.rows; i++)
+        free(arr.values[i]);
+    free(arr.values);
+    arr.rows = 0;
+    arr.columns = 0;
+    return 0;
+}

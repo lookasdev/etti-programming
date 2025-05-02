@@ -1,0 +1,37 @@
+Scrieți un program care declară și inițializează cu valori arbitrare câte o variabilă de tip double, int și char. Apoi declarați și inițializați un pointer către fiecare dintre cele trei variabile. Programul dvs. va afișa adresa și valoarea stocată pentru fiecare dintre cele șase variabile. Utilizați specificatorul de formatare specific pentru a afișa adresele în hexazecimal. 
+
+Ar trebui să vedeți adrese care arată în felul următor: „0xbfe55918”. Caracterele inițiale „0x” vă spun că se utilizează notația hexazecimală; restul cifrelor dau adresa în sine. Utilizați „%f” pentru a afișa o valoare reală.
+
+#include <stdio.h>
+
+int main()
+{
+    int a;
+    char c;
+    double d;
+    
+    a = 1;
+    c = 'c';
+    d = 1.1f;
+    
+    int *pa = &a;
+    char *pc = &c;
+    double *pd = &d;
+    
+    printf("Adresa var int este 0x%x \n", &a);
+    printf("Adresa var char este 0x%x \n", &c);
+    printf("Adresa var double este 0x%x \n \n", &d);
+    
+    printf("Adresa var int* este 0x%x \n", &pa);
+    printf("Adresa var char* este 0x%x \n", &pc);
+    printf("Adresa var double* este 0x%x \n \n", &pd);
+    
+    printf("Valoarea var int este %d \n", a);
+    printf("Valoarea var char este %c \n", c);
+    printf("Valoarea var double este %f \n \n", d);
+    
+    printf("Valoarea var int* este 0x%x \n", pa);
+    printf("Valoarea var char* este 0x%x \n", pc);
+    printf("Valoarea var double* este 0x%x \n \n", pd);
+    return 0;
+}

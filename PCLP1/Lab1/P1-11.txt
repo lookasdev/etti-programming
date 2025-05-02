@@ -1,0 +1,11 @@
+Scrieți un program care să citească de la tastatură o valoare întreagă, și o afișează în consolă formatând ieșirea cu specificatorul de precizie de valoare 10.
+
+#include <stdio.h>
+
+int main()
+{
+    int a;
+    scanf("%d", &a);
+    printf("%.10d", a);
+    return 0;
+}

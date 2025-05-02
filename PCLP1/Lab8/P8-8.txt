@@ -1,0 +1,79 @@
+Să se realizeze un program care să permită verificarea unui fișier sursă ce conține nume de funcții, valori numerice, operatori și paranteze și să valideze dacă este corect formatat din punct de vedere al parantezelor. O expresie este corect formată dacă toate parantezele deschise se închid în ordinea inversă a deschiderii lor.
+
+Date de intrare
+Se va citi de la tastatură un șir de caractere de dimeniune arbitrară reprezentând conținutul fișierului sursă supus verificării.
+
+Date de ieșire
+Programul va afişa pe ecran rezultatul verificării în felul următor:
+
+Dacă expresia este validă, programul va afișa textul „Corect!”;
+
+Dacă expresia nu este validă, programul va afișa textul „Incorect!”, urmat de un spațiu și un întreg reprezentând coloana pe care se situează caracterele care generează eroarea de sintaxă.
+
+
+
+Intrare
+
+Ieșire
+
+void ExtragereNod() { struct NOD *tmp=prim; if (tmp == NULL) return; if (prim == ultim) { prim = NULL; ultim = NULL; } else prim=prim->urmatorulNOD; free(tmp); }
+
+Corect!
+
+void ExtragereNod() { struct NOD *tmp=prim; if (tmp == NULL) return; if (prim == ultim) { prim = NULL; ultim = NULL; } else prim=prim->urmatorulNOD; free(tmp);
+
+Incorect! 21
+
+void strcmp(){return 0}}
+
+Incorect! 24
+
+void strcmp()}return 0}
+
+Incorect! 14
+
+
+
+#include <stdio.h>
+
+int main()
+{
+    char sir[1001];
+    char c;
+    int i = 0;
+    while (i < 1001-1) //lasam loc pt '\0'
+    {
+        scanf("%c", &c);
+        if (c == '\n')
+        {
+            sir[i] = '\0';
+            break;
+        }
+        sir[i] = c;
+        i++;
+    }
+    int test = 0;
+    int k;
+    i = 0;
+    while(sir[i] != '\0')
+    {
+        if (sir[i] == '{' && test == 0)
+        {
+            test--;
+            k = i;
+        }
+        else if (sir[i] == '}' && test == 0)
+        {
+            test++;
+            k = i;
+        }
+        else if (sir[i] == '{') test--;
+        else if (sir[i] == '}') test++;
+        i++;
+    }
+    
+    if (test == 0) printf("Corect!");
+    else printf("Incorect! %d", k-1); //trb k-1 aici
+    
+    return 0;
+}

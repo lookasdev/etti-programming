@@ -1,0 +1,15 @@
+Dacă listăm toate numerele naturale mai mici decât 10 care sunt multipli de 3 și 5 obtinem 3, 5, 6 și 9. Suma acestor multipli este 23. Scrieți un program care să determine suma tuturor multiplilor lui 3 și 5 mai mici decât 1000.
+
+#include <stdio.h>
+
+int main()
+{
+    int suma = 0;
+    for (int i = 3; i < 1000; i+=3)
+        suma += i;
+    for (int i = 5; i < 1000; i+=5)
+        if (i % 3 != 0)
+            suma += i;
+    printf("%d", suma);
+    return 0;
+}

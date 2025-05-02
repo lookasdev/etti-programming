@@ -1,0 +1,13 @@
+Scrieţi un program care citește de la tastatură doi întregi, și afișează restul împărțirii primului la al doilea.
+
+#include <stdio.h>
+
+int main()
+{
+    int a, b, rest;
+    scanf("%d", &a);
+    scanf("%d", &b);
+    rest = a%b;
+    printf("%d", rest);
+    return 0;
+}

@@ -1,0 +1,14 @@
+Scrieți un program care să exploreze fisierele antent limits.h și float.h, și să afișeze* domeniul de cuprindere pentru tipurile fundamentale de bază, precum și variațiile date de modificatorii de tip (Expresii-> Modificatori de tip; I/O formatate -> Funcția printf()).
+
+#include <stdio.h>
+#include <limits.h>
+#include <float.h>
+
+int main()
+{
+    printf("int -> %d : %d \n", INT_MIN, INT_MAX);
+    printf("char -> %d : %d \n", CHAR_MIN, CHAR_MAX);
+    printf("float -> %g : %g \n", FLT_MIN, FLT_MAX);
+    printf("double -> %lg : %lg \n", DBL_MIN, DBL_MAX);
+    return 0;
+}

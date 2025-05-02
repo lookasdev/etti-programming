@@ -1,0 +1,47 @@
+Realizați un program în limbajul C care să permită alocarea dinamică de memorie pentru un șir de caractere S de lungime inițială m. Ulterior, programul trebuie să realloce spațiul pentru șirul S astfel încât să permită adăugarea unui număr suplimentar de n caractere care vor fi introduse în continuarea șirului inițial.
+Programul trebuie să afișeze noul șir rezultat. Asigurați-vă că programul gestionează corect spațiul de memorie.
+
+Intrare:
+5
+TEST
+22
+ ALOCARE DINAMICA
+
+Ieșire
+TEST ALOCARE DINAMICA
+
+Notă: Șirul de caractere poate conține spații albe.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct array_1d
+{
+    char *values;
+    int length;
+};
+
+int main()
+{
+    struct array_1d arr = {};
+    int length, aux;
+    scanf("%d%*c", &length);
+    arr.values = (char *)malloc(length * sizeof(char));
+    arr.length += length;
+    for (int i = 0; i < arr.length; i++)
+        scanf("%[^\n]", (arr.values + i));
+    //arr.values[length-1] = ' '; // nu e nevoie
+    aux = length;
+    scanf("%d%*c", &length);
+    arr.length += length;
+    arr.values = (char *)realloc(arr.values, length * sizeof(char)); // e nevoie
+    for (int i = aux-1; i < arr.length; i++)
+        scanf("%[^\n]", (arr.values + i));
+    //for (int i = 0; i < arr.length; i++)
+        //printf("%c", *(arr.values + i));
+    printf("%s", arr.values);
+    free(arr.values);
+    arr.length = 0;
+    return 0;
+}

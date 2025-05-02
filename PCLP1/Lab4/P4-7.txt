@@ -1,0 +1,30 @@
+Realizați un program care să determine rădăcina pătrată a unui număr natural arbitrar introdus de la tastatură. Afișați în consolă rezultatul.
+
+Notă:  Rădăcina pătrată a unui număr a este numărul y cu proprietatea că y2 = a. Cu alte cuvinte, un număr y al cărui pătrat (rezultatul înmulțirii numărului cu el însuși, sau y × y) este a.
+
+Obs: Nu este permisă utilizarea funcției sqrt().
+
+#include <stdio.h>
+
+double newton(int nr)
+{
+    double x = nr;
+    double y = 1;
+    double precizie = 0.00001;
+    while (x-y > precizie)
+    {
+        x = (x + y) / 2;
+        y = nr / x;
+    }
+    return x;
+}
+
+int main()
+{
+    int nr;
+    double rad;
+    scanf("%d", &nr);
+    if (nr >= 0) rad = newton(nr);
+    printf("%.5f", rad);
+    return 0;
+}

@@ -1,0 +1,12 @@
+Scrieți un program care declară câte o variabilă pentru fiecare tip fundamental disponibil în limbajul C (exluzând tipul void).
+
+#include <stdio.h>
+
+int main()
+{
+    int a;
+    float b;
+    char c;
+    double d;
+    return 0;
+}

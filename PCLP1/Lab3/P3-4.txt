@@ -1,0 +1,16 @@
+Realizați un program care să citească un caracter de la tastatură și să afișeze toate celelalte caractere care îi urmează, până se ajunge la caracterul Z dacă litera introdusă de la tastatură este majusculă, sau z, dacă litera introdusă de la tastatură este minusculă.
+
+#include <stdio.h>
+
+int main()
+{
+    char c;
+    scanf("%c", &c);
+    if (c >= 'a' && c <= 'z')
+        for(char i = c+1; i <= 'z'; i++)
+            printf("%c", i);
+    else if (c >= 'A' && c <= 'Z')
+        for(char i = c+1; i <= 'Z'; i++)
+            printf("%c", i);
+    return 0;
+}

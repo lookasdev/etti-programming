@@ -1,0 +1,50 @@
+#include <stdio.h>
+
+char cifrare(char c, int k)
+{
+    for (int i = 0; i < k; i++)
+    {
+        if(c == 'z') c = 'a';
+        else if (c == 'Z') c = 'A';
+        else c++;
+    }
+    return c;
+}
+
+int main()
+{
+    char sir[256], c;
+    int n, k;
+    int v[11];
+    int i = 0;
+    while (i < 256-1)
+    {
+        scanf("%c", &c);
+        //c = getchar();
+        if (c == '\n')
+        {
+            sir[i] = '\0';
+            break;
+        }
+        sir[i] = c;
+        i++;
+    }
+    scanf("%d", &n);
+    for(int i = 0; i < n; i++)
+        scanf("%d", v + i);
+
+    i = 0;
+    k = 0;
+    while(sir[i] != '\0')
+    {
+        if ((sir[i] >= 'a' && sir[i] <= 'z') || (sir[i] >= 'A' && sir[i] <= 'Z'))
+        {
+            sir[i] = cifrare(sir[i], v[k]);
+            k++;
+        }
+        if(k == n) k = 0;
+        i++;
+    }
+    printf("%s", sir);
+    return 0;
+}

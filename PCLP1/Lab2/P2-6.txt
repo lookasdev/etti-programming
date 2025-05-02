@@ -1,0 +1,13 @@
+Criptarea este un proces de mascare a unei informații pentru a o face ilizibilă pentru utilizatorii neautorizați. În astfel de rutine, operatorii pentru biți sunt deseori utilizați. Realizați un program care să permită criptarea a 4 întregi reprezentând coordonate spațiale de interes ce vor fi transmise mai departe unei terțe parte. Pentru criptare se va folosi o cheie secretă citită ultima de la tastatură reprezentată printr-un întreg iar operația de criptare se realizează prin operatorul XOR. Să se afișeze în consolă cele 4 coordonate criptate.
+
+#include <stdio.h>
+
+int main()
+{
+    int x, y, z, t;
+    int cheie;
+    scanf("%d %d %d %d", &x, &y, &z, &t);
+    scanf("%d", &cheie);
+    printf("%d %d %d %d", x ^ cheie, y ^ cheie, z ^ cheie, t ^ cheie);
+    return 0;
+}

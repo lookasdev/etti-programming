@@ -1,0 +1,90 @@
+Realizați un program care să determine cel mai mic x+y+z
+, cu numerele întregi x>y>z>0
+, astfel încât x+y,x−y
+, x+z
+, x−z
+, y+z
+, y−z
+ sunt toate pătrate perfecte. Afișați în consolă valorile determinate pentru x
+, y
+ și z
+, speparate printr-un spațiu urmate de rezultatul x+y+z
+.
+
+#include <stdio.h>
+
+bool patrat(int nr) //fct verif patrat perf fara sqrt() sau pow()
+{
+    int aux = 1; //evitam nr <= 0
+    while (aux * aux < nr) aux++;
+    return aux * aux == nr;
+}
+
+/*
+a = x + y (1)
+b = x - y (2)
+c = x + z (3)
+d = x - z (4)
+e = y + z (5)
+f = y - z (6)
+
+(2) b = x - y = (x + z) - (y + z) => b = c - e
+(5) e = y + z = (x + y) - (x - z) => e = a - d
+(6) f = y - z = (x + y) - (x + z) => f = a - c
+
+(1) && (2) => x = (a + b) / 2; (7)
+(5) && (6) => y = (e + f) / 2; (8)
+(3) && (4) => z = (c - d) / 2; (9)
+
+x > y > z > 0 && (1),(3),(4) => a > c > d
+
+(9) => c si d trb sa aiba aceeasi paritate ca diferenta lor sa fie divizibila cu 2 (x, y, z sunt nr intregi)
+
+fiindca a, c si d sunt de asemenea patrate perfecte, valorile lor de start vor fi:
+a = 16 (4^2)
+c = 9 (3^2)
+d = 1 (1^2) (nu 4=2^2 deoarece c si d am precizat ca trb sa aiba aceeasi paritate)
+
+daca gasim a, c si d, aflam din (2),(5),(6) si b, e si f, astfel putem calcula din (7),(8),(9) x, y, z
+*/
+
+int main()
+{
+    int i = 4;
+    bool rez = false;
+    while (!rez)
+    {
+        int a = i * i;
+        for (int j = 3; j < i; j++)
+        {
+            if (rez) break;
+            int c = j * j;
+            int f = a - c;
+            if (patrat(f))
+            {
+                int initk = 1;
+                if (j % 2 == 0) initk = 2; //c(j*j) si d(k*k) trb sa aiba aceeasi paritate ca diferenta lor sa fie divizibila cu 2
+                for (int k = initk; k < j; k+=2)
+                {
+                    int d = k * k;
+                    int e = a - d;
+                    int b = c - e;
+                    if(patrat(e) && patrat(b))
+                    {
+                        int x = (a + b) / 2;
+                        int y = (e + f) / 2;
+                        int z = (c - d) / 2;
+                        int suma = x + y + z;
+                        //printf ("%d %d %d %d %d %d \n", a, b, c, d, e, f); //test
+                        printf("%d %d %d %d", x, y, z, suma);
+                        rez = true;
+                        break;
+                    }
+                }
+            }
+        }
+        i++;
+    }
+    //printf("end"); //test
+    return 0;
+}

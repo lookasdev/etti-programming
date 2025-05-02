@@ -1,0 +1,11 @@
+Realizați un program care să citească de la tastatură o valoare întreagă și să afișeze dacă valoarea introdusă este pozitivă sau negativă, afișând mesajul "Numar pozitiv" în consolă dacă valoarea este pozitivă, sau "Numar negativ", altfel. Nu se testează valoarea 0.
+
+#include <stdio.h>
+
+int main()
+{
+    int a;
+    scanf("%d", &a);
+    a > 0 ? printf("Numar pozitiv") : printf("Numar negativ");
+    return 0;
+}

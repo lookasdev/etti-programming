@@ -1,0 +1,73 @@
+La bursă se presupune că anumite date sunt înregistrate succesiv la un interval prestabilit de timp (de exemplu din oră în oră) formând un şir de valori. Avem de-a face cu o succesiune de numere ce reprezintă mărimi cu care scade (valori negative) sau creşte (valori pozitive) un indice bursier. Un anumit jucător la bursă este interesat doar de creşterea indicelui, dar mai ales de succesiunea cea mai lungă de valori pozitive, precum şi de începutul acestei succesiuni în şirul de date iniţial.
+
+Cerinţă
+
+Dându-se valoarea n, considerată drept numărul de elemente ale unui şir de valori reale: {x0,x1,...,xn−2,xn−1
+}. să se determine poziţia de început şi lungimea celei mai lungi secvenţe de valori pozitive cuprinse în şirul dat. Dacă există două succesiuni egale ca număr de valori pozitive, o vom considera pe aceea care are suma cea mai mare a valorilor pozitive. Iar dacă există mai multe secvenţe care prezintă şi aceeaşi valoare a sumei elementelor componente, atunci se va alege prima astfel de succesiune.
+
+Date de intrare
+
+Se vor citi de la tastatură (fluxul stdin) linii separate conţinând următoarele date:
+
+Pe prima linie valoarea n, urmată de caracterul newline (tasta Enter);
+Pe următoarea linie se prezintă la intrare cele n valori reale ce constituie elementele şirului. 
+
+Date de ieşire
+
+Programul va afişa pe ecran (stream-ul standard de ieşire), pe linii separate, următoarele:
+
+Pe prima linie o valoare întreagă pe 2 octeţi, fără semn, reprezentând indexul de început al subşirului identificat (conţinând doar valori reale pozitive);
+Pe a doua linie o valoare întreagă pe 2 octeţi, fără semn, reprezentând lungimea secvenţei identificate. 
+Dacă nu există un astfel de subşir, indexul se va afişa ca -1, lungimea fiind raportată ca 0 (a se vedea exemplele de mai jos).
+Fiecare linie afişată se va încheia cu caracterul newline (tasta Enter).
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int maxxs = 0, auxs = 0; //nr max de elem pozitive consecutive (formeaza un sir)
+    int maxxi = -1, auxi = -1; //indicele de start al acelui sir
+    double maxxsuma = 0, auxsuma = 0; //suma elem din acel sir
+    
+    int dim;
+    scanf("%d", &dim);
+    double *v = (double*) malloc(dim * sizeof(double));
+    
+    for (int i = 0; i < dim; i++)
+        scanf("%lf", v + i);
+    
+    for (int i = 0; i < dim; i++)
+    {
+        if (v[i] >= 0)
+        {
+            auxi = i;
+            auxs++;
+            auxsuma += v[i];
+            i++;
+            while (i < dim && v[i] > 0)
+            {
+                auxs++;
+                auxsuma += v[i];
+                i++;
+            }
+            if (auxs > maxxs || (auxs == maxxs && auxsuma > maxxsuma))
+            {
+                maxxs = auxs;
+                maxxi = auxi;
+                maxxsuma = auxsuma;
+            }
+        }
+        auxs = 0;
+        auxi = 0;
+        auxsuma = 0;
+    }
+    
+    //printf("%lf\n", v[maxxi]); //test
+    if (maxxi != -1) printf("%d\n%d", maxxi, maxxs);
+    else printf("-1\n0");
+    
+    free(v);
+    return 0;
+}

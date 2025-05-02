@@ -1,0 +1,22 @@
+Scrieți un program care să interschimbe valorile a două variabile de tip întreg folosind strict pointeri. Se vor afișa pe ecran valorile inițiale, urmate de valorile interschimbate.
+
+#include <stdio.h>
+
+int main()
+{
+    int var1;
+    int var2;
+    
+    scanf("%d", &var1);
+    scanf("%d", &var2);
+    
+    int aux = var1; //var aux
+    int *pvar1 = &var1;
+    int *pvar2 = &var2;
+    int *paux = &aux; //pointer la aux
+    var1 = *pvar2;
+    var2 = *paux;
+    printf("var1: %d \n", var1);
+    printf("var2: %d", var2);
+    return 0;
+}

@@ -1,0 +1,858 @@
+#include"mystring.h"
+/*
+ * C standard function - copy a block of memory.
+ */
+
+void *
+memcpy(void *dst, const void *src, size_t len)
+{
+	size_t i;
+
+	/*
+	 * memcpy does not support overlapping buffers, so always do it
+	 * forwards.
+	 */
+	
+	char *d = (char*)dst;
+	const char *s = (char*)src;
+
+	for (i=0; i<len; i++) {
+		d[i] = s[i];
+	}
+
+	return dst;
+}
+
+/*
+
+void *
+	memcpy(void *dest, const void *src, size_t len)
+	{
+		char *d = (char*) dest;
+		const char *s = (char*) src;
+		while (len--)
+			*d++ = *s++;
+		return dest;
+	}
+*/
+
+/*
+ * C standard function - copy a block of memory, handling overlapping
+ * regions correctly.
+ */
+
+void *
+memmove(void *dst, const void *src, size_t len)
+{
+	size_t i;
+
+	/*
+	 * If the buffers don't overlap, it doesn't matter what direction
+	 * we copy in. If they do, it does, so just assume they always do.
+	 * We don't concern ourselves with the possibility that the region
+	 * to copy might roll over across the top of memory, because it's
+	 * not going to happen.
+	 *
+	 * If the destination is above the source, we have to copy
+	 * back to front to avoid overwriting the data we want to
+	 * copy.
+	 *
+	 *      dest:       dddddddd
+	 *      src:    ssssssss   ^
+	 *              |   ^  |___|
+         *              |___|
+	 *
+	 * If the destination is below the source, we have to copy
+	 * front to back.
+	 *
+	 *      dest:   dddddddd
+	 *      src:    ^   ssssssss
+	 *              |___|  ^   |
+         *                     |___|
+	 */
+
+	if (dst < src) {
+		/*
+		 * As author/maintainer of this library, take advantage of the
+		 * fact that we know memcpy copies forwards.
+		 */
+		return memcpy(dst, src, len);
+	}
+	
+	char *d = (char*)dst;
+	const char *s = (char*)src;
+
+	for (i=len; i>0; i--) {
+		d[i-1] = s[i-1];
+	}
+
+	return dst;
+}
+
+/*
+void *
+	memmove(void *dest, const void *src, size_t len)
+	{
+		char *d = (char*) dest;
+		const char *s = (char*) src;
+		if (d < s)
+			while (len--)
+				*d++ = *s++;
+		else
+		{
+			char *lasts = (char*)(s + (len - 1));
+			char *lastd = d + (len - 1);
+			while (len--)
+				*lastd-- = *lasts--;
+		}
+
+		return dest;
+	}
+*/
+
+/*
+// this version relies on the stdlib's malloc() function.
+void * memmove(void * dest, const void * src, size_t len) {
+    char * d = (char * ) dest;
+    const char * s = (char * ) src;
+    //allocate memory for a temp buf
+    char * tmp = (char * ) malloc(sizeof(char) * len);
+    if (NULL == tmp) {
+        return NULL;
+    } else {
+        size_t i;
+        // copy src in temp
+        for (i = 0; i < len; ++i) {
+            *(tmp + i) = * (s + i);
+        }
+        //copy tmp in dest
+        for (i = 0; i < len; ++i) {
+            *(d + i) = * (tmp + i);
+        }
+        free(tmp);
+    }
+    return dest;
+}
+*/
+
+/*
+ * C standard function - returns a pointer to the located character,
+ * or a null pointer if the character does not occur in the object
+ * regions correctly.
+ */
+
+
+void *
+memchr(const void *str, int ch, size_t len)
+{
+	const unsigned char *buf = (unsigned char *)str;
+	size_t i;
+
+	for (i=0; i<len; i++) {
+		if (buf[i] == ch) {
+			/* this must launder const */
+			return (void *)(buf + i);
+		}
+	}
+	return NULL;
+}
+
+/*
+void *
+	memchr(const void *src, int c, size_t len)
+	{
+		const unsigned char *s = (unsigned char *) src;
+
+		while (len-- > 0)
+		{
+			if (*s == c)
+				return (void*) s;
+			s++;
+		}
+
+		return NULL;
+	}
+*/	
+
+/*
+ * Standard C string function: compare two memory blocks and return
+ * their sort order.
+ */
+
+int
+memcmp(const void *buf1, const void *buf2, size_t len)
+{
+	const unsigned char *a = (unsigned char *)buf1;
+	const unsigned char *b = (unsigned char *)buf2;
+	size_t i;
+
+	for (i=0; i<len; i++) {
+		if (a[i] != b[i]) {
+			return (int)(a[i] - b[i]);
+		}
+	}
+	return 0;
+}
+
+/*
+int
+memcmp(const void *buf1, const void *buf2, size_t len)
+{
+	const unsigned char *s1 = (unsigned char *) buf1;
+	const unsigned char *s2 = (unsigned char *) buf2;
+
+	while (len-- > 0)
+	{
+		if (*s1++ != *s2++)
+			return s1[-1] < s2[-1] ? -1 : 1;
+	}
+
+	return 0;
+}
+*/
+
+/*
+ * C standard function - initialize a block of memory
+ */
+
+void *
+memset(void *dest, int ch, size_t len)
+{
+	char *d = (char*)dest;
+	size_t i;
+
+	for (i=0; i<len; i++) {
+		d[i] = ch;
+	}
+
+	return d;
+}
+
+/*
+void *
+	memset(void *dest, int ch, size_t len)
+	{
+		unsigned char *d = (unsigned char *) dest;
+		while (len-- > 0)
+			*d++ = ch;
+		return dest;
+	}
+*/
+
+/*
+ * Standard C string function: append one string to another.
+ */
+
+char *
+strcat(char *dest, const char *src)
+{
+	size_t offset;
+
+	offset = strlen(dest);
+	/*
+	 * As author/maintainer of this library, take advantage of the
+	 * fact that we know strcpy().
+	 */
+	strcpy(dest+offset, src);
+	return dest;
+}
+
+/*
+char *
+	strcat(char *s, const char *append)
+	{
+		char *save = s;
+		for (; *s; ++s);
+		while ((*s++ = *append++) != '\0');
+		return (save);
+	}
+*/
+
+/*
+ * C standard string function: concatenate src on the end of dst.  
+ * At most strlen(dst)+n+1 bytes are written at dst (at most n+1 
+ * bytes being appended). 
+ * Return dst.
+ */
+char *
+strncat(char *dst, const char *src, size_t n)
+{
+	if (n != 0) {
+		char *d = dst;
+		const char *s = src;
+		while (*d != 0)
+			d++;
+		do {
+			if ((*d = *s++) == 0)
+				break;
+			d++;
+		} while (--n != 0);
+		*d = 0;
+	}
+	return (dst);
+}
+
+/*
+ * C standard string function: find leftmost instance of a character
+ * in a string.
+ */
+char *
+strchr(const char *s, int ch)
+{
+	/* avoid sign-extension problems */
+	const char c = ch;
+
+	/* scan from left to right */
+	while (*s) {
+		/* if we hit it, return it */
+		if (*s == c) {
+			return (char *)s;
+		}
+		s++;
+	}
+
+	/* if we were looking for the 0, return that */
+	if (*s == c) {
+		return (char *)s;
+	}
+
+	/* didn't find it */
+	return NULL;
+}
+
+/*
+char *
+strchr(const char *s, int ch)
+{
+	char c;
+
+	c = ch;
+	for (;; ++s)
+	{
+		if (*s == c)
+			return ((char*) s);
+		if (*s == '\0')
+			return (NULL);
+	}
+}
+*/
+
+/*
+ * C standard string function: find rightmost instance of a character
+ * in a string.
+ */
+char *
+strrchr(const char *s, int c)
+{
+	/* avoid sign-extension problems */
+	const char ch = c;
+
+	/* start one past the last character INCLUDING NULL TERMINATOR */
+	size_t i = strlen(s)+1;
+
+	/* go from right to left; stop at 0 */
+	while (i > 0) {
+
+		/* decrement first */
+		i--;
+
+		/* now check the character we're over */
+		if (s[i] == ch) {
+			return (char *)(s+i);
+		}
+	}
+
+	/* didn't find it */
+	return NULL;
+}
+/*
+char 
+*strrchr(const char *s, int ch)
+{
+	char *save;
+	char c;
+
+	c = ch;
+	for (save = NULL;; ++s)
+	{
+		if (*s == c)
+			save = (char*) s;
+		if (*s == '\0')
+			return (save);
+	}
+}
+*/
+
+/*
+ * Standard C string function: compare two strings and return their
+ * sort order.
+ */
+
+int
+strcmp(const char *a, const char *b)
+{
+	size_t i;
+
+	/*
+	 * Walk down both strings until either they're different
+	 * or we hit the end of A.
+	 *
+	 * If A and B strings are not the same length, when the
+	 * shorter one ends, the two will be different, and we'll
+	 * stop before running off the end of either.
+	 *
+	 * If they *are* the same length, it's sufficient to check
+	 * that we haven't run off the end of A, because that's the
+	 * same as checking to make sure we haven't run off the end of
+	 * B.
+	 */
+
+	for (i=0; a[i]!=0 && a[i]==b[i]; i++) {
+		/* nothing */
+	}
+
+	/*
+	 * If A is greater than B, return 1. If A is less than B,
+	 * return -1.  If they're the same, return 0. Since we have
+	 * stopped at the first character of difference (or the end of
+	 * both strings) checking the character under I accomplishes
+	 * this.
+	 *
+	 * Note that strcmp does not handle accented characters,
+	 * internationalization, or locale sort order;
+	 *
+	 * The rules say we compare order in terms of *unsigned* char.
+	 */
+	if ((unsigned char)a[i] > (unsigned char)b[i]) {
+		return 1;
+	}
+	else if (a[i] == b[i]) {
+		return 0;
+	}
+	return -1;
+}
+
+/*
+int
+strcmp(const char *p1, const char *p2)
+{
+	const unsigned char *s1 = (unsigned char *) p1;
+	const unsigned char *s2 = (unsigned char *) p2;
+	unsigned char c1, c2;
+	do {
+		c1 = (unsigned char) *s1++;
+		c2 = (unsigned char) *s2++;
+		if (c1 == '\0')
+			return c1 - c2;
+	}
+
+	while (c1 == c2);
+	return c1 - c2;
+}
+*/
+
+/*
+ * C standard string function: returns an integer greater than, equal to,
+ * or less than zero, accordingly as the string pointed to by s1 is
+ * greater than, equal to, or less than the string pointed to by s2
+ * in the first n bytes.
+ */
+int
+strncmp(const char *s1, const char *s2, size_t n)
+{
+    unsigned char u1, u2;
+    
+    while (n-- > 0)
+    {
+        u1 = (unsigned char) *s1++;
+        u2 = (unsigned char) *s2++;
+        if (u1 != u2)
+            return u1 - u2;
+        if (u1 == '\0')
+	        return 0;
+    }
+    return 0;
+}
+/*
+int
+strncmp(const char *s1, const char *s2, size_t n)
+{
+	if (n == 0)
+		return (0);
+	do {
+		if (*s1 != *s2++)
+			return (*(unsigned char *) s1 - *(unsigned char *) --s2);
+		if (*s1++ == 0)
+			break;
+	} while (--n != 0);
+	return (0);
+}
+*/
+
+/*
+ * Standard C string function: copy one string to another.
+ */
+char *
+strcpy(char *dest, const char *src)
+{
+	size_t i;
+
+	/*
+	 * Copy characters until we hit the null terminator.
+	 */
+	for (i=0; src[i]; i++) {
+		dest[i] = src[i];
+	}
+
+	/*
+	 * Add null terminator to result.
+	 */
+	dest[i] = 0;
+
+	return dest;
+}
+/*
+char *
+	strcpy(char *to, const char *from)
+	{
+		char *save = to;
+		for (; (*to = *from) != '\0'; ++from, ++to);
+		return (save);
+	}
+*/
+ 
+ /*
+ * Standard C string function: copy src to dst, truncating or null-padding
+ * to always copy n bytes.
+ * Return dst.
+ */
+char *
+strncpy(char *dst, const char *src, size_t n)
+{
+	if (n != 0) {
+		char *d = dst;
+		const char *s = src;
+
+		do {
+			if ((*d++ = *s++) == 0) {
+				/* NUL pad the remaining n-1 bytes */
+				while (--n != 0)
+					*d++ = 0;
+				break;
+			}
+		} while (--n != 0);
+	}
+	return (dst);
+}
+
+/*
+ * C standard string function: get length of a string
+ */
+size_t
+strlen(const char *str)
+{
+	size_t ret = 0;
+
+	while (str[ret]) {
+		ret++;
+	}
+	return ret;
+}
+/*
+size_t
+strlen(const char *str)
+{
+	const char *s;
+	for (s = str; *s; ++s)
+	    ;
+	return (s - str);
+}
+*/
+
+/*
+ * C standard string function: computes the length of the initial segment of
+ * the string pointed to s1 which consists entirely of characters from the 
+ * string pointed to by s2 (excluding the terminating null character).
+ * Returns the length of the segment found.
+ */
+ 
+size_t
+strspn (const char *s1, const char *s2)
+{
+    const char *s = s1;
+    const char *c;
+    
+    while (*s1)
+    {
+        for (c = s2; *c; c++)
+            if (*s1 == *c)
+                break;
+        
+        if (*c == '\0')
+            break;
+    
+        s1++;
+    }
+
+  return s1 - s;
+}
+
+/*
+size_t
+strspn(const char *s1, const char *s2)
+{
+	const char *p = s1, *spanp;
+	char c, sc;
+	cont:
+		c = *p++;
+	    for (spanp = s2; (sc = *spanp++) != 0;)
+		    if (sc == c)
+	            goto cont;
+	return (p - 1 - s1);
+}
+*/
+
+/*
+ * C standard string function: computes the length of the initial part of
+ * the string pointed to by s1 which consists entirely of characters NOT from 
+ * the string pointed to by s2 (excluding the terminating null character).
+ * Returns the length of the substring found.
+ */
+	
+size_t
+strcspn (const char *s1, const char *s2)
+{
+    const char *s = s1;
+    const char *c;
+    
+    while (*s1)
+    {
+        for (c = s2; *c; c++)
+            if (*s1 == *c)
+                break;
+        if (*c)
+            break;
+        
+        s1++;
+    }
+    
+    return s1 - s;
+}
+/*
+size_t
+strcspn(const char *s1, const char *s2)
+{
+	const char *p, *spanp;
+	char c, sc;
+	for (p = s1;;)
+	{
+		c = *p++;
+		spanp = s2;
+		do { 	
+		    if ((sc = *spanp++) == c)
+				return (p - 1 - s1);
+		} while (sc != 0);
+	}
+}
+*/
+
+/*
+ * C standard string function: locates the first occurence in the string
+ * pointed to by s1 of any character in string pointed to by s2 
+ * (excluding the terminating null character).
+ 
+ * Returns a pointer to the character found in s1, or a null pointer 
+ * if no character from s2 occurs in s1.
+ */
+
+char *
+strpbrk (const char *s1, const char *s2)
+{
+    const char *c = s2;
+    if (!*s1)
+        return (char *) NULL;
+
+    while (*s1)
+    {
+        for (c = s2; *c; c++)
+            if (*s1 == *c)
+                break;
+	    
+	    if (*c)
+	        break;
+        
+        s1++;
+    }
+
+    if (*c == '\0')
+        s1 = NULL;
+
+    return (char *) s1;
+}
+
+/*
+char *
+	strpbrk(const char *s1, const char *s2)
+	{
+		const char *scanp;
+		int c, sc;
+
+		while ((c = *s1++) != 0)
+		{
+			for (scanp = s2;
+				(sc = *scanp++) != 0;)
+				if (sc == c)
+					return ((char*)(s1 - 1));
+		}
+
+		return (NULL);
+	}
+*/
+
+/*
+ * C standard string function: searches for the substring s2 in the string
+ * s1, not including the terminating null characters. A pointer to the first
+ * occurrence of s2 is returned, or NULL if the substring is absent. 
+ * If s2 points to a string with zero length, the function returns s1.
+ */
+ 
+char *
+strstr (const char *s1, const char *s2)
+{
+    const size_t len = strlen (s2);
+    while (*s1)
+    {
+        if (!memcmp (s1, s2, len))
+            return (char *)s1;
+        ++s1;
+    }
+    return (0);
+}
+
+/*
+char *
+	strstr(const char *s, const char *find)
+	{
+		char c, sc;
+		size_t len;
+		if ((c = *find++) != 0)
+		{
+			len = strlen(find);
+			do { 	
+			    do { 	
+			        if ((sc = *s++) == 0)
+						return (NULL);
+				} while (sc != c);
+			} while (strncmp(s, find, len) != 0);
+			s--;
+		}
+
+		return ((char*) s);
+	}
+*/
+
+/*
+ * Standard C string function: tokenize a string splitting based on a
+ * list of separator characters. Reentrant version.
+ *
+ * The "context" argument should point to a "char *" that is preserved
+ * between calls to strtok_r that wish to operate on same string.
+ */
+char *
+strtok_r(char *string, const char *seps, char **context)
+{
+	char *head;  /* start of word */
+	char *tail;  /* end of word */
+
+	/* If we're starting up, initialize context */
+	if (string) {
+		*context = string;
+	}
+
+	/* Get potential start of this next word */
+	head = *context;
+	if (head == NULL) {
+		return NULL;
+	}
+
+	/* Skip any leading separators */
+	while (*head && strchr(seps, *head)) {
+		head++;
+	}
+
+	/* Did we hit the end? */
+	if (*head == 0) {
+		/* Nothing left */
+		*context = NULL;
+		return NULL;
+	}
+
+	/* skip over word */
+	tail = head;
+	while (*tail && !strchr(seps, *tail)) {
+		tail++;
+	}
+
+	/* Save head for next time in context */
+	if (*tail == 0) {
+		*context = NULL;
+	}
+	else {
+		*tail = 0;
+		tail++;
+		*context = tail;
+	}
+
+	/* Return current word */
+	return head;
+}
+
+/*
+char *
+	strtok_r(char *s, const char *sep, char **last)
+	{
+		char *spanp;
+		int c, sc;
+		char *tok;
+		if (s == NULL && (s = *last) == NULL)
+			return (NULL);
+		cont:
+			c = *s++;
+		    for (spanp = (char*) sep; (sc = *spanp++) != 0;)
+		    {
+			    if (c == sc)
+				    goto cont;
+		    }
+
+		if (c == 0)
+		{
+			*last = NULL;
+			return (NULL);
+		}
+
+		tok = s - 1;
+
+		for (;;)
+		{
+			c = *s++;
+			spanp = (char*) sep;
+			do { 	
+			    if ((sc = *spanp++) == c)
+				{
+					if (c == 0)
+						s = NULL;
+					else
+						s[-1] = 0;
+					*last = s;
+					return (tok);
+				}
+			} while (sc != 0);
+		}
+	}
+*/
+char *
+strtok(char *str, const char *seps)
+{
+    static char *strtok_context;
+	return strtok_r(str, seps, &strtok_context);
+}

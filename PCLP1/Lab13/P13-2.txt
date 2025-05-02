@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void citesteSir(char **sir)
+{
+    char c;
+    int size = 0;
+    while ((c = getchar()) != '\n')
+    {
+        *sir = (char *)realloc(*sir, (size + 1) * sizeof(char));
+        (*sir)[size++] = c;
+    }
+
+    *sir = (char *)realloc(*sir, (size + 1) * sizeof(char));
+    (*sir)[size] = '\0';
+}
+
+int main()
+{
+    int nr;
+    scanf("%d%*c", &nr);
+
+    for (int i = 1; i <= nr; ++i)
+    {
+        char *sir = NULL;
+        bool semafor = false;
+        sir = (char *)malloc(1 * sizeof(char)); //trb sa aiba o adresa initiala
+        citesteSir(&sir);
+        char *token = strtok(sir, ",");
+        while (token != NULL)
+        {
+            if (token[0] == '(')
+            {
+                for (unsigned int i = 0; i < strlen(token); ++i)
+                {
+                    if (token[i] != '(')
+                    {
+                        if (semafor == false) printf("%c", token[i]);
+                        else if (i <= 1) printf(",%c", token[i]); //conditie pt numere din sir de 2 sau mai multe cifre
+                        else if (i >= 2) printf("%c", token[i]); //conditie pt numere din sir de 2 sau mai multe cifre
+                    }
+                }
+                semafor = true;
+                char *futureToken;
+                futureToken = strtok(NULL, ",");
+                int aux = atoi(futureToken); // str -> int
+                for (int i = 0; i < aux; ++i) printf(",0");
+            }
+            else
+            {
+                if (semafor == false)
+                {
+                    printf("%s", token);
+                    semafor = true;
+                }
+                else printf(",%s", token);
+
+            }
+            token = strtok(NULL, ",");
+        }
+        printf("\n");
+        free(sir);
+    }
+    return 0;
+}

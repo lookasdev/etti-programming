@@ -1,0 +1,26 @@
+/*
+ * Includeți aici librăria proprie
+ */
+#include "mystring.h" //lib proprie 
+ 
+#include <stdio.h>
+
+//exemplu pt memcpy()
+ 
+#define MAX_LEN 80
+ 
+char source[ MAX_LEN ] = "This is the source string";
+char target[ MAX_LEN ] = "This is the target string";
+ 
+int main(void)
+{
+  printf("Before memcpy, target is \"%s\"\n", target );
+  memcpy(target, source, sizeof(source));
+  printf("After memcpy, target becomes \"%s\"\n", target );
+}
+ 
+/*********************  Output:  ************************
+ 
+Before memcpy, target is "This is the target string"
+After memcpy, target becomes "This is the source string"
+*/

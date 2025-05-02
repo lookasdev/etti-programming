@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void citesteMatrice(int ***matrice, int nrLinii, int nrColoane) // fct pentru init matrice si citirea valorilor
+{
+    *matrice = (int **)malloc(nrLinii * sizeof(int *));
+    for (int i = 0; i < nrLinii; ++i) (*matrice)[i] = (int *)malloc(nrColoane * sizeof(int));
+
+    for (int i = 0; i < nrLinii; ++i)
+        for (int j = 0; j < nrColoane; ++j)
+            scanf("%d", &(*matrice)[i][j]);
+}
+
+void elibereazaMatrice(int ***matrice, int nrLinii) // fct pentru eliberarea matricei din memorie
+{
+    for (int i = 0; i < nrLinii; ++i)
+        free((*matrice)[i]);
+    free(*matrice);
+    *matrice = NULL;
+}
+
+int main()
+{
+    int m, n, p;
+    scanf("%d %d %d", &m, &n, &p);
+
+    int **Vij = NULL;
+    citesteMatrice(&Vij, m, n); //matrice de dim m si n (ponderi)
+
+    int **Wjk = NULL;
+    citesteMatrice(&Wjk, n, p); //matrice de dim n si p (ponderi)
+
+    int *Xi = (int *)malloc(m * sizeof(int)); //sir de dim m
+    for (int i = 0; i < m; ++i) scanf("%d", &Xi[i]);
+
+    int *Sj = (int *)malloc(n * sizeof(int)); //sir de dim n
+    for (int j = 0; j < n; ++j)
+    {
+        Sj[j] = 0;
+        for (int i = 0; i < m; ++i) Sj[j] += Xi[i] * Vij[i][j];
+    }
+
+    int *Yk = (int *)malloc(p * sizeof(int)); //sir de dim p
+    for (int k = 0; k < p; ++k)
+    {
+        Yk[k] = 0;
+        for (int j = 0; j < n; ++j) Yk[k] += Sj[j] * Wjk[j][k];
+    }
+
+    int maxx = Yk[0];
+    int rez = 0;
+    for (int i = 1; i < p; ++i) //incepem de la 1 pt ca maxx a fost init cu val de pe poz 0
+        if (Yk[i] > maxx)
+        {
+            maxx = Yk[i];
+            rez = i;
+        }
+
+    printf("%d", rez + 1); //revenim la indexarea cu 1
+
+    elibereazaMatrice(&Vij, m);
+    elibereazaMatrice(&Wjk, n);
+
+    free(Xi);
+    free(Sj);
+    free(Yk);
+
+    return 0;
+}

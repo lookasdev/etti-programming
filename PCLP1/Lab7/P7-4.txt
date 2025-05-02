@@ -1,0 +1,45 @@
+În procesarea semnalelor se întâmplă foarte des ca semnalul recepționat să fie afectat de zgomot alb Gaussian aditiv. Pentru eliminarea zgomotului și, implicit, extragerea semnalului util dintr-un semnal zgomotos, o metodă foarte simplă este aplicarea unui filtru de mediere cu ajutorul căruia se calculează media valorilor semnalului pe ferestre glisante.
+
+Cerinţă
+
+Având la dispoziție un vector de valori reale se va calcula media aritmetică a fiecăror 5 valori adiacente. Astfel, pe poziția i
+ se va reține media aritmetică a valorilor vectorului de pe pozițiile i−2,i−1,i,i+1
+ și i+2
+. Această fereastră de dimensiune 5 va fi baleată pe toată lungimea vectorului. La capete, în lipsa unui număr suficient de valori ale semnalului de intrare, se va completa cu valoarea 0 până la atingerea dimensiunii ferestrei de procesare.
+
+Date de intrare
+Se vor citi de la tastatură (fluxul stdin) următoarele date:
+pe prima linie, o valoare întreagă n (5≤n≤100)
+ reprezentând numărul de valori ale semnalului;
+pe a doua linie, n valori reale, separate printr-un spațiu (caracterul whitespace), reprezentând valorile semnalului afectat de zgomot; 
+Date de ieșire
+Programul va afişa pe ecran (stream-ul standard de ieşire):
+n valori reale cu 2 zecimale, separate printr-un spațiu, reprezentând valorile semnalului procesat.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    int dim;
+    scanf("%d", &dim);
+    double *v = (double*) malloc((dim) * sizeof(double));
+    double *rez = (double*) malloc((dim) * sizeof(double));
+    for (int i = 0; i < dim; i++)
+        scanf("%lf", v + i);
+    int k = 0;
+    for (int i = 0; i < dim; i++)
+    {
+        if (i == 0) rez[k] = (0+0+v[i]+v[i+1]+v[i+2]) / 5;
+        else if (i == 1) rez[k] = (0+v[i-1]+v[i]+v[i+1]+v[i+2]) / 5;
+        else if (i == dim-2) rez[k] = (v[i-2]+v[i-1]+v[i]+v[i+1]+0) / 5;
+        else if (i == dim-1) rez[k] = (v[i-2]+v[i-1]+v[i]+0+0) / 5;
+        else rez[k] = (v[i-2]+v[i-1]+v[i]+v[i+1]+v[i+2]) / 5;
+        k++;
+    }
+    for (int i = 0; i < k; i++)
+        printf("%.2lf ", *(rez+i));
+    free(v);
+    free(rez);
+    return 0;
+}

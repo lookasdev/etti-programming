@@ -1,0 +1,269 @@
+#include "mystring.h"
+#include <stdio.h>
+//#include <stddef.h> //inclus in stdio.h
+
+void * memcpy(void *dest, const void *src, size_t len)
+{
+    char *d = (char *) dest;
+    const char *s = (char *) src;
+    while (len--)
+        *d++ = *s++;
+    return dest;
+}
+void *memmove(void *dest, const void *src, size_t n)
+{
+    char *d = (char *) dest;
+    const char *s = (const char *) src;
+
+    if (d == s || n == 0) return dest;
+
+    if (d < s || d >= (s + n))
+        while (n--) *d++ = *s++;
+    else
+    {
+        d += n - 1;
+        s += n - 1;
+        while (n--) *d-- = *s--;
+    }
+
+    return dest;
+}
+void *memchr(const void *str, int c, size_t n)
+{
+    const unsigned char *s = (const unsigned char *) str;
+    unsigned char uc = (unsigned char) c;
+
+    while (n-- != 0)
+    {
+        if (*s == uc) return (void *)s;
+        s++;
+    }
+
+    return NULL;
+}
+int memcmp(const void *buf1, const void *buf2, size_t n)
+{
+    const unsigned char *b1 = (const unsigned char *)buf1;
+    const unsigned char *b2 = (const unsigned char *)buf2;
+
+    while (n--)
+    {
+        if (*b1 != *b2) return (*b1 - *b2);
+        b1++;
+        b2++;
+    }
+
+    return 0;
+}
+void *memset(void *dest, int c, size_t n)
+{
+    unsigned char *d = (unsigned char *)dest;
+    unsigned char uc = (unsigned char)c;
+
+    while (n--) *d++ = uc;
+
+    return dest;
+}
+char *strcat(char *dest, const char *src)
+{
+    char *d = dest;
+
+    while (*d != '\0') d++;
+        
+    while (*src != '\0') *d++ = *src++;
+
+    *d = '\0';
+
+    return dest;
+}
+char *strncat(char *dest, const char *src, size_t n)
+{
+    char *d = dest;
+
+    while (*d != '\0') d++;
+        
+    while (*src != '\0' && n > 0)
+    {
+        *d++ = *src++;
+        n--;
+    }
+
+    *d = '\0';
+
+    return dest;
+}
+char *strchr(const char *src, int c)
+{
+    while (*src != '\0')
+    {
+        if (*src == (char)c) return (char *)src;
+        src++;
+    }
+
+    return NULL;
+}
+char *strrchr(const char *src, int c)
+{
+    const char *lastOccurrence = NULL;
+
+    while (*src != '\0')
+    {
+        if (*src == (char)c) lastOccurrence = src;
+            
+        src++;
+    }
+
+    return (char *)lastOccurrence;
+}
+int strcmp(const char *ptr1, const char *ptr2)
+{
+    while (*ptr1 != '\0' && *ptr1 == *ptr2)
+    {
+        ptr1++;
+        ptr2++;
+    }
+
+    return *(unsigned char *)ptr1 - *(unsigned char *)ptr2; // evita comportamentul nedefinit asociat cu semnele negative => intervalul [-128, 127]
+}
+int strncmp(const char *str1, const char *str2, size_t n)
+{
+    while (n > 0 && *str1 != '\0' && *str1 == *str2)
+    {
+        str1++;
+        str2++;
+        n--;
+    }
+
+    if (n > 0) return *(unsigned char *)str1 - *(unsigned char *)str2;
+    
+    return 0; //diferenta dintre caractere e 0 daca s-au computat primele n si nu au fost gasite diferente
+}
+char *strcpy(char *dest, const char *src)
+{
+    char *d = dest;
+
+    while ((*d++ = *src++) && *src != '\0')  //se continua pana cand se intalneste terminatorul nul
+    
+    *d = '\0'; //*d++ = '\0';
+    
+    return dest;
+}
+char *strncpy(char *dest, const char *src, size_t n)
+{
+    char *d = dest;
+
+    while (n > 0 && (*d++ = *src++) != '\0') n--;
+
+    while (n-- > 0) *d++ = '\0'; //daca src are mai putin de n caractere
+
+    return dest;
+}
+size_t strlen(const char *str)
+{
+    size_t length = 0;
+
+    
+    while (*str != '\0')
+    {
+        length++;
+        str++;
+    }
+
+    return length;
+}
+size_t strspn(const char *str1, const char *str2)
+{
+    size_t count = 0;
+
+    while (*str1 != '\0' && *str2 != '\0' && *str1 == *str2)
+    {
+        count++;
+        str1++;
+        str2++;
+    }
+    //returneaza lung secv de car care apartin lui str2 in str1
+    return count;
+}
+size_t strcspn(const char *str1, const char *str2)
+{
+    size_t count = 0;
+
+    while (*str1 != '\0')
+    {
+        const char *currentStr2 = str2;
+
+        while (*currentStr2 != '\0')
+        {
+            if (*str1 == *currentStr2) return count;
+            currentStr2++;
+        }
+        str1++;
+        count++;
+    }
+
+    return count;
+}
+char *strpbrk(const char *str1, const char *str2)
+{
+    while (*str1 != '\0')
+    {
+        const char *currentStr2 = str2;
+
+        while (*currentStr2 != '\0')
+        {
+            if (*str1 == *currentStr2) return (char *)str1;
+            currentStr2++;
+        }
+        str1++;
+    }
+
+    return NULL;
+}
+char *strstr(const char *str1, const char *str2)
+{
+    if (*str2 == '\0') return (char *)str1; //sir cautat este vid => return sirul sursa
+
+    while (*str1 != '\0')
+    {
+        const char *s1 = str1;
+        const char *s2 = str2;
+
+        while (*s1 != '\0' && *s2 != '\0' && *s1 == *s2)
+        {
+            s1++;
+            s2++;
+        }
+
+        if (*s2 == '\0') return (char *)str1;
+
+        str1++;
+    }
+
+    return NULL; // inseamna ca nu am gasit str2 in str1
+}
+char *strtok(char *str, const char *sep)
+{
+    //var statica lastToken pastreaza val intre apelurile fct strtok
+    //daca fct strtok este apelata din nou, lastToken nu va fi reinit la NULL, se va mentine val de la ult apel
+    static char *lastToken = NULL; //ia valoarea NULL numai la prima apelare //si 'la ultima' cand (vezi cazul steluta)
+    //prin util static, fct strtok are posibilitatea sa memoreze unde s-a oprit in ultimul apel si sa continue de acolo in urm apel
+    //prima oara se foloseste sirul original ca token (prima poz din sir)
+    if (str != NULL) lastToken = str; //str va fi luat NULL la toate apelarile dupa prima
+    else if (lastToken == NULL) return NULL; //nu mai sunt token-uri disponibile
+
+    char *tokenStart = lastToken;
+    while (*lastToken != '\0' && strchr(sep, *lastToken) == NULL) lastToken++;
+
+    // cazul pt ultimul token ('\0' apare doar la sfarsitul sirului sursa)
+    if (*lastToken == '\0') //cazul steluta
+    {
+        lastToken = NULL; //conditia de iesire dintr-un while(p != NULL) in care se apeleaza p = strtok(NULL , sep);
+        return tokenStart;
+    }
+
+    // Înlocuiește separatorul cu terminatorul nul pentru a obține token-ul curent
+    *lastToken = '\0'; //inainte lastToken era unul dintre separatori
+    lastToken++; //pregatim lastToken pt urm iteratie a functiei, cand tokenStart va lua val (poz in memorie) a lui lastToken
+
+    return tokenStart; //poz de unde incep token-urile (computate pe rand)
+}

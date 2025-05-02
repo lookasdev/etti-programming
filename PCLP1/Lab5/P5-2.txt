@@ -1,0 +1,145 @@
+Cifrele romane tradiționale sunt formate din următoarele denominări:
+ I = 1
+V = 5
+X = 10
+L = 50
+C = 100
+D = 500
+M = 1000
+Pentru ca un număr scris cu cifre romane să fie considerat valid există trei reguli de bază care trebuie respectate.
+Cifrele trebuie aranjate în ordinea descrescătoare a valorii. 
+M, C și X nu pot fi egalate sau depășite de valori mai mici. 
+D, L și V pot apărea fiecare o singură dată. 
+De exemplu, numărul șaisprezece ar putea fi scris ca XVI sau XIIIIII, prima fiind forma preferată, deoarece folosește cel mai mic număr de cifre. Nu am putea scrie IIIIIIIIIIIIIIII pentru că facem X (zece) din denominațiuni mai mici și nici VVVI pentru că se încalcă regula a doua și a treia.
+
+Regula „dimensiunii descrescătoare” a fost introdusă pentru a permite utilizarea combinațiilor substractive. De exemplu, patru se poate scrie IV deoarece este unu înainte de cinci. Întrucât regula cere ca numerele să fie aranjate în ordinea mărimii, ar trebui să fie clar pentru cititor că prezența unui număr mai mic deplasat, trebuia să fie scăzută fără ambiguitate din următorul număr, mai degrabă decât adăugat la el.
+
+De exemplu, nouăsprezece ar putea fi scris XIX = X (zece) + IX (nouă). Rețineți, de asemenea, cum regula cere ca X (zece) să fie plasat înainte de IX (nouă), iar IXX nu ar fi o configurație acceptabilă (regula de mărime descendentă). În mod similar, XVIV ar fi invalid deoarece V poate apărea o singură dată într-un număr.
+
+În general, romanii au încercat să folosească cât mai puține cifre atunci când afișează numerele. Din acest motiv, XIX ar fi forma preferată de nouăsprezece față de alte combinații valabile, precum XIIIIIIIII sau XVIIII.
+
+În epoca medievală, devenise o practică obișnuită să se evite mai mult de trei numere identice consecutive, profitând de combinațiile substractive mai compacte. Adică, IV s-ar scrie în loc de IIII, IX ar fi folosit în loc de IIIIIIIII sau VIIII și așa mai departe. În plus față de cele trei reguli prezentate mai sus, dacă sunt folosite combinații substractive, trebuie respectate următoarele patru reguli.
+Doar un I, X și C poate fi folosit ca număr de început într-o parte a unei perechi substractive. 
+I poate fi plasat doar înaintea lui V și X. 
+X poate fi plasat numai înaintea L și C. 
+C poate fi plasat numai înaintea D și M. 
+Ceea ce înseamnă că IL ar fi considerat un mod invalid de a scrie patruzeci și nouă, și în timp ce XXXXIIIIIIIII, XXXXVIIII, XXXXIX, XLIIIIIIIII, XLVIIII și XLIX sunt toate legitime, cea din urmă este forma preferată (minimală). Cu toate acestea, forma minimală nu era o regulă și încă mai rămân la Roma multe exemple în care nu s-a folosit economia numerelor. De exemplu, în celebrul Colosseum numerele de deasupra celei de-a patruzeci și noua intrare sunt scrise XXXXVIIII mai degrabă decât XLIX. De asemenea, este de așteptat, dar nu obligatoriu, ca valorile nominale mai mari să fie folosite ori de câte ori este posibil; de exemplu, V ar trebui folosit în locul lui IIIII, L ar trebui folosit în locul lui XXXXX și D ar trebui să fie folosit în locul lui CCCCC. 
+
+Acesta este sistemul pe care se bazează întregul sistem de numerotare romană.
+
+Pentru a scrie numere mari cu litere latine, există mai multe opțiuni, o opțiune  practică schimbă scala prin înmulțirea rădăcinii (I, V, X, L, etc.) cu o mie, iar literele romane sunt marcate fie cu bară superioară deasupra fiecărei litere, exemplu I¯¯¯
+, V¯¯¯¯
+, etc.
+
+Deoarece standardul ANSI nu permite scrierea literelor cu bară superioară, o alternativă uzuală presupune delimitarea extensiei de rădăcină printr-un simbol cum ar fi apostrof, de exemplu pentru 15 002 se foloseste XV'II.
+ 
+Realizați un program care să permită conversia unui număr natural arbitrar introdus de la tastatură în scriere romană, forma minimală, respectând regulile mentionate anterior. Să se extindă sistemul de scriere romană folosind simbolul apostrof, pentru a delimita extensia față de rădăcină.
+
+#include <stdio.h>
+
+void roman(int nr)
+{
+    while(nr)
+        {
+            if(nr >= 1000) //M
+            {
+                nr -= 1000;
+                printf("M");
+            }
+            else if (nr >= 500 && nr <= 1000) //D
+            {
+                if (nr >= 900) //CM (>= nu ==)
+                {
+                    nr -= 900;
+                    printf("CM");
+                }
+                else
+                {
+                    nr -= 500;
+                    printf("D"); 
+                }
+            }
+            else if (nr >= 100 && nr <= 500) //C
+            {
+                if (nr >= 400)
+                {
+                    nr -= 400;
+                    printf("CD"); //CD (>= nu ==)
+                }
+                else
+                {
+                    nr -= 100;
+                    printf("C"); 
+                }
+            }
+            else if (nr >= 50 && nr <= 100) //L
+            {
+                if (nr >= 90) //XC (>= nu ==)
+                {
+                    nr -= 90;
+                    printf("XC"); 
+                }
+                else
+                {
+                    nr -= 50;
+                    printf("L");
+                }
+            }
+            else if (nr >= 10 && nr <= 50) //X
+            {
+                if (nr >= 40) //XL (>= nu ==)
+                {
+                    nr -= 40;
+                    printf("XL"); 
+                }
+                else
+                {
+                    nr -= 10;
+                    printf("X");  
+                }
+            }
+            else if (nr >= 5 && nr <= 10) //V
+            {
+                if (nr >= 9) //IX (>= nu ==)
+                {
+                    nr -= 9;
+                    printf("IX"); 
+                }
+                else
+                {
+                    nr -= 5;
+                    printf("V"); 
+                }
+            }
+            else if (nr >= 1 && nr <= 5) //V
+            {
+                if (nr >= 4) //IV (>= nu ==)
+                {
+                    nr -= 4;
+                    printf("IV");
+                }
+                else
+                {
+                    nr -= 1;
+                    printf("I"); 
+                }
+            }
+        }
+}
+
+int main()
+{
+    int nr, p1, p2;
+    scanf("%d", &nr);
+    if (nr >= 4000)
+    {
+        p1 = nr / 1000;
+        p2 = nr % 1000;
+        roman(p1);
+        printf("'");
+        roman(p2);
+    }
+    else if (nr >= 1 && nr <= 3999) roman(nr);
+    else if (nr <= 0) printf("nr invalid");
+    return 0;
+}

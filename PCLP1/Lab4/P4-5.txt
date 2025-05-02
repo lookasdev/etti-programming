@@ -1,0 +1,53 @@
+Christian Goldbach a propus că fiecare număr compus impar poate fi scris ca suma dintre un prim și de două ori un pătrat.
+
+Notă. Numerele compuse impare sunt toate numerele întregi impare care nu sunt prime: 9, 15, 21, 25, 27, etc.
+
+9 = 7 + 2×12
+15 = 7 + 2×22
+21 = 3 + 2×32
+25 = 7 + 2×32
+27 = 19 + 2×22
+33 = 31 + 2×12
+
+Se pare că presupunerea era falsă.
+
+Realizați un program care să determine cel mai mic compus impar care nu poate fi scris ca suma unui prim și de două ori un pătrat. Afișați valoarea determinată în consolă.
+
+#include <stdio.h>
+
+bool prim(int nr)
+{
+    if (nr < 2) return false;
+    if (nr == 2) return true;
+    for (int d = 3; d*d <= nr; d+=2)
+        if (nr % d == 0) return false;
+    return true;
+}
+
+int main()
+{
+    int nr = 3;
+    while(42)
+    {
+        
+        if (!prim(nr))
+        {
+            bool ok = false;
+            for (int i = 1; 2 * i * i <= nr; i++)
+            {
+                if (prim(nr - 2 * i * i))
+                {
+                    ok = true;
+                    break;
+                }
+            }
+            if (!ok)
+            {
+                printf("%d", nr);
+                break;
+            }
+        }
+        nr += 2;
+    }
+    return 0;
+}

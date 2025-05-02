@@ -1,0 +1,49 @@
+Numărul prim 41 poate fi scris ca suma a șase numere prime consecutive: 41 = 2 + 3 + 5 + 7 + 11 + 13.
+
+Aceasta este cea mai lungă sumă de numere prime consecutive care formează un prim sub o sută.
+
+Cea mai lungă sumă de numere prime consecutive sub o mie care formează un prim, conține 21 de termeni și este egală cu 953.
+
+Realizați un program care să determine numărul prim, sub un milion, care produce cel mai lung lanț de numere prime consecutive a căror sumă formează primul căutat. Afișați în consolă numărul prim determinat. 
+
+#include <stdio.h>
+
+bool prim(int nr)
+{
+    if (nr == 2) return 1;
+    if (nr % 2 == 0) return 0;
+    for (int d = 3; d*d <= nr; d+=2)
+        if (nr % d == 0) return 0;
+    return 1;
+}
+
+int main()
+{
+    int rez = 0, maxxlant = 0;
+    for (int i = 2; i < 1000000; i++)
+    {
+        if (i % 2 != 0) //nu e nr par
+            if (prim(i))
+            {
+                int suma = 0;
+                int lant = 0;
+                for (int j = i; j < 1000000; j++)
+                {
+                    if (j % 2 != 0) //nu e nr par
+                        if (prim(j))
+                        {
+                            suma += j;
+                            lant++;
+                            if (suma > 1000000) break;
+                            if (prim(suma) && lant > maxxlant)
+                            {
+                                maxxlant = lant;
+                                rez = suma;
+                            }
+                        }
+                }
+            }
+    }
+    printf("%d", rez);
+    return 0;
+}

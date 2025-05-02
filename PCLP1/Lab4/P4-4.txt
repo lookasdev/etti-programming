@@ -1,0 +1,48 @@
+Următoarea secvență iterativă este definită pentru mulțimea de numere întregi pozitive:
+
+n → n/2 (n este par)
+n → 3n + 1 (n este impar)
+
+Folosind regula de mai sus și începând cu 13, generăm următoarea secvență:
+
+13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1
+Se poate observa că această secvență (începând cu 13 și terminând cu 1) conține 10 termeni. Deși nu a fost încă dovedit (Problema Collatz), se crede că toate numerele care respectă regula de mai sus se termină la 1.
+
+Care număr de pornire, sub un milion, produce cel mai lung lanț? 
+
+Realizați un program care să determine numărul de pornire sub un milion care produce cel mai lung lanț. Afișați în consolă numărul precum și lungimea lanțului, fiecare separat printr-un spațiu de tabulare.
+
+NOTĂ: Odată ce lanțul începe, termenii pot depăși un milion.
+
+#include <stdio.h>
+
+long long int collatz(long long int nr)
+{
+    int pasi = 0;
+    while (nr != 1)
+    {
+        if (nr % 2 == 0)
+            nr = nr/2;
+        else if (nr % 2 == 1)
+            nr = 3 * nr + 1;
+        pasi++;
+    }
+    return pasi;
+}
+
+int main()
+{
+    int maxx = - 1, nr_start = 0;
+    for (int i = 999999; i >= 1; i--)
+    {
+        int aux = collatz(i);
+        if (aux > maxx)
+        {
+            maxx = aux;
+            nr_start = i;
+        }
+        //printf("%d\n", i);
+    }
+    printf("%d\t%d", nr_start, maxx+1);
+    return 0;
+}

@@ -1,0 +1,13 @@
+Realizați un program care să permită conversia unei litere arbitrare introduse de la tastatură în minusculă dacă aceasta este majusculă, sau în majusculă dacă aceasta este minusculă.
+
+#include <stdio.h>
+
+int main()
+{
+    char c;
+    scanf("%c", &c);
+    if(c >= 'A' && c <= 'Z') c += 'a' - 'A';
+    else if(c >= 'a' && c <= 'z') c -= 'a' - 'A';
+    printf("%c", c);
+    return 0;
+}

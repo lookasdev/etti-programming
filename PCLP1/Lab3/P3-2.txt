@@ -1,0 +1,14 @@
+Folosind instrucţiuni de decizie, scrieţi un program care citeşte de la tastatură un număr întreg x şi afişează o valoare y calculată astfel:
+
+#include <stdio.h>
+
+int main()
+{
+    int x, y;
+    scanf("%d", &x);
+    if (x < 0) y = -x + 3;
+    else if (x > 4) y = 3*x - 9;
+    else y = 3;
+    printf("%d", y);
+    return 0;
+}

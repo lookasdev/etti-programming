@@ -1,0 +1,16 @@
+Scrieți un program care declară și inițializează o variabilă întreagă fără semn, o variabilă de tip caracter fără semn, o variabilă întreagă fără semn cu reprezentare lungă, și o variabilă reală cu dublă precizie cu reprezentare lungă, cu valori corespunzătoare, arbitrare.
+
+#include <stdio.h>
+
+int main()
+{
+    unsigned int a;
+    a = 1;
+    unsigned char b;
+    b = 'c';
+    unsigned long int c;
+    c = 42;
+    long double d;
+    d = 42.42f;
+    return 0;
+}

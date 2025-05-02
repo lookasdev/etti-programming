@@ -1,0 +1,156 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void citesteMatrice(int ***matrice, int nrLinii, int nrColoane) // fct pentru init matrice cu spatiu extra(10) si citirea valorilor sale
+{
+    int extra = 10;
+    *matrice = (int **)malloc((nrLinii + extra) * sizeof(int *));
+    for (int i = 0; i < nrLinii + extra; ++i) (*matrice)[i] = (int *)malloc((nrColoane + extra) * sizeof(int));
+
+    for (int i = 0; i < nrLinii; ++i)
+        for (int j = 0; j < nrColoane; ++j)
+            scanf("%d", &(*matrice)[i][j]);
+}
+
+void afiseazaMatrice(int **matrice, int nrLinii, int nrColoane) // fct pentru afisarea valorilor matricei
+{
+    for (int i = 0; i < nrLinii; ++i)
+    {
+        for (int j = 0; j < nrColoane; ++j)
+            printf("%d ", matrice[i][j]);
+        printf("\n");
+    }
+}
+
+void elibereazaMatrice(int ***matrice, int nrLinii) // fct pentru eliberarea matricei din memorie
+{
+    for (int i = 0; i < nrLinii; ++i)
+        free((*matrice)[i]);
+    free(*matrice);
+    *matrice = NULL;
+}
+
+void bordeazaMatrice(int **matrice, int nrLinii, int nrColoane, int dimK) // fct pentru bordarea matricei
+{
+    for (int i = 0; i < nrLinii; ++i)
+        for (int j = nrColoane; j < nrColoane + dimK - 1; ++j)
+            matrice[i][j] = 0;
+    for (int i = nrLinii; i < nrLinii + dimK - 1; ++i)
+        for (int j = 0; j < nrColoane + dimK - 1; ++j)
+            matrice[i][j] = 0;
+}
+
+void extrageSubMatrice(int **matrice, int ***submatrice, int lK, int cK, int dimK) // fct pentru extragerea submatricei
+{
+    *submatrice = (int **)malloc(dimK * sizeof(int *));
+    for (int i = 0; i < dimK; ++i)
+    {
+        (*submatrice)[i] = (int *)malloc(dimK * sizeof(int));
+    }
+
+    int ki = 0;
+    int kj = 0;
+    for (int i = lK; i < lK + dimK; ++i)
+    {
+        for (int j = cK; j < cK + dimK; ++j)
+        {
+            (*submatrice)[ki][kj] = matrice[i][j];
+            kj++;
+        }
+        kj = 0;
+        ki++;
+    }
+}
+
+void binarizeazaMatrice(int **matrice, int dimK) // fct pentru binarizarea unei matrici
+{
+    int indexCentru = dimK / 2;
+    int centru = matrice[indexCentru][indexCentru];
+
+    for (int i = 0; i < dimK; ++i)
+        for (int j = 0; j < dimK; ++j)
+            if (i != indexCentru || j != indexCentru) //evitam sa modif initial elem din centru
+            {
+                if (matrice[i][j] > centru) matrice[i][j] = 1;
+                else matrice[i][j] = 0;
+            }
+    matrice[indexCentru][indexCentru] = 0;
+}
+
+int transfZecMatrice(int **matrice, int dimK)
+{
+    int suma = 0;
+    int k = 1;
+
+    for (int i = 0; i < dimK; ++i)
+        for (int j = 0; j < dimK; ++j)
+        {
+            suma += matrice[i][j] * k;
+            k *= 2;
+        }
+    return suma;
+}
+
+int main()
+{
+    int **matrice = NULL;
+    int nrLinii, nrColoane, dimK, lK, cK, test;
+
+    scanf("%d", &nrLinii);
+    scanf("%d", &nrColoane);
+    citesteMatrice(&matrice, nrLinii, nrColoane);
+
+    scanf("%d", &dimK);
+    scanf("%d", &lK); //indexul liniei coltului din stanga sus al ferestrei de dimensiune k × k
+    scanf("%d", &cK); //indexul coloanei coltului din stanga sus al ferestrei de dimensiune k × k
+
+    scanf("%d", &test);
+    if (test == 1)
+    {
+        afiseazaMatrice(matrice, nrLinii, nrColoane);
+        elibereazaMatrice(&matrice, nrLinii);
+    }
+    else if (test == 2)
+    {
+        bordeazaMatrice(matrice, nrLinii, nrColoane, dimK);
+        //nrLinii += dimK - 1;
+        //nrColoane += dimK - 1;
+        afiseazaMatrice(matrice, nrLinii + dimK - 1, nrColoane + dimK - 1);
+        elibereazaMatrice(&matrice, nrLinii + dimK - 1);
+    }
+    else if (test == 3)
+    {
+        int **submatrice = NULL;
+        extrageSubMatrice(matrice, &submatrice, lK, cK, dimK);
+        afiseazaMatrice(submatrice, dimK, dimK);
+        elibereazaMatrice(&matrice, nrLinii);
+        elibereazaMatrice(&submatrice, dimK);
+    }
+    else if (test == 4)
+    {
+        binarizeazaMatrice(matrice, dimK);
+        afiseazaMatrice(matrice, dimK, dimK);
+        elibereazaMatrice(&matrice, dimK);
+    }
+    else if (test == 5)
+    {
+        int rez = transfZecMatrice(matrice, dimK);
+        printf("%d", rez);
+        elibereazaMatrice(&matrice, dimK);
+    }
+    else if (test == 6) //citirea matricei se face la inceputul programului, inainte de teste
+    {
+        bordeazaMatrice(matrice, nrLinii, nrColoane, dimK);
+
+        int **submatrice = NULL;
+        extrageSubMatrice(matrice, &submatrice, lK, cK, dimK);
+
+        binarizeazaMatrice(submatrice, dimK);
+        int rez = transfZecMatrice(submatrice, dimK);
+        printf("%d", rez);
+
+        elibereazaMatrice(&submatrice, dimK);
+        elibereazaMatrice(&matrice, nrLinii + dimK - 1);
+    }
+    return 0;
+}

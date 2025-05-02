@@ -1,0 +1,16 @@
+Scrieți un program care să citească de la tastatură trei valoari întreagi arbitrare și găsește și afișează pe ecran valoarea maximă.
+
+#include <stdio.h>
+
+int main()
+{
+    int a, b, c, maxx;
+    scanf("%d", &a);
+    scanf("%d", &b);
+    scanf("%d", &c);
+    maxx = a;
+    b > maxx ? maxx = b : maxx = maxx;
+    c > maxx ? maxx = c : maxx = maxx;
+    printf("%d", maxx);
+    return 0;
+}

@@ -1,0 +1,99 @@
+Cerință
+Având la dispoziție datele a două cercuri, p și q, reprezentate prin razele lor precum și de coordonatele centrelor lor x și y citite de la tastatură, și o valoare întreagă arbitrară de testare test, cu valori în intervalul [1;3], citită de la tastatură, să se scrie un program care să determine dacă două cercuri se intersectează, și de asemenea, dacă, primul cerc, p conține cel de-al doilea cerc q.
+
+În funcție de valoarea de testare test, programul va executa o serie de instrucțiuni, după cum urmează:
+1. Citirea de la stdin și afișarea în stdout a datelor cercurilor;
+
+2. Determinarea și afișarea dacă două cercuri se intersectează, caz în care afișați valoarea 1 și 0 în caz contrar.
+
+Notă. Două cercuri se intersectează atunci când distanța dintre centrele lor este mai mică sau egală cu suma razelor lor.
+
+3. Determinarea și afișarea dacă primul cerc, p conține cel de-al doilea cerc q (cercul q se găsește în interiorul cercului p). Afișați 1 dacă p conține q, altfel, afișați 0
+
+
+Notă. Cercul p conține cercul q când raza lui p este mai mare sau egală cu suma razei lui q și distanța dintre centrele lui p și q.
+
+În planul euclidian, dacă p=(p1,p2)
+ și q=(q1,q2)
+, atunci distanța este dată de:  d(p,q)=(p1−q1)2+(p2−q2)2−−−−−−−−−−−−−−−−−−√
+.
+
+Notă:  Pentru acest exemplu se permite utilizarea functiei sqrt cu prototipul double sqrt(double arg) care se regăsește în fișierul antet math.h. Exemplu de apelare a funcției sqrt: printf("%f", sqrt(9));
+
+ 
+Date de intrare:
+Se va citi de la tastatură:
+
+O valoare întreagă cuprinsă în intervalul [1;3], reprezentând valoarea de testare test în funcţie de care se vor rezolva diferite subpuncte prezentate anterior. 
+
+Pentru fiecare valoare de testare test, se va citi suplimentar:
+
+Test 1:
+
+Date de intrare:
+
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei pentru cercul p;
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei centru cercul q.
+Date de ieșire:
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului p, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter);
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului q, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter).
+
+Test 2:
+Date de intrare:
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului p, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter);
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului q, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter).
+Date de ieșire:
+afișați 1 dacă două cercuri se intersectează, 0 în caz contrar.
+
+Test 3:
+Date de intrare:
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului p, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter);
+trei valoari reale corespunzătoare razei și coordonatele x și y ale centrului razei cercului q, fiecare valoare separată prin virgulă, iar linia urmată de caracterul linie nouă (tasta Enter).
+Date de ieșire:
+afișați 1 dacă p conține q, altfel, afișați 0.
+
+
+
+#include <stdio.h>
+#include <math.h>
+
+struct cerc
+{
+    double raza;
+    double x;
+    double y;
+};
+
+double distanta(double p1, double p2, double q1, double q2)
+{
+    return (sqrt((p1-q1)*(p1-q1)+(p2-q2)*(p2-q2))); //sau folosim fct pow(x,2)
+}
+
+int main()
+{
+    cerc p, q;
+    int test;
+    scanf("%d \n", &test);
+    if (test == 1)
+    {
+        scanf("%lf %lf %lf \n", &p.raza, &p.x, &p.y);
+        scanf("%lf %lf %lf \n", &q.raza, &q.x, &q.y);
+        printf("%lf, %lf, %lf \n", p.raza, p.x, p.y);
+        printf("%lf, %lf, %lf \n", q.raza, q.x, q.y);
+    }
+    else if (test == 2)
+    {
+        scanf("%lf %lf %lf \n", &p.raza, &p.x, &p.y);
+        scanf("%lf %lf %lf \n", &q.raza, &q.x, &q.y);
+        if (distanta(p.x, p.y, q.x, q.y) <= p.raza + q.raza) printf("1");
+        else printf("0");
+    }
+    else if (test == 3)
+    {
+        scanf("%lf %lf %lf \n", &p.raza, &p.x, &p.y);
+        scanf("%lf %lf %lf \n", &q.raza, &q.x, &q.y);
+        if (p.raza >= q.raza + distanta(p.x, p.y, q.x, q.y)) printf("1");
+        else printf("0");
+    }
+    return 0;
+}

@@ -1,0 +1,43 @@
+Scrieţi un program care citeşte de la tastatură două şiruri de caractere, s1 și s2 (de maximum 11 caractere fiecare), şi afişează pe ecran numărul de apariţii ale caracterelor unice din primul şir, în cel de al doilea şir, în ordinea apariției lor. 
+
+Exemplu: sir1 = "abc", sir2 = "aacde" şi trebuie să rezulte "2 0 1".
+
+Date de intrare
+Se vor citi de la tastatură (fluxul stdin) următoarele date:
+
+un șir de caractere s1, urmat de caracterul linie nouă (tasta Enter);
+un șir de caractere s2, urmat de caracterul linie nouă.
+Date de ieşire
+Programul va afişa, pe ecran, la ieşire, numărul de apariţii ale caracterelor din primul şir, s1,  în cel de al doilea şir, s2, fiecare pe o linie nouă.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    char sir1[12], sir2[12];
+    int* v = (int*) calloc (200, sizeof(int));
+    //int v[201];
+    //for (int i = 0; i <= 200; i++) v[i] = 0;
+    scanf("%s", sir1);
+    scanf("%s", sir2);
+    int i = 0;
+    while(sir1[i] != '\0')
+    {
+        v[sir1[i]]++;
+        if (v[sir1[i]] == 1)
+        {
+            int k = 0; //contor aparitii
+            int j = 0;
+            while(sir2[j] != '\0')
+            {
+                if (sir1[i] == sir2[j]) k++;
+                j++;
+            }
+            printf("%d\n", k);
+        }
+        i++;
+    }
+    free(v);
+    return 0;
+}

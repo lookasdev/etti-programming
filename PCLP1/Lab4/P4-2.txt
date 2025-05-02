@@ -1,0 +1,30 @@
+2520 este cel mai mic număr care poate fi împărțit la fiecare dintre numerele de la 1 la 10, fără rest.
+
+Scrieți un program care să determine cel mai mic număr pozitiv care are ca divizori toate numerele de la 1 la 20. Intervalul va fi citit de la tastatură.
+
+#include <stdio.h>
+
+int cmmdc(long long int a, long long int b)
+{
+    if (b == 0) return a;
+    return cmmdc(b, a % b);
+}
+
+int cmmmc(long long int a, long long int b)
+{
+    return (a*b) / cmmdc(a,b);
+}
+
+int main()
+{
+    int l1, l2;
+    long long int produs_rez = 1;
+    scanf("%d", &l1); //capat min
+    scanf("%d", &l2); //capat max
+    for (int i = l1; i <= l2; i++)
+    {
+        produs_rez = cmmmc(produs_rez, i);
+    }
+    printf("%d", produs_rez);
+    return 0;
+}
