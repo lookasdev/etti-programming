@@ -1,0 +1,115 @@
+Să se scrie o aplicație de tip poliglot pentru conținutul unui site web. O aplicație poliglot presupune traducerea conținutului în mai multe limbi. Site-ul conține 2 elemente (hello_message, page_content) care au asociat câte un mesaj. La schimbarea limbii site-ului, se dorește schimbarea tuturor mesajelor din elementele site-ului în limba dorită. Se vor citi de la tastatură numele utilizatorului, limba și mesajele propriu-zise, până la întâlnirea cuvântului STOP și se vor memora într-o clasă Website, în felul următor:
+
+<nume_utilizator>
+<identificator_limba_1>
+<hello_message_1>
+<page_content_1>
+<identificator_limba_2>
+<hello_message_2>
+<page_content_2>
+…
+<identificator_limba_n>
+<hello_message_n>
+<page_content_n>
+STOP
+Meniul site-ului rulează în buclă și oferă funcționalități diferite, în funcție de comanda introdusă, astfel:
+
+alegere limbă - afișează limbile posibile și așteaptă introducerea unui string care specifică limba în care se va schimba site-ul (default: prima limbă introdusă).
+afișează mesajul de întâmpinare al paginii și numele utilizatorului, astfel:
+<hello_message>, <nume_utilizator>!
+afișează conținutul paginii în limba curentă
+ieșire
+
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+class Website
+{
+private:
+    std::vector<std::string> languages;
+    std::vector<std::string> helloMessages;
+    std::vector<std::string> pageContents;
+    std::string currentLanguage;
+    std::string username;
+
+public:
+    Website(std::string username) : username(username) {}
+    
+    void addMessage(const std::string& language, const std::string& helloMessage, const std::string& pageContent)
+    {
+        languages.push_back(language);
+        helloMessages.push_back(helloMessage);
+        pageContents.push_back(pageContent);
+
+        if (currentLanguage.empty())
+            currentLanguage = language;
+    }
+
+    void changeLanguage(const std::string& language) { currentLanguage = language; }
+
+    void displayWelcomeMessage()
+    {
+        auto it = std::find(languages.begin(), languages.end(), currentLanguage);
+        if (it != languages.end())
+        {
+            std::size_t index = std::distance(languages.begin(), it);
+            std::cout << helloMessages[index] << ", " << username << "!\n";
+        }
+    }
+
+    void displayPageContent()
+    {
+        auto it = std::find(languages.begin(), languages.end(), currentLanguage);
+        if (it != languages.end())
+        {
+            std::size_t index = std::distance(languages.begin(), it);
+            std::cout << pageContents[index] << std::endl;
+        }
+    }
+
+    // std::vector<std::string>& getLanguages() { return languages; }
+};
+
+int main()
+{
+    std::string nume;
+    std::cin >> nume;
+    Website website(nume);
+    
+    while (true)
+    {
+        std::string language, helloMessage, pageContent;
+        std::cin >> language;
+        if (language == "STOP") break;
+        // std::cin >> helloMessage >> pageContent;
+        std::cin.ignore();
+        getline(std::cin, helloMessage);
+        getline(std::cin, pageContent);
+        website.addMessage(language, helloMessage, pageContent);
+    }
+    
+    std::string input;
+    while (true)
+    {
+        // std::cout << "start";
+        std::cin >> input;
+        if (input == "1")
+        {
+            // std::cout << "Limbi disponibile: ";
+            // for (const auto& language : website.getLanguages())
+            //     std::cout << language << " ";
+            // std::cout << std::endl;
+
+            std::cin >> input;
+            website.changeLanguage(input);
+        }
+        else if (input == "2") website.displayWelcomeMessage();
+        else if (input == "3") website.displayPageContent();
+        else if (input == "4") break;
+    }
+
+    return 0;
+}
