@@ -1,4 +1,4 @@
-# 🎓 VPLs from PCLP1, PCLP2 & SDA - ETTI CTI
+# VPLs from PCLP1, PCLP2 & SDA - ETTI CTI
 
 ## 📁 Structure
 
