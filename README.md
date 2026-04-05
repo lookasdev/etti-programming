@@ -1,6 +1,6 @@
 # VPLs from PCLP1, PCLP2 & SDA - ETTI CTI
 
-## 📁 Structure
+## Structure
 
 ```
 .
